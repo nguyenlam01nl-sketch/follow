@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ExternalServiceController;
 
+// Public
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -15,11 +16,9 @@ Route::get('/services/tree', [ServiceController::class, 'tree']);
 Route::get('/services', [ServiceController::class, 'index']);
 Route::get('/services/{id}', [ServiceController::class, 'show']);
 
-Route::prefix('external')->group(function () {
-    Route::get('/services', [ExternalServiceController::class, 'getServices']);
-    Route::post('/orders', [ExternalServiceController::class, 'createOrder']);
-});
+Route::get('/external/services', [ExternalServiceController::class, 'getServices']);
 
+// Protected
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -30,6 +29,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
+
+    Route::post('/external/orders', [ExternalServiceController::class, 'createOrder']);
 
     Route::get('/wallet', [WalletController::class, 'index']);
     Route::get('/wallet/transactions', [WalletController::class, 'transactions']);

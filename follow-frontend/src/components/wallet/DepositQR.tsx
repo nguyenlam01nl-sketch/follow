@@ -8,7 +8,11 @@ function generateCode() {
   return "TF" + Math.floor(100000 + Math.random() * 900000);
 }
 
-function DepositQR() {
+type DepositQRProps = {
+  onDeposit?: () => void | Promise<void>;
+};
+
+function DepositQR({ onDeposit }: DepositQRProps) {
   const [amount, setAmount] = useState<number>(100000);
   const [note, setNote] = useState<string>("");
 
@@ -21,12 +25,24 @@ function DepositQR() {
   )}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
 
   return (
-    <div className="rounded-[28px] border border-white/12 bg-white/8 p-6 backdrop-blur-2xl space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold text-white">Nạp tiền qua QR</h2>
-        <p className="text-sm text-white/50">
-          Quét mã để chuyển khoản, giữ nguyên nội dung
-        </p>
+    <div className="space-y-5 rounded-[28px] border border-white/12 bg-white/8 p-6 backdrop-blur-2xl">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-white">Nạp tiền qua QR</h2>
+          <p className="text-sm text-white/50">
+            Quét mã để chuyển khoản, giữ nguyên nội dung
+          </p>
+        </div>
+
+        {onDeposit && (
+          <button
+            type="button"
+            onClick={onDeposit}
+            className="rounded-xl bg-[#1570ef] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+          >
+            Tạo yêu cầu nạp
+          </button>
+        )}
       </div>
 
       <div>
@@ -51,6 +67,7 @@ function DepositQR() {
       <div>
         <label className="text-sm text-white/60">Số tiền</label>
         <input
+          type="number"
           value={amount}
           onChange={(e) => setAmount(Number(e.target.value) || 0)}
           className="mt-1 h-12 w-full rounded-xl border border-white/15 bg-white/10 px-4 text-white outline-none"

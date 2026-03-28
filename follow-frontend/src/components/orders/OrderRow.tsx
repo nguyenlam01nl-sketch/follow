@@ -25,7 +25,7 @@ function OrderRow({ order }: Props) {
       </div>
 
       <div className="text-white">
-        {order.price}đ
+        {order.price} VND
       </div>
 
       <div>
