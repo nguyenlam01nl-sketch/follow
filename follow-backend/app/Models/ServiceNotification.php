@@ -6,5 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class ServiceNotification extends Model
 {
-    //
+    protected $fillable = [
+        'order_id',
+        'channel',
+        'payload',
+        'status',
+    ];
 }
