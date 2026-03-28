@@ -7,6 +7,8 @@ use App\Models\Order;
 use App\Models\Service;
 use App\Models\ServiceNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 
 class OrderController extends Controller
 {
@@ -165,6 +167,14 @@ class OrderController extends Controller
         $totalPrice = $service->requires_quantity ? ($unitPrice * $quantity) : $unitPrice;
 
         try {
+            Log::info('Order creation attempt', [
+                'user_id' => $request->user()->id,
+                'service_id' => $service->id,
+                'form_data' => $formData,
+                'unit_price' => $unitPrice,
+                'total_price' => $totalPrice,
+            ]);
+
             $order = Order::create([
                 'user_id' => $request->user()->id,
                 'service_id' => $service->id,
@@ -180,12 +190,15 @@ class OrderController extends Controller
                 'selected_price' => (int)$unitPrice,
                 'status' => 'pending',
             ]);
+
+            Log::info('Order created successfully', ['order_id' => $order->id]);
         } catch (\Exception $e) {
-            \Log::error('Order creation failed', [
+            Log::error('Order creation failed', [
                 'error' => $e->getMessage(),
                 'user_id' => $request->user()->id,
                 'service_id' => $service->id,
                 'data' => $data,
+                'trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
                 'message' => 'Lỗi lưu đơn vào database: ' . $e->getMessage(),
