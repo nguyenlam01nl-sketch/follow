@@ -186,6 +186,13 @@ export default function ServicesPage() {
     fetchServicesTree();
   }, []);
 
+  const engagementPlatforms = [
+    { key: "facebook", label: "Tăng tương tác Facebook", icon: Share2 },
+    { key: "instagram", label: "Tăng tương tác Instagram", icon: Globe },
+    { key: "tiktok", label: "Tăng tương tác TikTok", icon: MusicNoteIcon },
+    { key: "youtube", label: "Tăng tương tác YouTube", icon: Video },
+  ];
+
   const sections = useMemo(() => {
     return tree.map((platform) => ({
       ...platform,
@@ -219,6 +226,57 @@ export default function ServicesPage() {
             Không có dữ liệu dịch vụ.
           </div>
         )}
+        <section className="space-y-5 border-b border-white/10 pb-8">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.05]">
+                <Zap size={22} className="text-orange-400" />
+              </div>
+
+              <h2 className="text-3xl font-extrabold tracking-tight text-white">
+                TĂNG TƯƠNG TÁC
+              </h2>
+            </div>
+
+            <div className="rounded-full border border-orange-400/20 bg-orange-400/10 px-4 py-2 text-xs font-medium uppercase tracking-wide text-orange-200">
+              {engagementPlatforms.length} nền tảng
+            </div>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {engagementPlatforms.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <motion.button
+                  key={item.key}
+                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.18 }}
+                  onClick={() => navigate(`/services/engagement/${item.key}`)}
+                  className="group relative min-h-[180px] rounded-[24px] border border-white/8 bg-[#08152d] p-5 text-left transition hover:border-white/14 hover:bg-[#0b1a35]"
+                >
+                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.05]">
+                    <Icon size={22} className="text-orange-400" />
+                  </div>
+
+                  <h3 className="text-[22px] font-extrabold uppercase leading-7 text-white">
+                    {item.label}
+                  </h3>
+
+                  <p className="mt-2 text-sm text-white/35">
+                    Follow, like, view, comment, share, member, subscribe...
+                  </p>
+
+                  <div className="mt-4">
+                    <span className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] text-white/55">
+                      Social Boost
+                    </span>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+        </section>
 
         {!loading &&
           !error &&
@@ -265,11 +323,10 @@ export default function ServicesPage() {
                           </div>
 
                           <span
-                            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                              service.mode === "api"
+                            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${service.mode === "api"
                                 ? "bg-cyan-400/10 text-cyan-200"
                                 : "bg-fuchsia-400/10 text-fuchsia-200"
-                            }`}
+                              }`}
                           >
                             {service.mode}
                           </span>

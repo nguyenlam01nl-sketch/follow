@@ -7,6 +7,7 @@ import OrdersPage from "../pages/orders/OrdersPage";
 import WalletPage from "../pages/wallet/WalletPage";
 import AccountPage from "../pages/account/AccountPage";
 import ServiceOrderPage from "../pages/services/ServiceOrderPage";
+import EngagementPlatformPage from "../pages/services/EngagementPlatformPage";
 
 function AppRoutes() {
   return (
@@ -17,6 +18,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/services" element={<ServicesPage />} />
       <Route path="/services/:serviceId" element={<ServiceOrderPage />} />
+      <Route path="/services/engagement/:platform" element={<EngagementPlatformPage />} />
       <Route path="/orders" element={<OrdersPage />} />
       <Route path="/wallet" element={<WalletPage />} />
       <Route path="/account" element={<AccountPage />} />

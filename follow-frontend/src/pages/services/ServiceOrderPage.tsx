@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import api from "../../api/axios";
 import { ArrowLeft, ShoppingCart } from "lucide-react";
@@ -136,8 +137,38 @@ export default function ServiceOrderPage() {
       });
 
       setSuccess(res.data.message || "Đã tạo đơn thành công");
+
+      // Show success alert
+      await Swal.fire({
+        title: "Thành công!",
+        text: res.data.message || "Đã tạo đơn thành công",
+        icon: "success",
+        confirmButtonColor: "#2F80ED",
+        confirmButtonText: "OK",
+      });
+
+      // Reset form
+      const initialValues: Record<string, any> = {};
+      (service.form_schema || []).forEach((field: FormField) => {
+        if (field.type === "checkbox") {
+          initialValues[field.name] = false;
+        } else {
+          initialValues[field.name] = "";
+        }
+      });
+      setFormData(initialValues);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Không thể tạo đơn, vui lòng thử lại");
+      const errorMsg = err?.response?.data?.message || "Không thể tạo đơn, vui lòng thử lại";
+      setError(errorMsg);
+
+      // Show error alert
+      await Swal.fire({
+        title: "Lỗi!",
+        text: errorMsg,
+        icon: "error",
+        confirmButtonColor: "#2F80ED",
+        confirmButtonText: "OK",
+      });
     } finally {
       setSubmitting(false);
     }

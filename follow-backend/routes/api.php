@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\ExternalServiceController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -13,6 +14,11 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/services/tree', [ServiceController::class, 'tree']);
 Route::get('/services', [ServiceController::class, 'index']);
 Route::get('/services/{id}', [ServiceController::class, 'show']);
+
+Route::prefix('external')->group(function () {
+    Route::get('/services', [ExternalServiceController::class, 'getServices']);
+    Route::post('/orders', [ExternalServiceController::class, 'createOrder']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

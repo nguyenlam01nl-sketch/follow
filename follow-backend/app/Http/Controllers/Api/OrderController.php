@@ -164,21 +164,33 @@ class OrderController extends Controller
 
         $totalPrice = $service->requires_quantity ? ($unitPrice * $quantity) : $unitPrice;
 
-        $order = Order::create([
-            'user_id' => $request->user()->id,
-            'service_id' => $service->id,
-            'service_name' => $service->name,
-            'platform' => $service->platform,
-            'mode' => $service->mode,
-            'target_link' => $data['target_link'] ?? null,
-            'quantity' => $service->requires_quantity ? $quantity : null,
-            'unit_price' => $unitPrice,
-            'total_price' => $totalPrice,
-            'note' => $data['note'] ?? null,
-            'form_data' => !empty($formData) ? $formData : null,
-            'selected_price' => $unitPrice,
-            'status' => 'pending',
-        ]);
+        try {
+            $order = Order::create([
+                'user_id' => $request->user()->id,
+                'service_id' => $service->id,
+                'service_name' => $service->name,
+                'platform' => $service->platform ?? 'Unknown',
+                'mode' => $service->mode,
+                'target_link' => $data['target_link'] ?? null,
+                'quantity' => $service->requires_quantity ? $quantity : null,
+                'unit_price' => $unitPrice,
+                'total_price' => $totalPrice,
+                'note' => $data['note'] ?? null,
+                'form_data' => !empty($formData) ? $formData : null,
+                'selected_price' => (int)$unitPrice,
+                'status' => 'pending',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Order creation failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $request->user()->id,
+                'service_id' => $service->id,
+                'data' => $data,
+            ]);
+            return response()->json([
+                'message' => 'Lỗi lưu đơn vào database: ' . $e->getMessage(),
+            ], 500);
+        }
 
         ServiceNotification::create([
             'order_id' => $order->id,
