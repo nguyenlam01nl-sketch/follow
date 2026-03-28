@@ -62,7 +62,13 @@ function LoginPage() {
         confirmButtonText: "Tiếp tục",
       });
 
-      navigate("/dashboard");
+      const role = res.data.user?.role;
+
+      if (role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       const message =
         err?.response?.data?.message ||

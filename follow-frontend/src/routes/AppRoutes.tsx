@@ -9,31 +9,42 @@ import AccountPage from "@/pages/user/account/AccountPage";
 import ServiceOrderPage from "@/pages/user/services/ServiceOrderPage";
 import EngagementPlatformPage from "@/pages/user/services/EngagementPlatformPage";
 import ProtectedRoute from "./ProtectedRoute";
+import AdminDashboardPage from "@/pages/admin/dashboard/AdminDashboardPage";
+import AdminServicesPage from "@/pages/admin/services/AdminServicesPage";
+import AdminServiceEditPage from "@/pages/admin/services/AdminServiceEditPage";
+import AdminEngagementPlatformPage from "@/pages/admin/services/AdminEngagementPlatformPage";
 
 function AppRoutes() {
   return (
     <Routes>
-      {/* Redirect root */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-
       {/* Public */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* 🔒 Protected */}
-      <Route element={<ProtectedRoute />}>
+      {/* 👤 USER */}
+      <Route element={<ProtectedRoute role="user" />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/services/:serviceId" element={<ServiceOrderPage />} />
         <Route
           path="/services/engagement/:platform"
           element={<EngagementPlatformPage />}
         />
-
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/wallet" element={<WalletPage />} />
         <Route path="/account" element={<AccountPage />} />
+      </Route>
+
+      {/* 👑 ADMIN */}
+      <Route element={<ProtectedRoute role="admin" />}>
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+         <Route path="/admin/services" element={<AdminServicesPage />} />
+  <Route path="/admin/services/:serviceId/edit" element={<AdminServiceEditPage />} />
+  <Route
+    path="/admin/services/engagement/:platform"
+    element={<AdminEngagementPlatformPage />}
+  />
       </Route>
     </Routes>
   );

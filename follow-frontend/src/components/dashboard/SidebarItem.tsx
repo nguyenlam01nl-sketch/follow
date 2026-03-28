@@ -1,13 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 type Props = {
   to: string;
   label: string;
   icon: string;
-  active?: boolean;
 };
 
-function SidebarItem({ to, label, icon, active = false }: Props) {
+function SidebarItem({ to, label, icon }: Props) {
+  const location = useLocation();
+  const active = location.pathname === to;
+
   return (
     <Link
       to={to}

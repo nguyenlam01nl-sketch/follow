@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ExternalServiceController;
+use App\Http\Controllers\Api\AdminServiceController;
 
 // Public
 Route::post('/register', [AuthController::class, 'register']);
@@ -35,4 +36,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wallet', [WalletController::class, 'index']);
     Route::get('/wallet/transactions', [WalletController::class, 'transactions']);
     Route::post('/wallet/deposit', [WalletController::class, 'createDeposit']);
+
+    // Admin services
+    Route::prefix('admin')->group(function () {
+        Route::get('/services/{service}', [AdminServiceController::class, 'show']);
+        Route::put('/services/{service}', [AdminServiceController::class, 'update']);
+    });
 });

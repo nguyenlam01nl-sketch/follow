@@ -3,8 +3,19 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 
+type User = {
+  id?: number;
+  name?: string;
+  email?: string;
+  role?: "admin" | "user";
+};
+
 function Sidebar() {
   const navigate = useNavigate();
+
+  const rawUser = localStorage.getItem("user");
+  const user: User | null = rawUser ? JSON.parse(rawUser) : null;
+  const role = user?.role || "user";
 
   const handleLogout = async () => {
     const result = await Swal.fire({
@@ -27,8 +38,29 @@ function Sidebar() {
     }
 
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
+
+  const adminMenu = [
+    { to: "/admin/dashboard", label: "Dashboard", icon: "📊" },
+    { to: "/admin/services", label: "Dịch vụ", icon: "🛍️" },
+    { to: "/admin/orders", label: "Đơn hàng", icon: "🧾" },
+    { to: "/admin/wallet", label: "Ví tiền", icon: "💳" },
+    { to: "/admin/users", label: "Người dùng", icon: "👥" },
+    { to: "/admin/settings", label: "Cài đặt", icon: "⚙️" },
+  ];
+
+  const userMenu = [
+    { to: "/dashboard", label: "Dashboard", icon: "📊" },
+    { to: "/services", label: "Dịch vụ", icon: "🛍️" },
+    { to: "/orders", label: "Đơn hàng", icon: "🧾" },
+    { to: "/wallet", label: "Ví tiền", icon: "💳" },
+    { to: "/account", label: "Tài khoản", icon: "👤" },
+    { to: "/settings", label: "Cài đặt", icon: "⚙️" },
+  ];
+
+  const menuItems = role === "admin" ? adminMenu : userMenu;
 
   return (
     <aside className="hidden h-screen w-[270px] shrink-0 border-r border-white/10 bg-white/5 backdrop-blur-2xl lg:flex lg:flex-col">
@@ -42,7 +74,7 @@ function Sidebar() {
           <div>
             <h2 className="text-lg font-semibold">Follow Market</h2>
             <p className="text-xs uppercase tracking-[0.18em] text-white/45">
-              Admin panel
+              {role === "admin" ? "Admin panel" : "User panel"}
             </p>
           </div>
         </div>
@@ -54,19 +86,25 @@ function Sidebar() {
         </p>
 
         <div className="space-y-2 pb-4">
-          <SidebarItem to="/dashboard" label="Dashboard" icon="📊" active />
-          <SidebarItem to="/services" label="Dịch vụ" icon="🛍️" />
-          <SidebarItem to="/orders" label="Đơn hàng" icon="🧾" />
-          <SidebarItem to="/wallet" label="Ví tiền" icon="💳" />
-          <SidebarItem to="/users" label="Người dùng" icon="👥" />
-          <SidebarItem to="/settings" label="Cài đặt" icon="⚙️" />
+          {menuItems.map((item) => (
+            <SidebarItem
+              key={item.to}
+              to={item.to}
+              label={item.label}
+              icon={item.icon}
+            />
+          ))}
         </div>
       </div>
 
       <div className="border-t border-white/10 p-4">
         <div className="rounded-2xl border border-white/12 bg-white/8 p-4">
-          <p className="text-sm font-medium text-white">Nguyễn Lam</p>
-          <p className="mt-1 text-xs text-white/45">Administrator</p>
+          <p className="text-sm font-medium text-white">
+            {user?.name || "Người dùng"}
+          </p>
+          <p className="mt-1 text-xs text-white/45">
+            {role === "admin" ? "Administrator" : "User"}
+          </p>
 
           <button
             onClick={handleLogout}
