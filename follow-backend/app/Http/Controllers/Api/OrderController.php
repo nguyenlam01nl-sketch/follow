@@ -10,6 +10,63 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    /**
+     * Validate link format from service description
+     */
+    private function validateLinkFormat(Service $service, string $link): ?string
+    {
+        if ($service->mode !== 'manual' || !$service->description) {
+            return null;
+        }
+
+        $description = $service->description;
+
+        // Extract link patterns from description
+        // Look for patterns like: https://..., www...., or specific format hints
+        if (preg_match_all('/https?:\/\/[^\s<>"\'`]+|www\.[^\s<>"\'`]+/', $description, $matches)) {
+            $patterns = $matches[0];
+
+            // Validate against each pattern
+            foreach ($patterns as $pattern) {
+                if ($this->linkMatchesPattern($link, $pattern)) {
+                    return null;
+                }
+            }
+
+            // If we found patterns but link doesn't match any, return error
+            if (!empty($patterns)) {
+                $exampleLink = $patterns[0];
+                return "Link không đúng định dạng. Vui lòng nhập link dạng: " . $exampleLink;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if link matches the pattern (domain + structure)
+     */
+    private function linkMatchesPattern(string $link, string $pattern): bool
+    {
+        // Extract domain from pattern
+        if (preg_match('/(https?:\/\/)?([^\/]+)/', $pattern, $patternMatch)) {
+            $patternDomain = $patternMatch[2];
+
+            // Extract domain from link
+            if (preg_match('/(https?:\/\/)?([^\/]+)/', $link, $linkMatch)) {
+                $linkDomain = $linkMatch[2];
+
+                // Check if domains match (with wildcards for subdomains)
+                $patternDomain = str_replace('www.', '', $patternDomain);
+                $linkDomain = str_replace('www.', '', $linkDomain);
+
+                return strpos($linkDomain, $patternDomain) !== false;
+            }
+        }
+
+        return false;
+    }
+
     public function index(Request $request)
     {
         return response()->json(
@@ -43,6 +100,14 @@ class OrderController extends Controller
         $service = Service::findOrFail($data['service_id']);
         $formData = $data['form_data'] ?? [];
 
+        // Validate link format if service requires link
+        if ($service->requires_link && !empty($data['target_link'])) {
+            $linkError = $this->validateLinkFormat($service, $data['target_link']);
+            if ($linkError) {
+                return response()->json(['message' => $linkError], 422);
+            }
+        }
+
         if (!empty($service->form_schema) && is_array($service->form_schema)) {
             foreach ($service->form_schema as $field) {
                 $fieldName = $field['name'] ?? null;
@@ -66,6 +131,14 @@ class OrderController extends Controller
                         return response()->json([
                             'message' => 'Vui lòng nhập/chọn: ' . ($field['label'] ?? $fieldName),
                         ], 422);
+                    }
+
+                    // Validate link format if field is for link
+                    if ($fieldType === 'text' && (strpos($field['name'], 'link') !== false || strpos($field['label'] ?? '', 'link') !== false)) {
+                        $linkError = $this->validateLinkFormat($service, $value);
+                        if ($linkError) {
+                            return response()->json(['message' => $linkError], 422);
+                        }
                     }
                 }
             }
