@@ -20,7 +20,7 @@ function Sidebar() {
   const handleLogout = async () => {
     const result = await Swal.fire({
       title: "Đăng xuất?",
-      text: "Bé có chắc muốn đăng xuất không?",
+      text: "Bạn có chắc muốn đăng xuất không?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#2F80ED",
@@ -48,7 +48,7 @@ function Sidebar() {
     { to: "/admin/orders", label: "Đơn hàng", icon: "🧾" },
     { to: "/admin/wallet", label: "Ví tiền", icon: "💳" },
     { to: "/admin/users", label: "Người dùng", icon: "👥" },
-    { to: "/admin/settings", label: "Cài đặt", icon: "⚙️" },
+    // { to: "/admin/settings", label: "Cài đặt", icon: "⚙️" },
   ];
 
   const userMenu = [
@@ -57,7 +57,7 @@ function Sidebar() {
     { to: "/orders", label: "Đơn hàng", icon: "🧾" },
     { to: "/wallet", label: "Ví tiền", icon: "💳" },
     { to: "/account", label: "Tài khoản", icon: "👤" },
-    { to: "/settings", label: "Cài đặt", icon: "⚙️" },
+    // { to: "/settings", label: "Cài đặt", icon: "⚙️" },
   ];
 
   const menuItems = role === "admin" ? adminMenu : userMenu;

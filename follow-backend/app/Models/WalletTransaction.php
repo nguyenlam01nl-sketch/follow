@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class WalletTransaction extends Model
 {
+    protected $table = 'wallet_transactions';
+
     protected $fillable = [
         'user_id',
         'title',
@@ -19,4 +21,9 @@ class WalletTransaction extends Model
     protected $casts = [
         'amount' => 'decimal:2',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

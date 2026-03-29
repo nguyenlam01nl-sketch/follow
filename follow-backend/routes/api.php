@@ -8,8 +8,13 @@ use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ExternalServiceController;
 use App\Http\Controllers\Api\AdminServiceController;
-
+use App\Http\Controllers\Api\AdminWalletController;
+use App\Http\Controllers\Api\AdminExternalServiceController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\AdminDashboardController;
+use App\Http\Controllers\Api\AdminOrderController;
 // Public
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -19,9 +24,13 @@ Route::get('/services/{id}', [ServiceController::class, 'show']);
 
 Route::get('/external/services', [ExternalServiceController::class, 'getServices']);
 
+Route::get('/notifications', [AdminDashboardController::class, 'userNotifications']);
+
 // Protected
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 
     Route::get('/account', [AccountController::class, 'me']);
     Route::put('/account/profile', [AccountController::class, 'updateProfile']);
@@ -37,9 +46,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wallet/transactions', [WalletController::class, 'transactions']);
     Route::post('/wallet/deposit', [WalletController::class, 'createDeposit']);
 
-    // Admin services
     Route::prefix('admin')->group(function () {
+        Route::put('/external-services/{service}', [AdminExternalServiceController::class, 'update']);
+
         Route::get('/services/{service}', [AdminServiceController::class, 'show']);
         Route::put('/services/{service}', [AdminServiceController::class, 'update']);
+
+        Route::get('/orders', [AdminOrderController::class, 'index']);
+        Route::put('/orders/{order}', [AdminOrderController::class, 'update']);
+
+        Route::get('/wallet/users', [AdminWalletController::class, 'users']);
+        Route::get('/wallet/stats', [AdminWalletController::class, 'stats']);
+        Route::post('/wallet/adjust', [AdminWalletController::class, 'adjust']);
+
+        Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+        Route::get('/notifications', [AdminDashboardController::class, 'notifications']);
+        Route::post('/notifications', [AdminDashboardController::class, 'storeNotification']);
     });
 });

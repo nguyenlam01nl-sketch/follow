@@ -14,7 +14,24 @@ class ServiceSeeder extends Seeder
             $this->makeService(
                 platform: 'facebook',
                 groupKey: 'support',
-                serviceKey: 'mo-khoa-fb-dang-956',
+                serviceKey: 'lay-lai-facebook-bi-hack',
+                name: 'LẤY LẠI FACEBOOK BỊ HACK',
+                price: 450000,
+                schema: [
+                    $this->textField('account_info', 'NHẬP MAIL HOẶC SĐT FB + PASSWORD FB', 'hotieubao@gmail.com + 0978899999 + pass', true),
+                    $this->textField('contact', 'NHẬP THÔNG TIN LIÊN HỆ', 'Sđt (Zalo) hoặc id (Telegram) để thông báo đơn hàng', true),
+                    $this->radioField('package', 'CHỌN MÁY CHỦ DỊCH VỤ', [
+                        $this->option('Lấy Lại Facebook Bị Hack', 'lay-lai-facebook-bi-hack', 450000),
+                        $this->option('Lấy Lại Facebook Bị Hack + Bảo Vệ TK Khỏi Nguy Cơ Hack', 'lay-lai-facebook-bi-hack-bao-ve', 950000),
+                    ]),
+                    $this->agreeField(),
+                ]
+            ),
+
+            $this->makeService(
+                platform: 'facebook',
+                groupKey: 'support',
+                serviceKey: 'mo-khoa-fb-dang-956-ket-sat-o-khoa-tim',
                 name: 'MỞ KHÓA FB DẠNG 956 ( KÉT SẮT TÍM & Ổ KHÓA TÍM )',
                 price: 450000,
                 schema: [
@@ -432,7 +449,7 @@ class ServiceSeeder extends Seeder
                 name: 'XÁC MINH ĐỘ TUỔI TIKTOK',
                 price: 150000,
                 schema: [
-                    $this->textField('tiktok_id', 'NHẬP ID TIKTOK', '@hatokimedia', true),
+                    $this->textField('tiktok_id', 'NHẬP ID TIKTOK', '@solamvietnam', true),
                     $this->textField('contact', 'NHẬP THÔNG TIN LIÊN HỆ', '097.......', true),
                     $this->radioField('package', 'CHỌN MÁY CHỦ DỊCH VỤ', [
                         $this->option('Xác Minh Độ Tuổi', 'xac-minh-do-tuoi', 150000),
@@ -449,10 +466,42 @@ class ServiceSeeder extends Seeder
                 name: 'HẠN CHẾ LIVE',
                 price: 999999,
                 schema: [
-                    $this->textField('tiktok_id', 'NHẬP ID TIKTOK', '@hatokimedia', true),
+                    $this->textField('tiktok_id', 'NHẬP ID TIKTOK', '@solamvietnam', true),
                     $this->textField('contact', 'NHẬP THÔNG TIN TÀI KHOẢN', 'Sđt (Zalo) hoặc id (Telegram)', true),
                     $this->radioField('package', 'CHỌN MÁY CHỦ DỊCH VỤ', [
                         $this->option('Fix Hạn Chế Live', 'fix-han-che-live', 999999),
+                    ]),
+                    $this->agreeField(),
+                ]
+            ),
+
+            $this->makeService(
+                platform: 'x-twitter',
+                groupKey: 'support',
+                serviceKey: 'dich-vu-x-twitter',
+                name: 'DỊCH VỤ',
+                price: 100000,
+                schema: [
+                    $this->textField('link', 'NHẬP LINK TÀI KHOẢN / BÀI VIẾT', 'https://x.com/...', true),
+                    $this->textField('contact', 'THÔNG TIN LIÊN HỆ', 'Sđt (Zalo) hoặc id (Telegram)', true),
+                    $this->radioField('package', 'CHỌN MÁY CHỦ DỊCH VỤ', [
+                        $this->option('Dịch vụ X Twitter', 'dich-vu-x-twitter', 100000),
+                    ]),
+                    $this->agreeField(),
+                ]
+            ),
+
+            $this->makeService(
+                platform: 'youtube',
+                groupKey: 'support',
+                serviceKey: 'dich-vu-youtube',
+                name: 'DỊCH VỤ YOUTUBE',
+                price: 100000,
+                schema: [
+                    $this->textField('link', 'NHẬP LINK KÊNH / VIDEO', 'https://youtube.com/...', true),
+                    $this->textField('contact', 'THÔNG TIN LIÊN HỆ', 'Sđt (Zalo) hoặc id (Telegram)', true),
+                    $this->radioField('package', 'CHỌN MÁY CHỦ DỊCH VỤ', [
+                        $this->option('Dịch vụ YouTube', 'dich-vu-youtube', 100000),
                     ]),
                     $this->agreeField(),
                 ]
@@ -483,7 +532,7 @@ class ServiceSeeder extends Seeder
             'slug' => Str::slug($platform . '-' . $serviceKey),
             'description' => 'Cung cấp đa dạng các gói dịch vụ chất lượng cao.',
             'mode' => 'manual',
-            'price' => $price,
+            'price' => $price * 3,
             'min_quantity' => null,
             'max_quantity' => null,
             'unit' => 'gói',
@@ -542,7 +591,7 @@ class ServiceSeeder extends Seeder
         return [
             'label' => $label,
             'value' => $value,
-            'price' => $price,
+            'price' => $price * 3,
         ];
     }
 }

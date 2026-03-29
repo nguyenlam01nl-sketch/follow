@@ -58,20 +58,25 @@ function AuthLayout({ children }: Props) {
           <div className="max-w-xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 py-2 backdrop-blur-xl">
               <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_16px_rgba(103,232,249,0.9)]" />
-              <span className="text-sm text-white/80">Liquid Glass UI</span>
-            </div>
+<a
+  href="https://zalo.me/0909172556"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-sm text-white/80"
+>
+  Zalo: 0909 172 556
+</a>            </div>
 
-            <h1 className="text-5xl font-semibold leading-tight tracking-tight xl:text-6xl">
-              Follow services
-              <span className="block bg-gradient-to-r from-cyan-300 via-sky-300 to-fuchsia-300 bg-clip-text text-transparent">
-                dashboard platform
-              </span>
-            </h1>
+        <h1 className="text-5xl font-semibold leading-tight tracking-tight xl:text-6xl">
+  Solam Vietnam
+  <span className="block bg-gradient-to-r from-cyan-300 via-sky-300 to-fuchsia-300 bg-clip-text text-transparent">
+    social growth platform
+  </span>
+</h1>
 
-            <p className="mt-6 max-w-lg text-base leading-8 text-white/65 xl:text-lg">
-              Website bán follow, dame, mở account và nhiều dịch vụ số khác với
-              giao diện hiện đại, cảm giác premium và dễ scale về sau.
-            </p>
+<p className="mt-6 max-w-lg text-base leading-8 text-white/65 xl:text-lg">
+  Nền tảng tăng tương tác tất cả nền tảng mạng xã hội và nhiều dịch vụ khác.
+</p>
 
             <div className="mt-10 grid max-w-lg grid-cols-3 gap-4">
               <div className="rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-xl">

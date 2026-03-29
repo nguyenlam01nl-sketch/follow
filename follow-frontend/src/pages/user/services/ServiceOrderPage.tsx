@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import api from "@/api/axios";
-import { ArrowLeft, ShoppingCart } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Wallet } from "lucide-react";
 
 type FieldOption = {
   label: string;
@@ -32,6 +32,12 @@ type ServiceItem = {
   form_schema?: FormField[];
 };
 
+function formatMoney(value?: number | string) {
+  const num = Number(value || 0);
+  if (!Number.isFinite(num)) return "0 VND";
+  return `${num.toLocaleString("vi-VN")} VND`;
+}
+
 export default function ServiceOrderPage() {
   const navigate = useNavigate();
   const { serviceId } = useParams();
@@ -39,9 +45,10 @@ export default function ServiceOrderPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [service, setService] = useState<ServiceItem | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [loadingWallet, setLoadingWallet] = useState(false);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -74,63 +81,117 @@ export default function ServiceOrderPage() {
     if (serviceId) fetchService();
   }, [serviceId]);
 
-  const selectedPackage = useMemo(() => {
-    const packageField = service?.form_schema?.find((f) => f.type === "radio");
-    if (!packageField?.options) return null;
+  useEffect(() => {
+    const fetchWallet = async () => {
+      try {
+        setLoadingWallet(true);
+        const res = await api.get("/wallet");
+        setWalletBalance(Number(res.data?.balance ?? res.data?.data?.balance ?? 0));
+      } catch (err) {
+        console.error("Không lấy được số dư ví:", err);
+        setWalletBalance(0);
+      } finally {
+        setLoadingWallet(false);
+      }
+    };
 
-    return packageField.options.find(
-      (opt) => opt.value === formData[packageField.name]
-    );
-  }, [service, formData]);
+    fetchWallet();
+  }, []);
 
-  const totalPrice = useMemo(() => {
-    if (selectedPackage?.price) return selectedPackage.price;
-    return service?.price || 0;
-  }, [selectedPackage, service]);
-
-  const handleChange = (name: string, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const refreshWallet = async () => {
+    try {
+      const res = await api.get("/wallet");
+      setWalletBalance(Number(res.data?.balance ?? res.data?.data?.balance ?? 0));
+    } catch (err) {
+      console.error("Refresh ví lỗi:", err);
+    }
   };
 
-  const validateForm = () => {
-    if (!service?.form_schema) return true;
+const selectedPackage = useMemo(() => {
+  const packageField = service?.form_schema?.find((f) => f.type === "radio");
+  if (!packageField?.options) return null;
 
-    for (const field of service.form_schema) {
-      if (!field.required) continue;
+  return packageField.options.find(
+    (opt) => opt.value === formData[packageField.name]
+  );
+}, [service, formData]);
 
-      const value = formData[field.name];
+const totalPrice = useMemo(() => {
+  if (selectedPackage?.price) return selectedPackage.price;
+  return service?.price || 0;
+}, [selectedPackage, service]);
 
-      if (field.type === "checkbox") {
-        if (!value) {
-          setError(`Vui lòng xác nhận: ${field.label}`);
-          return false;
-        }
-      } else {
-        if (value === undefined || value === null || value === "") {
-          setError(`Vui lòng nhập/chọn: ${field.label}`);
-          return false;
-        }
+const handleChange = (name: string, value: any) => {
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+const validateForm = () => {
+  if (!service?.form_schema) return true;
+
+  for (const field of service.form_schema) {
+    if (!field.required) continue;
+
+    const value = formData[field.name];
+
+    if (field.type === "checkbox") {
+      if (!value) {
+        setError(`Vui lòng xác nhận: ${field.label}`);
+        return false;
+      }
+    } else {
+      if (value === undefined || value === null || value === "") {
+        setError(`Vui lòng nhập/chọn: ${field.label}`);
+        return false;
       }
     }
+  }
 
-    return true;
-  };
+  return true;
+};
 
 const handleCreateOrder = async () => {
   if (!service) return;
 
   setError("");
-  setSuccess("");
 
   if (!validateForm()) return;
 
-  // 🔥 Confirm trước khi tạo đơn
+  if (Number(totalPrice) > Number(walletBalance)) {
+    const result = await Swal.fire({
+      title: "Số dư không đủ!",
+      html: `
+        <div style="text-align:left">
+          <p>Số dư hiện tại: <b>${formatMoney(walletBalance)}</b></p>
+          <p>Tổng tiền đơn: <b>${formatMoney(totalPrice)}</b></p>
+        </div>
+      `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#2F80ED",
+      cancelButtonColor: "#9CA3AF",
+      confirmButtonText: "Nạp thêm",
+      cancelButtonText: "Đóng",
+    });
+
+    if (result.isConfirmed) {
+      navigate("/wallet");
+    }
+
+    return;
+  }
+
   const confirm = await Swal.fire({
     title: "Xác nhận đặt đơn?",
-    text: "Bạn có chắc muốn tạo đơn hàng này không?",
+    html: `
+      <div style="text-align:left">
+        <p>Số dư ví: <b>${formatMoney(walletBalance)}</b></p>
+        <p>Tổng tiền đơn: <b>${formatMoney(totalPrice)}</b></p>
+        <p style="margin-top:8px;">Bạn có chắc muốn tạo đơn hàng này không?</p>
+      </div>
+    `,
     icon: "question",
     showCancelButton: true,
     confirmButtonColor: "#2F80ED",
@@ -150,7 +211,8 @@ const handleCreateOrder = async () => {
       selected_price: totalPrice,
     });
 
-    // ✅ Thành công
+    await refreshWallet();
+
     await Swal.fire({
       title: "Thành công!",
       text: "Đã tạo đơn thành công",
@@ -159,14 +221,12 @@ const handleCreateOrder = async () => {
       confirmButtonText: "OK",
     });
 
-    // Reset form
     const initialValues: Record<string, any> = {};
     (service.form_schema || []).forEach((field: FormField) => {
       initialValues[field.name] = field.type === "checkbox" ? false : "";
     });
 
     setFormData(initialValues);
-
   } catch (err: any) {
     const errorMsg =
       err?.response?.data?.message || "Không thể tạo đơn, vui lòng thử lại";
@@ -182,6 +242,9 @@ const handleCreateOrder = async () => {
     setSubmitting(false);
   }
 };
+
+
+
 
   const renderField = (field: FormField) => {
     if (field.type === "text") {
@@ -240,7 +303,7 @@ const handleCreateOrder = async () => {
               >
                 <div className="flex items-center gap-4">
                   <div
-                    className={`h-7 w-7 rounded-full border flex items-center justify-center ${
+                    className={`flex h-7 w-7 items-center justify-center rounded-full border ${
                       checked ? "border-blue-500" : "border-white/20"
                     }`}
                   >
@@ -259,8 +322,8 @@ const handleCreateOrder = async () => {
                   </div>
                 </div>
 
-                <div className="text-right text-emerald-400 font-bold">
-                  {opt.price?.toLocaleString()}đ
+                <div className="text-right font-bold text-emerald-400">
+                  {formatMoney(opt.price || 0)}
                 </div>
 
                 <input
@@ -306,6 +369,27 @@ const handleCreateOrder = async () => {
           Quay lại
         </button>
 
+        <div className="flex items-center justify-between rounded-2xl border border-emerald-400/15 bg-emerald-400/5 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400/10">
+              <Wallet size={18} className="text-emerald-300" />
+            </div>
+            <div>
+              <p className="text-xs text-white/45">Số dư ví hiện tại</p>
+              <p className="text-sm font-semibold text-emerald-300">
+                {loadingWallet ? "Đang tải..." : formatMoney(walletBalance)}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={refreshWallet}
+            className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:bg-white/5"
+          >
+            Làm mới
+          </button>
+        </div>
+
         {loading && (
           <div className="rounded-[28px] border border-white/10 bg-[#08152d] p-6 text-white/60">
             Đang tải dịch vụ...
@@ -339,12 +423,6 @@ const handleCreateOrder = async () => {
                   </div>
                 )}
 
-                {success && (
-                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
-                    {success}
-                  </div>
-                )}
-
                 {service.form_schema?.map((field) => (
                   <div key={field.name} className="space-y-3">
                     {field.type !== "checkbox" && (
@@ -375,7 +453,7 @@ const handleCreateOrder = async () => {
                 <p>• Chỉ sử dụng dịch vụ cho mục đích hợp pháp.</p>
                 <p>• Chỉ xử lý tài khoản/nội dung bạn có quyền sử dụng.</p>
                 <p>• Không dùng dịch vụ để lừa đảo, mạo danh hoặc gây hại người khác.</p>
-                <p className="border-t border-white/10 pt-4 text-red-300 font-semibold">
+                <p className="border-t border-white/10 pt-4 font-semibold text-red-300">
                   Vi phạm, tài khoản sẽ bị khóa và bạn tự chịu trách nhiệm.
                 </p>
               </div>
@@ -384,9 +462,23 @@ const handleCreateOrder = async () => {
                 <p className="text-sm text-white/45">Dịch vụ đang chọn</p>
                 <p className="mt-1 font-semibold text-white">{service.name}</p>
 
+                <p className="mt-4 text-sm text-white/45">Số dư ví</p>
+                <p className="mt-1 text-xl font-bold text-emerald-300">
+                  {formatMoney(walletBalance)}
+                </p>
+
                 <p className="mt-4 text-sm text-white/45">Tổng tiền</p>
                 <p className="mt-1 text-2xl font-extrabold text-emerald-400">
-                  {totalPrice.toLocaleString()}đ
+                  {formatMoney(totalPrice)}
+                </p>
+
+                <p className="mt-4 text-sm text-white/45">Trạng thái</p>
+                <p className="mt-1 font-semibold">
+                  {Number(totalPrice) <= Number(walletBalance) ? (
+                    <span className="text-emerald-300">Đủ số dư để thanh toán</span>
+                  ) : (
+                    <span className="text-red-300">Không đủ số dư</span>
+                  )}
                 </p>
               </div>
             </div>

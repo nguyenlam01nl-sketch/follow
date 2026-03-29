@@ -19,15 +19,19 @@ function PasswordInput({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-white/80">{label}</label>
+      <label htmlFor={name} className="text-sm font-medium text-white/80">
+        {label}
+      </label>
 
       <div className="relative">
         <input
+          id={name}
           type={show ? "text" : "password"}
           name={name}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          autoComplete="current-password"
           className="h-12 w-full rounded-2xl border border-white/12 bg-white/8 px-4 pr-16 text-sm text-white outline-none transition duration-200 placeholder:text-white/30 focus:border-cyan-300/45 focus:bg-white/10 focus:shadow-[0_0_0_4px_rgba(34,211,238,0.12)]"
         />
 

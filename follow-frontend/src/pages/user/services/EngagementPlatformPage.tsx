@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import api from "@/api/axios";
-import { ChevronLeft, Sparkles } from "lucide-react";
+import { ChevronLeft, Sparkles, Wallet } from "lucide-react";
 
 function FacebookIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -45,10 +45,14 @@ type ApiServiceItem = {
   category?: string;
   platform?: string;
   rate?: number | string;
+  original_rate?: number | string;
+  sell_rate?: number | string;
+  rate_per?: number | string;
   min?: number | string;
   max?: number | string;
   refill?: boolean;
   cancel?: boolean;
+  status?: string;
 };
 
 type ServiceTypeOption = {
@@ -235,8 +239,13 @@ const engagementData: Record<
 
 function formatMoney(value?: string | number) {
   const num = Number(value || 0);
-  if (!Number.isFinite(num)) return "0đ";
-  return `${num.toLocaleString("vi-VN")}đ`;
+  if (!Number.isFinite(num)) return "0 VND";
+  return `${num.toLocaleString("vi-VN")} VND`;
+}
+
+function getDisplayPrice(item?: ApiServiceItem) {
+  if (!item) return 0;
+  return Number(item.sell_rate ?? item.rate ?? 0);
 }
 
 function stripHtml(html?: string) {
@@ -285,7 +294,6 @@ function matchesServiceType(
   return matchers.some((keyword) => text.includes(keyword.toLowerCase()));
 }
 
-
 export default function EngagementPlatformPage() {
   const { platform = "" } = useParams();
   const navigate = useNavigate();
@@ -305,10 +313,18 @@ export default function EngagementPlatformPage() {
   const [commentContent, setCommentContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [loadingWallet, setLoadingWallet] = useState(false);
+
   const selectedTypeMeta = current?.serviceTypes.find((x) => x.key === serviceType);
   const isComment = serviceType === "comment";
 
-  
+  const selectedPackage = useMemo(() => {
+    return filteredServices.find(
+      (item) => String(item.service) === selectedServiceId
+    );
+  }, [selectedServiceId]);
+
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -325,6 +341,23 @@ export default function EngagementPlatformPage() {
     };
 
     fetchServices();
+  }, []);
+
+  useEffect(() => {
+    const fetchWallet = async () => {
+      try {
+        setLoadingWallet(true);
+        const res = await api.get("/wallet");
+        setWalletBalance(Number(res.data?.balance ?? res.data?.data?.balance ?? 0));
+      } catch (error) {
+        console.error("Lỗi lấy số dư ví:", error);
+        setWalletBalance(0);
+      } finally {
+        setLoadingWallet(false);
+      }
+    };
+
+    fetchWallet();
   }, []);
 
   const platformServices = useMemo(() => {
@@ -348,11 +381,9 @@ export default function EngagementPlatformPage() {
     );
   }, [platformServices, selectedTypeMeta, platform]);
 
-  const selectedPackage = useMemo(() => {
-    return filteredServices.find(
-      (item) => String(item.service) === selectedServiceId
-    );
-  }, [filteredServices, selectedServiceId]);
+  const selectedPrice = useMemo(() => {
+    return getDisplayPrice(selectedPackage);
+  }, [selectedPackage]);
 
   const handleChangeType = (value: string) => {
     setServiceType(value);
@@ -361,6 +392,15 @@ export default function EngagementPlatformPage() {
     setLink("");
     setNote("");
     setCommentContent("");
+  };
+
+  const refreshWallet = async () => {
+    try {
+      const res = await api.get("/wallet");
+      setWalletBalance(Number(res.data?.balance ?? res.data?.data?.balance ?? 0));
+    } catch (error) {
+      console.error("Lỗi refresh ví:", error);
+    }
   };
 
   const handleSubmit = async () => {
@@ -423,18 +463,40 @@ export default function EngagementPlatformPage() {
       return;
     }
 
-const confirm = await Swal.fire({
-  title: "Xác nhận đặt đơn?",
-  text: "Bạn có chắc muốn tạo đơn hàng này không?",
-  icon: "question",
-  showCancelButton: true,
-  confirmButtonColor: "#2F80ED",
-  cancelButtonColor: "#9CA3AF",
-  confirmButtonText: "Đồng ý",
-  cancelButtonText: "Huỷ",
-});
+    if (selectedPrice > walletBalance) {
+      await Swal.fire({
+        title: "Số dư không đủ!",
+        html: `
+          <div style="text-align:left">
+            <p>Số dư hiện tại: <b>${formatMoney(walletBalance)}</b></p>
+            <p>Giá dịch vụ: <b>${formatMoney(selectedPrice)}</b></p>
+          </div>
+        `,
+        icon: "warning",
+        confirmButtonColor: "#2F80ED",
+        confirmButtonText: "Nạp thêm",
+      });
+      return;
+    }
 
-if (!confirm.isConfirmed) return;
+    const confirm = await Swal.fire({
+      title: "Xác nhận đặt đơn?",
+      html: `
+        <div style="text-align:left">
+          <p>Số dư ví: <b>${formatMoney(walletBalance)}</b></p>
+          <p>Giá dịch vụ: <b>${formatMoney(selectedPrice)}</b></p>
+          <p style="margin-top:8px;">Bạn có chắc muốn tạo đơn hàng này không?</p>
+        </div>
+      `,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#2F80ED",
+      cancelButtonColor: "#9CA3AF",
+      confirmButtonText: "Đồng ý",
+      cancelButtonText: "Huỷ",
+    });
+
+    if (!confirm.isConfirmed) return;
 
     try {
       setSubmitting(true);
@@ -453,8 +515,9 @@ if (!confirm.isConfirmed) return;
         payload.note = note;
       }
 
-      const res = await api.post("/external/orders", payload);
-      console.log(res.data);
+      await api.post("/external/orders", payload);
+      await refreshWallet();
+
       await Swal.fire({
         title: "Thành công!",
         text: "Tạo đơn thành công",
@@ -516,9 +579,30 @@ if (!confirm.isConfirmed) return;
                   Tăng tương tác {current.label}
                 </h2>
                 <p className="mt-1 text-sm text-white/40">
-                  Chọn loại dịch vụ rồi chọn gói thực tế từ API.
+                  Chọn loại dịch vụ rồi chọn gói thực tế.
                 </p>
               </div>
+            </div>
+
+            <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-emerald-400/15 bg-emerald-400/5 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-400/10">
+                  <Wallet size={18} className="text-emerald-300" />
+                </div>
+                <div>
+                  <div className="text-xs text-white/45">Số dư ví</div>
+                  <div className="text-sm font-semibold text-emerald-300">
+                    {loadingWallet ? "Đang tải..." : formatMoney(walletBalance)}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={refreshWallet}
+                className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:bg-white/5"
+              >
+                Làm mới
+              </button>
             </div>
 
             <div className="mb-4 flex items-center gap-3 rounded-xl border border-white/10 bg-[#071122] px-4 py-3">
@@ -565,7 +649,7 @@ if (!confirm.isConfirmed) return;
 
                   {filteredServices.map((item) => (
                     <option key={item.service} value={String(item.service)}>
-                      #{item.service} - {item.name} - {formatMoney(item.rate)}
+                      #{item.service} - {item.name} - {formatMoney(getDisplayPrice(item))}
                     </option>
                   ))}
                 </select>
@@ -605,7 +689,7 @@ if (!confirm.isConfirmed) return;
                   {selectedPackage?.name || "Chưa chọn gói"}
                 </div>
                 <div className="mt-1 text-xs text-emerald-300">
-                  {selectedPackage ? formatMoney(selectedPackage.rate) : "Chưa có giá"}
+                  {selectedPackage ? formatMoney(selectedPrice) : "Chưa có giá"}
                 </div>
               </div>
             </div>
@@ -647,6 +731,7 @@ if (!confirm.isConfirmed) return;
             <div className="text-base font-semibold text-white">Thông tin đơn</div>
 
             <div className="mt-4 space-y-3 text-sm">
+              <div className="text-white/70">Số dư ví: {formatMoney(walletBalance)}</div>
               <div className="text-white/70">Nền tảng: {current.label}</div>
               <div className="text-white/70">
                 Loại: {selectedTypeMeta?.name || "..."}
@@ -655,7 +740,7 @@ if (!confirm.isConfirmed) return;
                 Gói: {selectedPackage?.name || "..."}
               </div>
               <div className="text-emerald-300">
-                Giá: {selectedPackage ? formatMoney(selectedPackage.rate) : "..."}
+                Giá: {selectedPackage ? formatMoney(selectedPrice) : "..."}
               </div>
               <div className="text-white/70">
                 Min/Max:{" "}
@@ -665,9 +750,21 @@ if (!confirm.isConfirmed) return;
               </div>
               <div className="break-all text-white/70">Link: {link || "..."}</div>
               <div className="text-white/70">Số lượng: {quantity || "..."}</div>
+              <div className="text-white/70">
+                Trạng thái ví:{" "}
+                {selectedPackage ? (
+                  selectedPrice <= walletBalance ? (
+                    <span className="text-emerald-300">Đủ số dư</span>
+                  ) : (
+                    <span className="text-red-300">Không đủ số dư</span>
+                  )
+                ) : (
+                  "..."
+                )}
+              </div>
 
               {selectedPackage?.desc && (
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-white/65 whitespace-pre-line">
+                <div className="whitespace-pre-line rounded-xl border border-white/10 bg-white/[0.03] p-3 text-white/65">
                   {stripHtml(selectedPackage.desc)}
                 </div>
               )}

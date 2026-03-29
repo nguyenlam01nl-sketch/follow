@@ -1,5 +1,5 @@
-import GlassPanel from "../common/GlassPanel";
 import Logo from "../common/Logo";
+import GlassPanel from "../common/GlassPanel";
 
 type Props = {
   title: string;

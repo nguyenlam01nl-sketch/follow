@@ -9,6 +9,7 @@ use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use App\Models\ExternalServicePrice;
 
 class ExternalServiceController extends Controller
 {
@@ -100,24 +101,55 @@ class ExternalServiceController extends Controller
         return false;
     }
 
-    public function getServices()
-    {
-        $baseUrl = config('services.external_api.base_url');
-        $apiKey = config('services.external_api.token');
+  public function getServices()
+{
+    $data = $this->getExternalServicesData();
 
-        if (!$baseUrl || !$apiKey) {
-            return response()->json([
-                'message' => 'Thiếu EXTERNAL_API_BASE_URL hoặc EXTERNAL_API_TOKEN trong .env',
-            ], 500);
+    if (!$data || !is_array($data)) {
+        return response()->json([
+            'message' => 'Không lấy được dịch vụ external'
+        ], 500);
+    }
+
+    // xử lý nếu API trả về dạng { data: [...] }
+    $services = isset($data['data']) && is_array($data['data'])
+        ? $data['data']
+        : $data;
+
+    // 🔥 lấy giá override từ DB
+    $priceRows = ExternalServicePrice::all()->keyBy('provider_service_id');
+
+    $mapped = collect($services)->map(function ($item) use ($priceRows) {
+        $serviceId = (int) ($item['service'] ?? 0);
+
+        $override = $priceRows->get($serviceId);
+
+        if ($override) {
+
+            $item['name'] = $override->name ?? ($item['name'] ?? '');
+            $item['desc'] = $override->desc ?? ($item['desc'] ?? '');
+            $item['original_rate'] = $override->original_rate;
+            $item['sell_rate'] = $override->sell_rate;
+            $item['rate_per'] = $override->rate_per;
+            $item['min'] = $override->min;
+            $item['max'] = $override->max;
+            $item['platform'] = $override->platform ?? ($item['platform'] ?? '');
+            $item['category'] = $override->category ?? ($item['category'] ?? '');
+            $item['status'] = $override->status ?? ($item['status'] ?? 'active');
+        } else {
+            // chưa có giá riêng → dùng giá API
+            $item['original_rate'] = $item['rate'] ?? 0;
+            $item['sell_rate'] = $item['rate'] ?? 0;
+            $item['rate_per'] = $item['rate_per'] ?? 1000;
         }
 
-        $response = Http::asForm()->post($baseUrl, [
-            'key' => $apiKey,
-            'action' => 'services',
-        ]);
+        return $item;
+    })->values();
 
-        return response()->json($response->json(), $response->status());
-    }
+    return response()->json([
+        'data' => $mapped
+    ]);
+}
 
     public function createOrder(Request $request)
     {
@@ -291,5 +323,42 @@ class ExternalServiceController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function update(Request $request, $serviceId)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'desc' => ['nullable', 'string'],
+            'original_rate' => ['required', 'numeric', 'min:0'],
+            'sell_rate' => ['required', 'numeric', 'min:0'],
+            'rate_per' => ['required', 'integer', 'min:1'],
+            'min' => ['nullable', 'integer', 'min:0'],
+            'max' => ['nullable', 'integer', 'min:0'],
+            'platform' => ['nullable', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'max:255'],
+            'status' => ['required', 'string', 'max:50'],
+        ]);
+
+        $row = ExternalServicePrice::updateOrCreate(
+            ['provider_service_id' => $serviceId],
+            [
+                'name' => $data['name'],
+                'desc' => $data['desc'] ?? null,
+                'original_rate' => $data['original_rate'],
+                'sell_rate' => $data['sell_rate'],
+                'rate_per' => $data['rate_per'],
+                'min' => $data['min'] ?? null,
+                'max' => $data['max'] ?? null,
+                'platform' => $data['platform'] ?? null,
+                'category' => $data['category'] ?? null,
+                'status' => $data['status'],
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Đã cập nhật giá bán dịch vụ',
+            'data' => $row,
+        ]);
     }
 }

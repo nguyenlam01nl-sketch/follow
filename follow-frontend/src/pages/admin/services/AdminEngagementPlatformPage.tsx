@@ -45,6 +45,9 @@ type ApiServiceItem = {
   category?: string;
   platform?: string;
   rate?: number | string;
+  original_rate?: number | string;
+  sell_rate?: number | string;
+  rate_per?: number | string;
   min?: number | string;
   max?: number | string;
   refill?: boolean;
@@ -122,6 +125,32 @@ function formatMoney(value?: string | number) {
   return `${num.toLocaleString("vi-VN")} VND`;
 }
 
+function getRawOriginalPrice(item?: ApiServiceItem) {
+  if (!item) return 0;
+  return Number(item.original_rate ?? item.rate ?? 0);
+}
+
+function getRawSellPrice(item?: ApiServiceItem) {
+  if (!item) return 0;
+  return Number(item.sell_rate ?? item.rate ?? 0);
+}
+
+function getRatePer(item?: ApiServiceItem) {
+  if (!item) return 1000;
+  const per = Number(item.rate_per ?? 1000);
+  return per > 0 ? per : 1000;
+}
+
+function getOriginalUnitPrice(item?: ApiServiceItem) {
+  if (!item) return 0;
+  return getRawOriginalPrice(item) / getRatePer(item);
+}
+
+function getUnitPrice(item?: ApiServiceItem) {
+  if (!item) return 0;
+  return getRawSellPrice(item) / getRatePer(item);
+}
+
 function matchesServiceType(
   item: ApiServiceItem,
   typeKey: string,
@@ -173,9 +202,13 @@ export default function AdminEngagementPlatformPage() {
   const [editForm, setEditForm] = useState({
     name: "",
     desc: "",
-    rate: "",
+    original_rate: "",
+    sell_rate: "",
+    rate_per: "1",
     min: "",
     max: "",
+    platform: "",
+    category: "",
     status: "active",
   });
 
@@ -230,9 +263,13 @@ export default function AdminEngagementPlatformPage() {
       setEditForm({
         name: "",
         desc: "",
-        rate: "",
+        original_rate: "",
+        sell_rate: "",
+        rate_per: "1",
         min: "",
         max: "",
+        platform: "",
+        category: "",
         status: "active",
       });
       return;
@@ -241,9 +278,13 @@ export default function AdminEngagementPlatformPage() {
     setEditForm({
       name: selectedPackage.name || "",
       desc: selectedPackage.desc || "",
-      rate: String(selectedPackage.rate ?? ""),
+      original_rate: String(getOriginalUnitPrice(selectedPackage)),
+      sell_rate: String(getUnitPrice(selectedPackage)),
+      rate_per: "1",
       min: String(selectedPackage.min ?? ""),
       max: String(selectedPackage.max ?? ""),
+      platform: selectedPackage.platform || "",
+      category: selectedPackage.category || "",
       status: selectedPackage.status || "active",
     });
   }, [selectedPackage]);
@@ -253,7 +294,7 @@ export default function AdminEngagementPlatformPage() {
 
     const confirm = await Swal.fire({
       title: "Lưu thay đổi?",
-      text: "Bạn có chắc muốn cập nhật gói external này không?",
+      text: "Bạn có chắc muốn cập nhật giá bán gói này không?",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#2F80ED",
@@ -267,22 +308,32 @@ export default function AdminEngagementPlatformPage() {
     try {
       setSaving(true);
 
+      const originalPer = getRatePer(selectedPackage);
+
       await api.put(`/admin/external-services/${selectedPackage.service}`, {
         name: editForm.name.trim(),
         desc: editForm.desc.trim(),
-        rate: Number(editForm.rate || 0),
+        original_rate: Number(editForm.original_rate || 0) * originalPer,
+        sell_rate: Number(editForm.sell_rate || 0) * originalPer,
+        rate_per: originalPer,
         min: Number(editForm.min || 0),
         max: Number(editForm.max || 0),
+        platform: editForm.platform.trim(),
+        category: editForm.category.trim(),
         status: editForm.status,
       });
 
       await Swal.fire({
         title: "Thành công!",
-        text: "Đã cập nhật gói dịch vụ",
+        text: "Đã cập nhật giá bán",
         icon: "success",
         confirmButtonColor: "#2F80ED",
         confirmButtonText: "OK",
       });
+
+      const res = await api.get("/external/services");
+      const data = res.data?.data || res.data || [];
+      setServices(Array.isArray(data) ? data : []);
     } catch (error: any) {
       await Swal.fire({
         title: "Lỗi!",
@@ -329,7 +380,7 @@ export default function AdminEngagementPlatformPage() {
                   Quản lý tương tác {current.label}
                 </h2>
                 <p className="mt-1 text-sm text-white/40">
-                  Chọn loại dịch vụ, chọn gói, sau đó chỉnh giá và nội dung.
+                  Chọn gói và chỉnh giá bán riêng cho từng service.
                 </p>
               </div>
             </div>
@@ -375,13 +426,13 @@ export default function AdminEngagementPlatformPage() {
                     {!serviceType
                       ? "Chọn loại dịch vụ trước"
                       : loadingServices
-                      ? "Đang tải dịch vụ..."
-                      : "Chọn gói"}
+                        ? "Đang tải dịch vụ..."
+                        : "Chọn gói"}
                   </option>
 
                   {filteredServices.map((item) => (
                     <option key={item.service} value={String(item.service)}>
-                      #{item.service} - {item.name} - {formatMoney(item.rate)}
+                      #{item.service} - {item.name} - {formatMoney(getUnitPrice(item))}
                     </option>
                   ))}
                 </select>
@@ -394,28 +445,45 @@ export default function AdminEngagementPlatformPage() {
                 value={editForm.name}
                 onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
                 className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white outline-none"
-                placeholder="Nhập tên gói"
               />
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <label className="text-sm text-white/70">Giá</label>
+                <label className="text-sm text-white/70">Giá gốc API</label>
                 <input
-                  value={editForm.rate}
-                  onChange={(e) => setEditForm((prev) => ({ ...prev, rate: e.target.value }))}
+                  value={editForm.original_rate}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, original_rate: e.target.value }))}
                   className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white outline-none"
-                  placeholder="Nhập giá"
                 />
               </div>
 
+              <div className="space-y-2">
+                <label className="text-sm text-white/70">Giá bán của mình</label>
+                <input
+                  value={editForm.sell_rate}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, sell_rate: e.target.value }))}
+                  className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-white/70">Tính theo</label>
+                <input
+                  value={editForm.rate_per}
+                  readOnly
+                  className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm text-white/70">Min</label>
                 <input
                   value={editForm.min}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, min: e.target.value }))}
                   className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white outline-none"
-                  placeholder="Min"
                 />
               </div>
 
@@ -425,19 +493,17 @@ export default function AdminEngagementPlatformPage() {
                   value={editForm.max}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, max: e.target.value }))}
                   className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white outline-none"
-                  placeholder="Max"
                 />
               </div>
             </div>
 
             <div className="mt-4 space-y-2">
-              <label className="text-sm text-white/70">Nội dung / mô tả</label>
+              <label className="text-sm text-white/70">Mô tả</label>
               <textarea
                 value={editForm.desc}
                 onChange={(e) => setEditForm((prev) => ({ ...prev, desc: e.target.value }))}
-                rows={6}
+                rows={5}
                 className="w-full rounded-xl border border-white/10 bg-[#071327] px-3 py-3 text-sm text-white outline-none"
-                placeholder="Nhập nội dung mô tả dịch vụ"
               />
             </div>
 
@@ -471,15 +537,17 @@ export default function AdminEngagementPlatformPage() {
               <div className="text-white/70">Nền tảng: {current.label}</div>
               <div className="text-white/70">Loại: {selectedTypeMeta?.name || "..."}</div>
               <div className="text-white/70">Gói: {editForm.name || "..."}</div>
-              <div className="text-emerald-300">Giá: {formatMoney(editForm.rate)}</div>
+              <div className="text-white/70">
+                Giá gốc: {selectedPackage ? formatMoney(getOriginalUnitPrice(selectedPackage)) : "..."}
+              </div>
+              <div className="text-emerald-300">
+                Giá bán: {selectedPackage ? formatMoney(getUnitPrice(selectedPackage)) : "..."}
+              </div>
+              <div className="text-white/70">Theo: 1</div>
               <div className="text-white/70">
                 Min/Max: {editForm.min || "..."} / {editForm.max || "..."}
               </div>
               <div className="text-white/70">ID gói: {selectedPackage?.service || "..."}</div>
-
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 whitespace-pre-line text-white/65">
-                {editForm.desc || "Chưa có nội dung"}
-              </div>
             </div>
           </div>
         </div>

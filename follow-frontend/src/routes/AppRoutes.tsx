@@ -13,6 +13,8 @@ import AdminDashboardPage from "@/pages/admin/dashboard/AdminDashboardPage";
 import AdminServicesPage from "@/pages/admin/services/AdminServicesPage";
 import AdminServiceEditPage from "@/pages/admin/services/AdminServiceEditPage";
 import AdminEngagementPlatformPage from "@/pages/admin/services/AdminEngagementPlatformPage";
+import AdminWalletPage from "@/pages/admin/wallet/AdminWalletPage";
+import AdminOrderPage from "@/pages/admin/orders/AdminOrderPage";
 
 function AppRoutes() {
   return (
@@ -39,13 +41,15 @@ function AppRoutes() {
       {/* 👑 ADMIN */}
       <Route element={<ProtectedRoute role="admin" />}>
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-         <Route path="/admin/services" element={<AdminServicesPage />} />
-  <Route path="/admin/services/:serviceId/edit" element={<AdminServiceEditPage />} />
-  <Route
-    path="/admin/services/engagement/:platform"
-    element={<AdminEngagementPlatformPage />}
-  />
+        <Route path="/admin/services" element={<AdminServicesPage />} />
+        <Route path="/admin/services/:serviceId/edit" element={<AdminServiceEditPage />} />
+        <Route path="/admin/orders" element={<AdminOrderPage />} />
+        <Route
+          path="/admin/services/engagement/:platform"
+          element={<AdminEngagementPlatformPage />}
+        />
       </Route>
+      <Route path="/admin/wallet" element={<AdminWalletPage />} />
     </Routes>
   );
 }

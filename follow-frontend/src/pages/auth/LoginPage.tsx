@@ -21,14 +21,17 @@ function LoginPage() {
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
-    if (!form.username || !form.password) {
+    if (!form.username.trim() || !form.password.trim()) {
       const message = "Vui lòng nhập đầy đủ username và mật khẩu";
       setError(message);
 
@@ -45,7 +48,7 @@ function LoginPage() {
       setLoading(true);
 
       const res = await api.post("/login", {
-        username: form.username,
+        username: form.username.trim(),
         password: form.password,
       });
 
@@ -58,7 +61,7 @@ function LoginPage() {
       await Swal.fire({
         icon: "success",
         title: "Đăng nhập thành công",
-        text: "Chào mừng bạn quay lại hệ thống",
+        text: "Bạn đã đăng nhập vào hệ thống",
         confirmButtonText: "Tiếp tục",
       });
 
@@ -73,6 +76,7 @@ function LoginPage() {
       const message =
         err?.response?.data?.message ||
         err?.response?.data?.errors?.username?.[0] ||
+        err?.response?.data?.errors?.password?.[0] ||
         "Sai username hoặc mật khẩu";
 
       setError(message);
@@ -92,7 +96,7 @@ function LoginPage() {
     <AuthLayout>
       <AuthCard
         title="Đăng nhập"
-        subtitle="Truy cập dashboard để quản lý dịch vụ, đơn hàng và ví của bạn."
+        subtitle="Vui lòng đăng nhập để tiếp tục."
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
