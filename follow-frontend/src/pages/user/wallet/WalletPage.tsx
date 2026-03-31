@@ -21,18 +21,24 @@ function WalletPage() {
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [transferNote, setTransferNote] = useState("");
 
   const fetchWalletData = async () => {
     try {
       setLoading(true);
 
-      const [walletRes, txRes] = await Promise.all([
+      const [walletRes, txRes, userRes] = await Promise.all([
         api.get("/wallet"),
         api.get("/wallet/transactions"),
+        api.get("/account"),
       ]);
 
       setBalance(Number(walletRes.data?.balance || 0));
       setTransactions(Array.isArray(txRes.data) ? txRes.data : []);
+
+      const username =
+        userRes.data?.username || userRes.data?.name || "user";
+      setTransferNote(`solavietnam ${username}`);
     } catch (error) {
       console.error("Lỗi load wallet:", error);
       await Swal.fire({
@@ -51,40 +57,48 @@ function WalletPage() {
   }, []);
 
   const handleCreateDeposit = async () => {
-    const { value: amount } = await Swal.fire({
-      title: "Nạp tiền",
-      input: "number",
-      inputLabel: "Nhập số tiền muốn nạp",
-      inputPlaceholder: "Ví dụ: 500000",
-      showCancelButton: true,
-      confirmButtonText: "Tạo yêu cầu",
-      cancelButtonText: "Huỷ",
-      confirmButtonColor: "#2F80ED",
-      inputValidator: (value) => {
-        if (!value) return "Vui lòng nhập số tiền";
-        if (Number(value) < 1000) return "Số tiền tối thiểu là 1.000đ";
-        return null;
-      },
-    });
-
-    if (!amount) return;
-
     try {
+      const userRes = await api.get("/account");
+      const username = userRes.data?.username || userRes.data?.name || "user";
+
+      const { value: amount } = await Swal.fire({
+        title: "Nạp tiền",
+        input: "number",
+        inputLabel: "Nhập số tiền",
+        inputPlaceholder: "500000",
+        showCancelButton: true,
+        confirmButtonText: "Tạo",
+        cancelButtonText: "Huỷ",
+        confirmButtonColor: "#2F80ED",
+        inputValidator: (value) => {
+          if (!value) return "Nhập số tiền";
+          if (Number(value) < 1000) return "Tối thiểu 1.000đ";
+          return null;
+        },
+      });
+
+      if (!amount) return;
+
+      const transferContent = `solavietnam ${username}`;
+      setTransferNote(transferContent);
+
       const res = await api.post("/wallet/deposit", {
         amount: Number(amount),
         payment_method: "bank_transfer",
+        content: transferContent,
       });
 
       const qrInfo = res.data?.qr_info;
+      setTransferNote(qrInfo?.content || transferContent);
 
       await Swal.fire({
-        title: "Tạo yêu cầu thành công",
+        title: "Tạo thành công",
         html: `
-          <div style="text-align:left">
+          <div style="text-align:left;font-size:14px">
             <p><b>Ngân hàng:</b> ${qrInfo?.bank_name || ""}</p>
-            <p><b>Số tài khoản:</b> ${qrInfo?.account_number || ""}</p>
-            <p><b>Chủ tài khoản:</b> ${qrInfo?.account_name || ""}</p>
-            <p><b>Nội dung CK:</b> ${qrInfo?.content || ""}</p>
+            <p><b>STK:</b> ${qrInfo?.account_number || ""}</p>
+            <p><b>Chủ TK:</b> ${qrInfo?.account_name || ""}</p>
+            <p><b>Nội dung:</b> ${qrInfo?.content || transferContent}</p>
           </div>
         `,
         icon: "success",
@@ -95,7 +109,9 @@ function WalletPage() {
     } catch (error: any) {
       await Swal.fire({
         title: "Lỗi!",
-        text: error?.response?.data?.message || "Không thể tạo yêu cầu nạp tiền",
+        text:
+          error?.response?.data?.message ||
+          "Không thể tạo yêu cầu nạp tiền",
         icon: "error",
         confirmButtonColor: "#2F80ED",
       });
@@ -104,27 +120,40 @@ function WalletPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 px-2 sm:px-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Ví tiền</h1>
-          <p className="text-sm text-white/50">Quản lý số dư và giao dịch</p>
+          <h1 className="text-lg font-semibold text-white sm:text-2xl">
+            Ví tiền
+          </h1>
+          <p className="text-xs text-white/50 sm:text-sm">
+            Quản lý số dư & giao dịch
+          </p>
         </div>
 
-        <BalanceCard balance={balance} />
-        <DepositQR onDeposit={handleCreateDeposit} />
+        <div className="space-y-3">
+          <BalanceCard balance={balance} />
+          <DepositQR
+            onDeposit={handleCreateDeposit}
+            transferNote={transferNote}
+          />
+        </div>
 
-        <div className="rounded-[28px] border border-white/12 bg-white/8 p-6 backdrop-blur-2xl">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-xl sm:rounded-[28px] sm:p-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">
-              Lịch sử giao dịch
+            <h2 className="text-sm font-semibold text-white sm:text-lg">
+              Lịch sử
             </h2>
           </div>
 
-          <div className="mt-4 space-y-2">
+          <div className="mt-3 space-y-1.5">
             {loading ? (
-              <div className="text-sm text-white/50">Đang tải...</div>
+              <div className="text-xs text-white/50 sm:text-sm">
+                Đang tải...
+              </div>
             ) : transactions.length === 0 ? (
-              <div className="text-sm text-white/50">Chưa có giao dịch nào</div>
+              <div className="text-xs text-white/50 sm:text-sm">
+                Chưa có giao dịch
+              </div>
             ) : (
               transactions.map((tx) => (
                 <TransactionRow

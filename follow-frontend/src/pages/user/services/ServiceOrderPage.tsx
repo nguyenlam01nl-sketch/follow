@@ -107,141 +107,141 @@ export default function ServiceOrderPage() {
     }
   };
 
-const selectedPackage = useMemo(() => {
-  const packageField = service?.form_schema?.find((f) => f.type === "radio");
-  if (!packageField?.options) return null;
+  const selectedPackage = useMemo(() => {
+    const packageField = service?.form_schema?.find((f) => f.type === "radio");
+    if (!packageField?.options) return null;
 
-  return packageField.options.find(
-    (opt) => opt.value === formData[packageField.name]
-  );
-}, [service, formData]);
+    return packageField.options.find(
+      (opt) => opt.value === formData[packageField.name]
+    );
+  }, [service, formData]);
 
-const totalPrice = useMemo(() => {
-  if (selectedPackage?.price) return selectedPackage.price;
-  return service?.price || 0;
-}, [selectedPackage, service]);
+  const totalPrice = useMemo(() => {
+    if (selectedPackage?.price) return selectedPackage.price;
+    return service?.price || 0;
+  }, [selectedPackage, service]);
 
-const handleChange = (name: string, value: any) => {
-  setFormData((prev) => ({
-    ...prev,
-    [name]: value,
-  }));
-};
+  const handleChange = (name: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-const validateForm = () => {
-  if (!service?.form_schema) return true;
+  const validateForm = () => {
+    if (!service?.form_schema) return true;
 
-  for (const field of service.form_schema) {
-    if (!field.required) continue;
+    for (const field of service.form_schema) {
+      if (!field.required) continue;
 
-    const value = formData[field.name];
+      const value = formData[field.name];
 
-    if (field.type === "checkbox") {
-      if (!value) {
-        setError(`Vui lòng xác nhận: ${field.label}`);
-        return false;
-      }
-    } else {
-      if (value === undefined || value === null || value === "") {
-        setError(`Vui lòng nhập/chọn: ${field.label}`);
-        return false;
+      if (field.type === "checkbox") {
+        if (!value) {
+          setError(`Vui lòng xác nhận: ${field.label}`);
+          return false;
+        }
+      } else {
+        if (value === undefined || value === null || value === "") {
+          setError(`Vui lòng nhập/chọn: ${field.label}`);
+          return false;
+        }
       }
     }
-  }
 
-  return true;
-};
+    return true;
+  };
 
-const handleCreateOrder = async () => {
-  if (!service) return;
+  const handleCreateOrder = async () => {
+    if (!service) return;
 
-  setError("");
+    setError("");
 
-  if (!validateForm()) return;
+    if (!validateForm()) return;
 
-  if (Number(totalPrice) > Number(walletBalance)) {
-    const result = await Swal.fire({
-      title: "Số dư không đủ!",
-      html: `
+    if (Number(totalPrice) > Number(walletBalance)) {
+      const result = await Swal.fire({
+        title: "Số dư không đủ!",
+        html: `
         <div style="text-align:left">
           <p>Số dư hiện tại: <b>${formatMoney(walletBalance)}</b></p>
           <p>Tổng tiền đơn: <b>${formatMoney(totalPrice)}</b></p>
         </div>
       `,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#2F80ED",
-      cancelButtonColor: "#9CA3AF",
-      confirmButtonText: "Nạp thêm",
-      cancelButtonText: "Đóng",
-    });
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#2F80ED",
+        cancelButtonColor: "#9CA3AF",
+        confirmButtonText: "Nạp thêm",
+        cancelButtonText: "Đóng",
+      });
 
-    if (result.isConfirmed) {
-      navigate("/wallet");
+      if (result.isConfirmed) {
+        navigate("/wallet");
+      }
+
+      return;
     }
 
-    return;
-  }
-
-  const confirm = await Swal.fire({
-    title: "Xác nhận đặt đơn?",
-    html: `
+    const confirm = await Swal.fire({
+      title: "Xác nhận đặt đơn?",
+      html: `
       <div style="text-align:left">
         <p>Số dư ví: <b>${formatMoney(walletBalance)}</b></p>
         <p>Tổng tiền đơn: <b>${formatMoney(totalPrice)}</b></p>
         <p style="margin-top:8px;">Bạn có chắc muốn tạo đơn hàng này không?</p>
       </div>
     `,
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonColor: "#2F80ED",
-    cancelButtonColor: "#9CA3AF",
-    confirmButtonText: "Đồng ý",
-    cancelButtonText: "Huỷ",
-  });
-
-  if (!confirm.isConfirmed) return;
-
-  try {
-    setSubmitting(true);
-
-    await api.post("/orders", {
-      service_id: service.id,
-      form_data: formData,
-      selected_price: totalPrice,
-    });
-
-    await refreshWallet();
-
-    await Swal.fire({
-      title: "Thành công!",
-      text: "Đã tạo đơn thành công",
-      icon: "success",
+      icon: "question",
+      showCancelButton: true,
       confirmButtonColor: "#2F80ED",
-      confirmButtonText: "OK",
+      cancelButtonColor: "#9CA3AF",
+      confirmButtonText: "Đồng ý",
+      cancelButtonText: "Huỷ",
     });
 
-    const initialValues: Record<string, any> = {};
-    (service.form_schema || []).forEach((field: FormField) => {
-      initialValues[field.name] = field.type === "checkbox" ? false : "";
-    });
+    if (!confirm.isConfirmed) return;
 
-    setFormData(initialValues);
-  } catch (err: any) {
-    const errorMsg =
-      err?.response?.data?.message || "Không thể tạo đơn, vui lòng thử lại";
+    try {
+      setSubmitting(true);
 
-    await Swal.fire({
-      title: "Lỗi!",
-      text: errorMsg,
-      icon: "error",
-      confirmButtonColor: "#2F80ED",
-      confirmButtonText: "OK",
-    });
-  } finally {
-    setSubmitting(false);
-  }
-};
+      await api.post("/orders", {
+        service_id: service.id,
+        form_data: formData,
+        selected_price: totalPrice,
+      });
+
+      await refreshWallet();
+
+      await Swal.fire({
+        title: "Thành công!",
+        text: "Đã tạo đơn thành công",
+        icon: "success",
+        confirmButtonColor: "#2F80ED",
+        confirmButtonText: "OK",
+      });
+
+      const initialValues: Record<string, any> = {};
+      (service.form_schema || []).forEach((field: FormField) => {
+        initialValues[field.name] = field.type === "checkbox" ? false : "";
+      });
+
+      setFormData(initialValues);
+    } catch (err: any) {
+      const errorMsg =
+        err?.response?.data?.message || "Không thể tạo đơn, vui lòng thử lại";
+
+      await Swal.fire({
+        title: "Lỗi!",
+        text: errorMsg,
+        icon: "error",
+        confirmButtonColor: "#2F80ED",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
 
 
@@ -286,74 +286,128 @@ const handleCreateOrder = async () => {
       );
     }
 
-    if (field.type === "radio") {
-      return (
-        <div className="space-y-3">
-          {field.options?.map((opt) => {
-            const checked = formData[field.name] === opt.value;
+   if (field.type === "radio") {
+  return (
+    <div className="space-y-3">
+      {field.options?.map((opt) => {
+        const checked = formData[field.name] === opt.value;
 
-            return (
-              <label
-                key={opt.value}
-                className={`flex cursor-pointer items-center justify-between rounded-[22px] border px-5 py-5 transition ${
-                  checked
-                    ? "border-blue-500/40 bg-white/[0.06]"
-                    : "border-white/10 bg-white/[0.03]"
-                }`}
-              >
-                <div className="flex items-center gap-4">
+        return (
+          <div key={opt.value} className="space-y-2">
+            <label
+              className={`flex cursor-pointer items-center justify-between rounded-[22px] border px-5 py-5 transition ${
+                checked
+                  ? "border-blue-500/40 bg-white/[0.06]"
+                  : "border-white/10 bg-white/[0.03]"
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full border ${
+                    checked ? "border-blue-500" : "border-white/20"
+                  }`}
+                >
                   <div
-                    className={`flex h-7 w-7 items-center justify-center rounded-full border ${
-                      checked ? "border-blue-500" : "border-white/20"
+                    className={`h-3.5 w-3.5 rounded-full ${
+                      checked ? "bg-blue-500" : "bg-transparent"
                     }`}
-                  >
-                    <div
-                      className={`h-3.5 w-3.5 rounded-full ${
-                        checked ? "bg-blue-500" : "bg-transparent"
-                      }`}
-                    />
-                  </div>
-
-                  <div>
-                    <p className="font-semibold text-white">{opt.label}</p>
-                    {opt.description && (
-                      <p className="mt-1 text-sm text-white/45">{opt.description}</p>
-                    )}
-                  </div>
+                  />
                 </div>
 
-                <div className="text-right font-bold text-emerald-400">
-                  {formatMoney(opt.price || 0)}
+                <div>
+                  <p className="font-semibold text-white">{opt.label}</p>
                 </div>
+              </div>
 
-                <input
-                  type="radio"
-                  name={field.name}
-                  value={opt.value}
-                  checked={checked}
-                  onChange={() => handleChange(field.name, opt.value)}
-                  className="hidden"
-                />
-              </label>
-            );
-          })}
-        </div>
-      );
-    }
+              <div className="text-right font-bold text-emerald-400">
+                {formatMoney(opt.price || 0)}
+              </div>
 
-    if (field.type === "checkbox") {
-      return (
-        <label className="flex items-center gap-3 text-white/70">
-          <input
-            type="checkbox"
-            checked={!!formData[field.name]}
-            onChange={(e) => handleChange(field.name, e.target.checked)}
-            className="h-5 w-5 rounded border-white/20 bg-transparent"
-          />
-          <span>{field.label}</span>
-        </label>
-      );
-    }
+              <input
+                type="radio"
+                name={field.name}
+                value={opt.value}
+                checked={checked}
+                onChange={() => handleChange(field.name, opt.value)}
+                className="hidden"
+              />
+            </label>
+
+            {checked && opt.description && (
+              <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-white/75">
+                <p className="mb-2 font-semibold text-amber-300">
+                  Chi tiết gói dịch vụ đang chọn
+                </p>
+
+                <div className="space-y-2 leading-6">
+                  {opt.description.split("\n").map((line, index) => (
+                    <p key={index}>{line}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+   if (field.type === "checkbox") {
+  const checked = !!formData[field.name];
+
+  return (
+    <label
+      className={`flex cursor-pointer items-start gap-4 rounded-[22px] border px-4 py-4 transition ${
+        checked
+          ? "border-emerald-400/30 bg-emerald-400/10"
+          : "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]"
+      }`}
+    >
+      <div
+        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border transition ${
+          checked
+            ? "border-emerald-400 bg-emerald-400 text-[#04111f]"
+            : "border-white/20 bg-[#050b1a]"
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => handleChange(field.name, e.target.checked)}
+          className="hidden"
+        />
+        {checked && (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="h-4 w-4"
+          >
+            <path
+              fillRule="evenodd"
+              d="M20.285 6.709a1 1 0 0 1 .006 1.414l-9.25 9.333a1 1 0 0 1-1.42.003l-4.25-4.25a1 1 0 1 1 1.414-1.414l3.54 3.54 8.543-8.62a1 1 0 0 1 1.417-.006Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        )}
+      </div>
+
+      <div className="min-w-0">
+        <p
+          className={`text-sm font-semibold leading-6 ${
+            checked ? "text-white" : "text-white/78"
+          }`}
+        >
+          {field.label}
+        </p>
+        <p className="mt-1 text-xs leading-5 text-white/45">
+          Vui lòng xác nhận trước khi thanh toán đơn hàng.
+        </p>
+      </div>
+    </label>
+  );
+}
 
     return null;
   };

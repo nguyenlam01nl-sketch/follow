@@ -96,7 +96,7 @@ function LoginPage() {
     <AuthLayout>
       <AuthCard
         title="Đăng nhập"
-        subtitle="Vui lòng đăng nhập để tiếp tục."
+        subtitle="Đăng nhập vào Sola Vietnam để tiếp tục sử dụng nền tảng."
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -125,7 +125,7 @@ function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative h-12 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-400 to-fuchsia-500 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(34,211,238,0.28)] transition duration-300 hover:scale-[1.01] hover:shadow-[0_20px_45px_rgba(34,211,238,0.36)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="group relative h-12 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-400 to-violet-500 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(34,211,238,0.28)] transition duration-300 hover:scale-[1.01] hover:shadow-[0_20px_45px_rgba(34,211,238,0.36)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <span className="absolute inset-0 bg-white/0 transition group-hover:bg-white/8" />
               <span className="absolute inset-y-0 left-[-30%] w-[30%] skew-x-[-20deg] bg-white/20 blur-md transition-all duration-700 group-hover:left-[120%]" />

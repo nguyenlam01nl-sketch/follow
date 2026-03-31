@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import api from "@/api/axios";
 import {
-  // ArrowRight,
   BadgeCheck,
   Eye,
   Globe,
@@ -54,6 +53,20 @@ function formatLabel(value: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function MusicNoteIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" {...props}>
+      <path
+        d="M9 18.5C9 19.8807 7.65685 21 6 21C4.34315 21 3 19.8807 3 18.5C3 17.1193 4.34315 16 6 16C7.65685 16 9 17.1193 9 18.5ZM9 18.5V6L19 4V15.5M19 15.5C19 16.8807 17.6569 18 16 18C14.3431 18 13 16.8807 13 15.5C13 14.1193 14.3431 13 16 13C17.6569 13 19 14.1193 19 15.5Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function getPlatformMeta(platform: string) {
   const key = platform.toLowerCase();
 
@@ -96,20 +109,6 @@ function getPlatformMeta(platform: string) {
   };
 }
 
-function MusicNoteIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}>
-      <path
-        d="M9 18.5C9 19.8807 7.65685 21 6 21C4.34315 21 3 19.8807 3 18.5C3 17.1193 4.34315 16 6 16C7.65685 16 9 17.1193 9 18.5ZM9 18.5V6L19 4V15.5M19 15.5C19 16.8807 17.6569 18 16 18C14.3431 18 13 16.8807 13 15.5C13 14.1193 14.3431 13 16 13C17.6569 13 19 14.1193 19 15.5Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function getServiceIcon(service: ServiceItem) {
   const text = `${service.name} ${service.group_key} ${service.service_key}`.toLowerCase();
 
@@ -133,7 +132,12 @@ function getServiceIcon(service: ServiceItem) {
     return BadgeCheck;
   }
 
-  if (text.includes("hack") || text.includes("mở khóa") || text.includes("unlock") || text.includes("khóa")) {
+  if (
+    text.includes("hack") ||
+    text.includes("mở khóa") ||
+    text.includes("unlock") ||
+    text.includes("khóa")
+  ) {
     return Lock;
   }
 
@@ -202,48 +206,49 @@ export default function ServicesPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-10">
-        <div className="border-b border-white/6 pb-4">
-          <div className="text-xs uppercase tracking-[0.24em] text-white/40">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="border-b border-white/6 pb-3">
+          <div className="text-[10px] sm:text-xs uppercase tracking-[0.18em] sm:tracking-[0.24em] text-white/40">
             Trang chủ &nbsp; &gt; &nbsp; Automxh
           </div>
         </div>
 
         {loading && (
-          <div className="rounded-[28px] border border-white/10 bg-[#08152d] p-6 text-white/60">
+          <div className="rounded-[20px] sm:rounded-[24px] border border-white/10 bg-[#08152d] p-4 sm:p-6 text-sm sm:text-base text-white/60">
             Đang tải dịch vụ...
           </div>
         )}
 
         {!loading && error && (
-          <div className="rounded-[28px] border border-red-400/20 bg-red-400/10 p-6 text-red-200">
+          <div className="rounded-[20px] sm:rounded-[24px] border border-red-400/20 bg-red-400/10 p-4 sm:p-6 text-sm sm:text-base text-red-200">
             {error}
           </div>
         )}
 
         {!loading && !error && sections.length === 0 && (
-          <div className="rounded-[28px] border border-white/10 bg-[#08152d] p-6 text-white/60">
+          <div className="rounded-[20px] sm:rounded-[24px] border border-white/10 bg-[#08152d] p-4 sm:p-6 text-sm sm:text-base text-white/60">
             Không có dữ liệu dịch vụ.
           </div>
         )}
-        <section className="space-y-5 border-b border-white/10 pb-8">
-          <div className="flex items-center justify-between gap-4">
+
+        <section className="space-y-4 sm:space-y-5 border-b border-white/10 pb-6 sm:pb-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.05]">
-                <Zap size={22} className="text-orange-400" />
+              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-white/[0.05]">
+                <Zap size={18} className="text-orange-400 sm:h-[22px] sm:w-[22px]" />
               </div>
 
-              <h2 className="text-3xl font-extrabold tracking-tight text-white">
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
                 TĂNG TƯƠNG TÁC
               </h2>
             </div>
 
-            <div className="rounded-full border border-orange-400/20 bg-orange-400/10 px-4 py-2 text-xs font-medium uppercase tracking-wide text-orange-200">
+            <div className="w-fit rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-medium uppercase tracking-wide text-orange-200">
               {engagementPlatforms.length} nền tảng
             </div>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             {engagementPlatforms.map((item) => {
               const Icon = item.icon;
 
@@ -253,22 +258,22 @@ export default function ServicesPage() {
                   whileHover={{ y: -4 }}
                   transition={{ duration: 0.18 }}
                   onClick={() => navigate(`/services/engagement/${item.key}`)}
-                  className="group relative min-h-[180px] rounded-[24px] border border-white/8 bg-[#08152d] p-5 text-left transition hover:border-white/14 hover:bg-[#0b1a35]"
+                  className="group relative min-h-[140px] sm:min-h-[160px] rounded-[18px] sm:rounded-[22px] border border-white/8 bg-[#08152d] p-4 sm:p-5 text-left transition hover:border-white/14 hover:bg-[#0b1a35]"
                 >
-                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.05]">
-                    <Icon size={22} className="text-orange-400" />
+                  <div className="mb-4 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-white/[0.05]">
+                    <Icon size={18} className="text-orange-400 sm:h-[22px] sm:w-[22px]" />
                   </div>
 
-                  <h3 className="text-[22px] font-extrabold uppercase leading-7 text-white">
+                  <h3 className="text-base sm:text-lg font-bold uppercase leading-6 text-white">
                     {item.label}
                   </h3>
 
-                  <p className="mt-2 text-sm text-white/35">
+                  <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-white/40">
                     Follow, like, view, comment, share, member, subscribe...
                   </p>
 
-                  <div className="mt-4">
-                    <span className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] text-white/55">
+                  <div className="mt-3 sm:mt-4">
+                    <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] sm:px-3 sm:text-[11px] text-white/55">
                       Social Boost
                     </span>
                   </div>
@@ -287,25 +292,27 @@ export default function ServicesPage() {
             return (
               <section
                 key={platform.platform}
-                className={`space-y-5 border-b ${meta.sectionBorder} pb-8`}
+                className={`space-y-4 sm:space-y-5 border-b ${meta.sectionBorder} pb-6 sm:pb-8`}
               >
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.05]">
-                      <Icon size={22} className={meta.iconClass} />
+                    <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-white/[0.05]">
+                      <Icon size={18} className={`${meta.iconClass} sm:h-[22px] sm:w-[22px]`} />
                     </div>
 
-                    <h2 className="text-3xl font-extrabold tracking-tight text-white">
+                    <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
                       {meta.label}
                     </h2>
                   </div>
 
-                  <div className={`rounded-full border px-4 py-2 text-xs font-medium uppercase tracking-wide ${meta.badgeClass}`}>
+                  <div
+                    className={`w-fit rounded-full border px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-medium uppercase tracking-wide ${meta.badgeClass}`}
+                  >
                     {platform.services.length} dịch vụ
                   </div>
                 </div>
 
-                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
                   {platform.services.map((service) => {
                     const ServiceIcon = getServiceIcon(service);
 
@@ -315,46 +322,45 @@ export default function ServicesPage() {
                         whileHover={{ y: -4 }}
                         transition={{ duration: 0.18 }}
                         onClick={() => navigate(`/services/${service.id}`)}
-                        className="group relative min-h-[210px] rounded-[24px] border border-white/8 bg-[#08152d] p-5 text-left transition hover:border-white/14 hover:bg-[#0b1a35]"
+                        className="group relative min-h-[160px] sm:min-h-[190px] rounded-[18px] sm:rounded-[22px] border border-white/8 bg-[#08152d] p-4 sm:p-5 text-left transition hover:border-white/14 hover:bg-[#0b1a35]"
                       >
-                        <div className="mb-5 flex items-start justify-between gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.05]">
-                            <ServiceIcon size={22} className="text-orange-400" />
+                        <div className="mb-4 flex items-start justify-between gap-3">
+                          <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-white/[0.05]">
+                            <ServiceIcon
+                              size={18}
+                              className="text-orange-400 sm:h-[22px] sm:w-[22px]"
+                            />
                           </div>
 
                           <span
-                            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${service.mode === "api"
+                            className={`rounded-full px-2.5 py-1 text-[10px] sm:px-3 sm:text-[11px] font-semibold uppercase tracking-wide ${
+                              service.mode === "api"
                                 ? "bg-cyan-400/10 text-cyan-200"
                                 : "bg-fuchsia-400/10 text-fuchsia-200"
-                              }`}
+                            }`}
                           >
                             {service.mode}
                           </span>
                         </div>
 
-                        <h3 className="line-clamp-2 min-h-[56px] text-[22px] font-extrabold uppercase leading-7 text-white">
+                        <h3 className="line-clamp-2 min-h-[44px] sm:min-h-[52px] text-base sm:text-lg font-bold uppercase leading-6 text-white">
                           {service.name}
                         </h3>
 
-                        <p className="mt-2 line-clamp-2 text-sm text-white/35">
-                          {service.description || "Cung cấp đa dạng các gói dịch vụ chất lượng cao."}
+                        <p className="mt-1.5 sm:mt-2 line-clamp-2 text-xs sm:text-sm text-white/40">
+                          {service.description ||
+                            "Cung cấp đa dạng các gói dịch vụ chất lượng cao."}
                         </p>
 
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] text-white/55">
+                        <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
+                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] sm:px-3 sm:text-[11px] text-white/55">
                             {formatLabel(service.group_key)}
                           </span>
 
-                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] text-white/55">
+                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] sm:px-3 sm:text-[11px] text-white/55">
                             {Number(service.price).toLocaleString()}đ
                           </span>
                         </div>
-
-                        {/* <div className="absolute bottom-5 left-5">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0a2a66] transition group-hover:translate-x-1">
-                            <ArrowRight size={16} className="text-[#4EA1FF]" />
-                          </div>
-                        </div> */}
                       </motion.button>
                     );
                   })}

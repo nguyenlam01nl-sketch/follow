@@ -1,20 +1,46 @@
-import SidebarItem from "./SidebarItem";
+import { useMemo } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  FileText,
+  Wallet,
+  User,
+  Users,
+  House,
+  LogOut,
+  X,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import api from "../../api/axios";
+import SidebarItem from "./SidebarItem";
+import LogoSola from "../common/LogoSola";
 
-type User = {
+type UserType = {
   id?: number;
   name?: string;
   email?: string;
   role?: "admin" | "user";
 };
 
-function Sidebar() {
+type MenuItem = {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+};
+
+type SidebarProps = {
+  mobileOpen: boolean;
+  setMobileOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const rawUser = localStorage.getItem("user");
-  const user: User | null = rawUser ? JSON.parse(rawUser) : null;
+  const user: UserType | null = rawUser ? JSON.parse(rawUser) : null;
   const role = user?.role || "user";
 
   const handleLogout = async () => {
@@ -27,6 +53,8 @@ function Sidebar() {
       cancelButtonColor: "#9CA3AF",
       confirmButtonText: "Đồng ý",
       cancelButtonText: "Hủy",
+      background: "#0f172a",
+      color: "#fff",
     });
 
     if (!result.isConfirmed) return;
@@ -42,79 +70,228 @@ function Sidebar() {
     navigate("/login");
   };
 
-  const adminMenu = [
-    { to: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-    { to: "/admin/services", label: "Dịch vụ", icon: "🛍️" },
-    { to: "/admin/orders", label: "Đơn hàng", icon: "🧾" },
-    { to: "/admin/wallet", label: "Ví tiền", icon: "💳" },
-    { to: "/admin/users", label: "Người dùng", icon: "👥" },
-    // { to: "/admin/settings", label: "Cài đặt", icon: "⚙️" },
+  const adminMenu: MenuItem[] = [
+    { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/admin/services", label: "Dịch vụ", icon: ShoppingBag },
+    { to: "/admin/orders", label: "Đơn hàng", icon: FileText },
+    { to: "/admin/wallet", label: "Ví tiền", icon: Wallet },
+    { to: "/admin/users", label: "Người dùng", icon: Users },
   ];
 
-  const userMenu = [
-    { to: "/dashboard", label: "Dashboard", icon: "📊" },
-    { to: "/services", label: "Dịch vụ", icon: "🛍️" },
-    { to: "/orders", label: "Đơn hàng", icon: "🧾" },
-    { to: "/wallet", label: "Ví tiền", icon: "💳" },
-    { to: "/account", label: "Tài khoản", icon: "👤" },
-    // { to: "/settings", label: "Cài đặt", icon: "⚙️" },
+  const userMenu: MenuItem[] = [
+    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/services", label: "Dịch vụ", icon: ShoppingBag },
+    { to: "/orders", label: "Đơn hàng", icon: FileText },
+    { to: "/wallet", label: "Ví tiền", icon: Wallet },
+    { to: "/account", label: "Tài khoản", icon: User },
   ];
 
-  const menuItems = role === "admin" ? adminMenu : userMenu;
+  const menuItems: MenuItem[] = role === "admin" ? adminMenu : userMenu;
+
+  const mobileQuickMenu: MenuItem[] = useMemo(() => {
+    if (role === "admin") {
+      return [
+        { to: "/admin/dashboard", label: "Home", icon: House },
+        { to: "/admin/orders", label: "Đơn", icon: FileText },
+        { to: "/admin/wallet", label: "Ví", icon: Wallet },
+        { to: "/admin/users", label: "User", icon: Users },
+      ];
+    }
+
+    return [
+      { to: "/dashboard", label: "Home", icon: House },
+      { to: "/services", label: "Dịch vụ", icon: ShoppingBag },
+      { to: "/orders", label: "Đơn", icon: FileText },
+      { to: "/wallet", label: "Ví", icon: Wallet },
+    ];
+  }, [role]);
 
   return (
-    <aside className="hidden h-screen w-[270px] shrink-0 border-r border-white/10 bg-white/5 backdrop-blur-2xl lg:flex lg:flex-col">
-      <div className="border-b border-white/10 px-6 py-6">
-        <div className="flex items-center gap-3">
-          <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-fuchsia-500 font-bold text-white shadow-[0_10px_30px_rgba(34,211,238,0.35)]">
-            F
-            <div className="absolute inset-0 rounded-2xl border border-white/20" />
-          </div>
+    <>
+      <div
+        className={`fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-[3px] transition-all duration-300 xl:hidden ${
+          mobileOpen
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0"
+        }`}
+        onClick={() => setMobileOpen(false)}
+      />
 
-          <div>
-            <h2 className="text-lg font-semibold">Follow Market</h2>
-            <p className="text-xs uppercase tracking-[0.18em] text-white/45">
-              {role === "admin" ? "Admin panel" : "User panel"}
+      <aside
+        className={`fixed left-0 top-0 z-[60] flex h-screen w-[84%] max-w-[330px] flex-col border-r border-white/10 bg-[linear-gradient(180deg,rgba(8,18,40,0.98)_0%,rgba(3,10,24,0.98)_100%)] shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl transition-transform duration-300 xl:hidden ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="relative overflow-hidden border-b border-white/10 px-4 py-4">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_35%),radial-gradient(circle_at_right,rgba(217,70,239,0.16),transparent_30%)]" />
+
+       <div className="relative flex items-start justify-between gap-3">
+  <LogoSola size="md" variant="sidebar" />
+
+  <button
+    type="button"
+    onClick={() => setMobileOpen(false)}
+    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] border border-white/10 bg-white/5 text-white/75 transition hover:bg-white/10 hover:text-white"
+  >
+    <X className="h-5 w-5" />
+  </button>
+</div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+          <div className="mb-3 px-3">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-white/30">
+              Main Menu
             </p>
           </div>
+
+          <div className="space-y-1.5">
+            {menuItems.map((item) => {
+              const active = location.pathname === item.to;
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMobileOpen(false)}
+                  className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl px-4 py-3 transition-all duration-200 ${
+                    active
+                      ? "bg-gradient-to-r from-cyan-500/20 via-sky-500/16 to-fuchsia-500/20 text-white ring-1 ring-white/10 shadow-[0_0_20px_rgba(34,211,238,0.16)]"
+                      : "text-white/70 hover:bg-white/6 hover:text-white"
+                  }`}
+                >
+                  {active && (
+                    <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-gradient-to-b from-cyan-400 to-fuchsia-500" />
+                  )}
+
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition ${
+                      active
+                        ? "border-white/12 bg-white/10"
+                        : "border-white/8 bg-white/[0.03] group-hover:bg-white/8"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{item.label}</p>
+                  </div>
+                </NavLink>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
-        <p className="mb-3 px-2 text-xs uppercase tracking-[0.18em] text-white/35">
-          Main Menu
-        </p>
+        <div className="border-t border-white/10 bg-white/[0.02] p-3">
+          <div className="rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/20 to-fuchsia-500/20 text-sm font-semibold text-white ring-1 ring-white/10">
+                {(user?.name || "U").charAt(0).toUpperCase()}
+              </div>
 
-        <div className="space-y-2 pb-4">
-          {menuItems.map((item) => (
-            <SidebarItem
-              key={item.to}
-              to={item.to}
-              label={item.label}
-              icon={item.icon}
-            />
-          ))}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-white">
+                  {user?.name || "Người dùng"}
+                </p>
+                <p className="mt-0.5 text-xs text-white/45">
+                  {role === "admin" ? "Administrator" : "User"}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm font-medium text-white/85 transition hover:bg-white/10 hover:text-white"
+            >
+              <LogOut className="h-4 w-4" />
+              Đăng xuất
+            </button>
+          </div>
         </div>
-      </div>
+      </aside>
 
-      <div className="border-t border-white/10 p-4">
-        <div className="rounded-2xl border border-white/12 bg-white/8 p-4">
-          <p className="text-sm font-medium text-white">
-            {user?.name || "Người dùng"}
+      <aside className="hidden h-screen w-[285px] shrink-0 border-r border-white/10 bg-[linear-gradient(180deg,rgba(10,20,40,0.92)_0%,rgba(6,12,26,0.95)_100%)] backdrop-blur-2xl xl:flex xl:flex-col">
+        <div className="relative overflow-hidden border-b border-white/10 px-6 py-6">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_35%),radial-gradient(circle_at_right,rgba(217,70,239,0.12),transparent_30%)]" />
+
+          <div className="relative flex items-center gap-3">
+            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-400 to-fuchsia-500 font-bold text-white shadow-[0_12px_32px_rgba(34,211,238,0.3)]">
+              F
+              <div className="absolute inset-0 rounded-2xl border border-white/20" />
+            </div>
+
+            <div>
+              <h2 className="text-lg font-semibold text-white">Follow Market</h2>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/45">
+                {role === "admin" ? "Admin Panel" : "User Panel"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
+          <p className="mb-3 px-2 text-[11px] uppercase tracking-[0.24em] text-white/30">
+            Main Menu
           </p>
-          <p className="mt-1 text-xs text-white/45">
-            {role === "admin" ? "Administrator" : "User"}
-          </p>
 
-          <button
-            onClick={handleLogout}
-            className="mt-4 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-2 text-sm text-white/75 transition hover:bg-white/12 hover:text-white"
-          >
-            Đăng xuất
-          </button>
+          <div className="space-y-2 pb-4">
+            {menuItems.map((item) => (
+              <SidebarItem
+                key={item.to}
+                to={item.to}
+                label={item.label}
+                icon={item.icon}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-white/10 p-4">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-sm font-semibold text-white">
+              {user?.name || "Người dùng"}
+            </p>
+            <p className="mt-1 text-xs text-white/45">
+              {role === "admin" ? "Administrator" : "User"}
+            </p>
+
+            <button
+              onClick={handleLogout}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
+            >
+              <LogOut className="h-4 w-4" />
+              Đăng xuất
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-slate-950/88 px-2 py-2 backdrop-blur-2xl xl:hidden">
+        <div className="grid grid-cols-4 gap-1.5">
+          {mobileQuickMenu.map((item) => {
+            const active = location.pathname === item.to;
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={`flex flex-col items-center justify-center rounded-2xl px-2 py-2 text-[11px] transition ${
+                  active
+                    ? "bg-gradient-to-r from-cyan-500/15 to-fuchsia-500/15 text-white"
+                    : "text-white/55 hover:bg-white/5 hover:text-white/85"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="mt-1 truncate">{item.label}</span>
+              </NavLink>
+            );
+          })}
         </div>
       </div>
-    </aside>
+    </>
   );
 }
 

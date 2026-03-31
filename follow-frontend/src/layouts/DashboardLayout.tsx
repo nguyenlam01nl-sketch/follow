@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Sidebar from "../components/dashboard/Sidebar";
 import Topbar from "../components/dashboard/Topbar";
 
@@ -6,6 +7,8 @@ type Props = {
 };
 
 function DashboardLayout({ children }: Props) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#07111f] text-white">
       <div className="relative min-h-screen overflow-hidden">
@@ -15,12 +18,13 @@ function DashboardLayout({ children }: Props) {
         <div className="absolute bottom-[-120px] right-[-80px] -z-10 h-[300px] w-[300px] rounded-full bg-fuchsia-500/20 blur-3xl" />
 
         <div className="flex min-h-screen">
-          <Sidebar />
+          <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
           <div className="flex min-h-screen flex-1 flex-col">
-            <Topbar />
-
-            <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+            <Topbar onOpenSidebar={() => setMobileOpen(true)} />
+            <main className="flex-1 p-4 pb-20 sm:p-6 lg:p-8 xl:pb-8">
+              {children}
+            </main>
           </div>
         </div>
       </div>

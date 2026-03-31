@@ -30,22 +30,35 @@ class WalletController extends Controller
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:1000'],
             'payment_method' => ['nullable', 'string', 'max:50'],
-            'note' => ['nullable', 'string'],
+            'content' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $user = $request->user();
+
+        $transferContent = $data['content']
+            ?? ('solavietnam ' . ($user->username ?: $user->name ?: 'user'));
+
         $transaction = WalletTransaction::create([
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'title' => 'Nạp tiền vào ví',
             'amount' => $data['amount'],
             'type' => 'deposit',
             'status' => 'pending',
             'payment_method' => $data['payment_method'] ?? 'bank_transfer',
-            'note' => $data['note'] ?? null,
+            'note' => $transferContent,
         ]);
 
         return response()->json([
             'message' => 'Đã tạo yêu cầu nạp tiền',
             'transaction' => $transaction,
+            'qr_info' => [
+                'bank_name' => 'Techcombank',
+                'bank_code' => 'techcombank',
+                'account_number' => '19037432671013',
+                'account_name' => 'Nguyen Lam',
+                'amount' => (float) $data['amount'],
+                'content' => $transferContent,
+            ],
         ], 201);
     }
 }

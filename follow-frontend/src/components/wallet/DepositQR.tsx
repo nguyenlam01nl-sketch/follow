@@ -4,32 +4,31 @@ const BANK = "techcombank";
 const ACCOUNT = "19037432671013";
 const ACCOUNT_NAME = "Nguyen Lam";
 
-function generateCode() {
-  return "TF" + Math.floor(100000 + Math.random() * 900000);
-}
-
 type DepositQRProps = {
   onDeposit?: () => void | Promise<void>;
+  transferNote?: string;
 };
 
-function DepositQR({ onDeposit }: DepositQRProps) {
+function DepositQR({ onDeposit, transferNote }: DepositQRProps) {
   const [amount, setAmount] = useState<number>(100000);
   const [note, setNote] = useState<string>("");
 
   useEffect(() => {
-    setNote(generateCode());
-  }, []);
+    setNote(transferNote || "");
+  }, [transferNote]);
 
   const qrUrl = `https://img.vietqr.io/image/${BANK}-${ACCOUNT}-compact.png?amount=${amount}&addInfo=${encodeURIComponent(
     note
   )}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
 
   return (
-    <div className="space-y-5 rounded-[28px] border border-white/12 bg-white/8 p-6 backdrop-blur-2xl">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold text-white">Nạp tiền qua QR</h2>
-          <p className="text-sm text-white/50">
+    <div className="space-y-4 rounded-2xl border border-white/12 bg-white/8 p-3 backdrop-blur-2xl sm:rounded-[28px] sm:p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-white sm:text-lg">
+            Nạp tiền qua QR
+          </h2>
+          <p className="text-xs text-white/50 sm:text-sm">
             Quét mã để chuyển khoản, giữ nguyên nội dung
           </p>
         </div>
@@ -38,7 +37,7 @@ function DepositQR({ onDeposit }: DepositQRProps) {
           <button
             type="button"
             onClick={onDeposit}
-            className="rounded-xl bg-[#1570ef] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+            className="shrink-0 rounded-xl bg-[#1570ef] px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110 sm:px-4 sm:text-sm"
           >
             Tạo yêu cầu nạp
           </button>
@@ -46,13 +45,14 @@ function DepositQR({ onDeposit }: DepositQRProps) {
       </div>
 
       <div>
-        <p className="mb-2 text-sm text-white/60">Chọn mệnh giá</p>
+        <p className="mb-2 text-xs text-white/60 sm:text-sm">Chọn mệnh giá</p>
         <div className="flex flex-wrap gap-2">
           {[50000, 100000, 200000, 500000, 1000000].map((v) => (
             <button
               key={v}
+              type="button"
               onClick={() => setAmount(v)}
-              className={`rounded-xl border px-4 py-2 text-sm transition ${
+              className={`rounded-xl border px-3 py-2 text-xs transition sm:px-4 sm:text-sm ${
                 amount === v
                   ? "border-white/20 bg-white/12 text-white"
                   : "border-white/10 bg-white/6 text-white/60 hover:bg-white/10"
@@ -65,44 +65,38 @@ function DepositQR({ onDeposit }: DepositQRProps) {
       </div>
 
       <div>
-        <label className="text-sm text-white/60">Số tiền</label>
+        <label className="text-xs text-white/60 sm:text-sm">Số tiền</label>
         <input
           type="number"
           value={amount}
           onChange={(e) => setAmount(Number(e.target.value) || 0)}
-          className="mt-1 h-12 w-full rounded-xl border border-white/15 bg-white/10 px-4 text-white outline-none"
+          className="mt-1 h-11 w-full rounded-xl border border-white/15 bg-white/10 px-4 text-sm text-white outline-none sm:h-12 sm:text-base"
         />
       </div>
 
       <div>
-        <label className="text-sm text-white/60">Nội dung chuyển khoản</label>
+        <label className="text-xs text-white/60 sm:text-sm">
+          Nội dung chuyển khoản
+        </label>
 
-        <div className="mt-1 flex h-12 items-center justify-between rounded-xl border border-white/15 bg-white/10 px-4">
-          <span className="select-all font-semibold tracking-wider text-white">
-            {note}
+        <div className="mt-1 flex h-11 items-center justify-between gap-2 rounded-xl border border-white/15 bg-white/10 px-4 sm:h-12">
+          <span className="min-w-0 truncate select-all text-sm font-semibold tracking-wide text-white sm:text-base">
+            {note || "Chưa có nội dung"}
           </span>
 
           <button
             type="button"
-            onClick={() => navigator.clipboard.writeText(note)}
-            className="text-xs text-cyan-300 hover:underline"
+            onClick={() => note && navigator.clipboard.writeText(note)}
+            className="shrink-0 text-xs text-cyan-300 hover:underline"
           >
             Copy
           </button>
         </div>
 
-        <div className="mt-2 flex items-center justify-between">
-          <p className="text-xs text-red-300">
+        <div className="mt-2">
+          <p className="text-[11px] text-red-300 sm:text-xs">
             ⚠️ Bắt buộc giữ nguyên nội dung khi chuyển khoản
           </p>
-
-          <button
-            type="button"
-            onClick={() => setNote(generateCode())}
-            className="text-xs text-white/50 hover:text-white"
-          >
-            Tạo mã mới
-          </button>
         </div>
       </div>
 
@@ -110,7 +104,7 @@ function DepositQR({ onDeposit }: DepositQRProps) {
         <img
           src={qrUrl}
           alt="QR Code"
-          className="h-56 w-56 rounded-xl bg-white p-2"
+          className="h-44 w-44 rounded-xl bg-white p-2 sm:h-56 sm:w-56"
         />
 
         <button

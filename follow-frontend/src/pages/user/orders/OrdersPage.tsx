@@ -83,36 +83,39 @@ function OrdersPage() {
 
   const paginatedOrders = useMemo(() => {
     const start = (page - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    return filtered.slice(start, end);
+    return filtered.slice(start, start + ITEMS_PER_PAGE);
   }, [filtered, page]);
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-white">Đơn hàng</h1>
-            <p className="text-sm text-white/50">Quản lý đơn của bạn</p>
-          </div>
+      <div className="space-y-4 px-3 sm:px-4">
+        {/* Header */}
+        <div>
+          <h1 className="text-lg sm:text-xl font-semibold text-white">
+            Đơn hàng
+          </h1>
+          <p className="text-xs text-white/50">
+            Quản lý đơn của bạn
+          </p>
         </div>
 
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-2">
+        {/* Filter + Search */}
+        <div className="flex flex-col gap-2">
+          <div className="flex overflow-x-auto gap-2 pb-1">
             {[
               { key: "all", label: "Tất cả" },
-              { key: "pending", label: "Chờ xử lý" },
+              { key: "pending", label: "Chờ" },
               { key: "processing", label: "Đang chạy" },
-              { key: "completed", label: "Hoàn thành" },
-              { key: "failed", label: "Thất bại" },
+              { key: "completed", label: "Xong" },
+              { key: "failed", label: "Lỗi" },
             ].map((f) => (
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`rounded-xl border px-4 py-2 text-sm ${
+                className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs ${
                   filter === f.key
-                    ? "border-white/20 bg-white/12 text-white"
-                    : "border-white/10 bg-white/6 text-white/60 hover:bg-white/10"
+                    ? "bg-white/15 text-white"
+                    : "bg-white/5 text-white/60"
                 }`}
               >
                 {f.label}
@@ -120,18 +123,17 @@ function OrdersPage() {
             ))}
           </div>
 
-          <div className="w-full lg:w-[340px]">
-            <input
-              type="text"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Tìm theo link, username, mã đơn..."
-              className="w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-white/20 focus:bg-white/10"
-            />
-          </div>
+          <input
+            type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="Tìm đơn..."
+            className="w-full rounded-lg bg-white/5 px-3 py-2 text-xs text-white placeholder:text-white/40 outline-none"
+          />
         </div>
 
-        <div className="grid grid-cols-6 gap-4 px-4 text-xs text-white/40">
+        {/* Header table (ẩn mobile) */}
+        <div className="hidden sm:grid grid-cols-6 gap-3 px-2 text-xs text-white/40">
           <div>ID</div>
           <div>Dịch vụ</div>
           <div>Link</div>
@@ -140,11 +142,14 @@ function OrdersPage() {
           <div>Trạng thái</div>
         </div>
 
+        {/* Orders */}
         <div className="space-y-2">
           {loading ? (
-            <div className="px-4 text-white/50">Đang tải...</div>
+            <div className="text-xs text-white/50">Đang tải...</div>
           ) : filtered.length === 0 ? (
-            <div className="px-4 text-white/50">Không có đơn nào</div>
+            <div className="text-xs text-white/50">
+              Không có đơn nào
+            </div>
           ) : (
             paginatedOrders.map((order) => (
               <OrderRow
@@ -162,28 +167,31 @@ function OrdersPage() {
           )}
         </div>
 
+        {/* Pagination */}
         {!loading && filtered.length > 0 && (
-          <div className="flex items-center justify-center gap-3 pt-4">
+          <div className="flex items-center justify-center gap-2 pt-2">
             <button
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page === 1}
-              className="rounded-xl border border-white/10 bg-white/6 px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="px-3 py-1 text-xs rounded-lg bg-white/5 text-white disabled:opacity-40"
             >
-              Prev
+              ‹
             </button>
 
-            <div className="text-sm text-white/70">
-              Trang {page} / {totalPages || 1}
-            </div>
+            <span className="text-xs text-white/70">
+              {page}/{totalPages || 1}
+            </span>
 
             <button
               onClick={() =>
-                setPage((prev) => Math.min(prev + 1, totalPages || 1))
+                setPage((prev) =>
+                  Math.min(prev + 1, totalPages || 1)
+                )
               }
               disabled={page === totalPages || totalPages === 0}
-              className="rounded-xl border border-white/10 bg-white/6 px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="px-3 py-1 text-xs rounded-lg bg-white/5 text-white disabled:opacity-40"
             >
-              Next
+              ›
             </button>
           </div>
         )}
