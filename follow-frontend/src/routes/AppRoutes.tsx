@@ -15,6 +15,7 @@ import AdminServiceEditPage from "@/pages/admin/services/AdminServiceEditPage";
 import AdminEngagementPlatformPage from "@/pages/admin/services/AdminEngagementPlatformPage";
 import AdminWalletPage from "@/pages/admin/wallet/AdminWalletPage";
 import AdminOrderPage from "@/pages/admin/orders/AdminOrderPage";
+import AdminUsersPage from "@/pages/admin/users/AdminUsersPage";
 
 function AppRoutes() {
   return (
@@ -50,6 +51,7 @@ function AppRoutes() {
         />
       </Route>
       <Route path="/admin/wallet" element={<AdminWalletPage />} />
+      <Route path="/admin/users" element={<AdminUsersPage />} />
     </Routes>
   );
 }

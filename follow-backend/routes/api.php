@@ -8,11 +8,12 @@ use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ExternalServiceController;
 use App\Http\Controllers\Api\AdminServiceController;
-use App\Http\Controllers\Api\AdminWalletController;
+use App\Http\Controllers\Api\AdminWalletController; 
 use App\Http\Controllers\Api\AdminExternalServiceController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AdminOrderController;
+use App\Http\Controllers\Api\AdminUserController;
 // Public
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -62,5 +63,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
         Route::get('/notifications', [AdminDashboardController::class, 'notifications']);
         Route::post('/notifications', [AdminDashboardController::class, 'storeNotification']);
+
+
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::get('/users/{id}', [AdminUserController::class, 'show']);
+        Route::patch('/users/{id}', [AdminUserController::class, 'update']);
+        Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
     });
 });
