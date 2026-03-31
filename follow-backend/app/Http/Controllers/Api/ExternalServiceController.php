@@ -100,6 +100,64 @@ class ExternalServiceController extends Controller
         return false;
     }
 
+    private function extractExternalOrderId(array $responseData): ?string
+    {
+        $orderId =
+            $responseData['order']
+            ?? $responseData['data']['order']
+            ?? $responseData['id']
+            ?? $responseData['data']['id']
+            ?? null;
+
+        return $orderId !== null ? (string) $orderId : null;
+    }
+
+    private function extractExternalStatus(array $responseData): ?string
+    {
+        return $responseData['status']
+            ?? $responseData['data']['status']
+            ?? null;
+    }
+
+    private function extractApiCharge(array $responseData): ?float
+    {
+        $charge = $responseData['charge']
+            ?? $responseData['data']['charge']
+            ?? null;
+
+        if ($charge === null || $charge === '') {
+            return null;
+        }
+
+        return (float) str_replace(',', '', (string) $charge);
+    }
+
+    private function extractApiStartCount(array $responseData): ?int
+    {
+        $startCount = $responseData['start_count']
+            ?? $responseData['data']['start_count']
+            ?? null;
+
+        if ($startCount === null || $startCount === '') {
+            return null;
+        }
+
+        return (int) $startCount;
+    }
+
+    private function extractApiRemains(array $responseData): ?int
+    {
+        $remains = $responseData['remains']
+            ?? $responseData['data']['remains']
+            ?? null;
+
+        if ($remains === null || $remains === '') {
+            return null;
+        }
+
+        return (int) $remains;
+    }
+
     public function getServices()
     {
         $data = $this->getExternalServicesData();
@@ -270,10 +328,11 @@ class ExternalServiceController extends Controller
         }
 
         $response = Http::asForm()->post($baseUrl, $payload);
+        $responseData = $response->json();
 
         if (!$response->successful()) {
             return response()->json(
-                $response->json() ?: ['message' => 'Không thể tạo đơn ở external API'],
+                $responseData ?: ['message' => 'Không thể tạo đơn ở external API'],
                 $response->status()
             );
         }
@@ -287,7 +346,7 @@ class ExternalServiceController extends Controller
                 $externalService,
                 $unitPrice,
                 $totalPrice,
-                $response,
+                $responseData,
                 $user
             ) {
                 $serviceName = $externalService['name'] ?? ('#' . $serviceId);
@@ -308,6 +367,11 @@ class ExternalServiceController extends Controller
                         : null,
                     'selected_price' => $unitPrice,
                     'status' => 'pending',
+                    'external_order_id' => $this->extractExternalOrderId($responseData),
+                    'external_status' => $this->extractExternalStatus($responseData),
+                    'api_charge' => $this->extractApiCharge($responseData),
+                    'api_start_count' => $this->extractApiStartCount($responseData),
+                    'api_remains' => $this->extractApiRemains($responseData),
                 ]);
 
                 $user->balance = (float) $user->balance - (float) $totalPrice;
@@ -335,7 +399,7 @@ class ExternalServiceController extends Controller
                         'note' => $order->note,
                         'unit_price' => $order->unit_price,
                         'total_price' => $order->total_price,
-                        'external_api_response' => $response->json(),
+                        'external_api_response' => $responseData,
                     ], JSON_UNESCAPED_UNICODE),
                     'status' => 'pending',
                 ]);
@@ -346,7 +410,7 @@ class ExternalServiceController extends Controller
             return response()->json([
                 'message' => 'Đã tạo đơn thành công',
                 'order' => $order,
-                'external_response' => $response->json(),
+                'external_response' => $responseData,
                 'balance' => (float) $request->user()->fresh()->balance,
             ], 201);
         } catch (\Exception $e) {

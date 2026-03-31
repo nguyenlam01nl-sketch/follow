@@ -68,7 +68,7 @@ function AuthLayout({ children }: Props) {
               <span className="block bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-300 bg-clip-text text-transparent">
                 Nền tảng dịch vụ mạng xã hội
                 <br />
-                hiện đại và đáng tin cậy
+                Uy tín nhất Việt Nam
               </span>
             </h1>
 

@@ -10,6 +10,7 @@ use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class OrderController extends Controller
 {
@@ -293,4 +294,120 @@ class OrderController extends Controller
             'balance' => (float) $request->user()->fresh()->balance,
         ], 201);
     }
+
+    public function refreshStatus(Request $request, $id)
+    {
+        $order = \App\Models\Order::findOrFail($id);
+
+        if (!$order->external_order_id) {
+            return response()->json([
+                'message' => 'Không có external_order_id'
+            ], 400);
+        }
+
+        try {
+            $response = Http::asForm()->post(env('EXTERNAL_API_URL'), [
+                'key' => env('EXTERNAL_API_KEY'),
+                'action' => 'status',
+                'order' => $order->external_order_id,
+            ]);
+
+            $data = $response->json();
+
+            if (!$data || isset($data['error'])) {
+                return response()->json([
+                    'message' => 'API lỗi',
+                    'error' => $data['error'] ?? null
+                ], 500);
+            }
+
+            // map status
+            $status = strtolower($data['status'] ?? '');
+
+            if ($status === 'success') $status = 'completed';
+            if ($status === 'processing') $status = 'processing';
+            if ($status === 'pending') $status = 'pending';
+
+            $order->update([
+                'external_status' => $data['status'] ?? null,
+                'status' => $status,
+                'api_charge' => isset($data['charge']) ? (float) str_replace(',', '', $data['charge']) : null,
+                'api_start_count' => isset($data['start_count']) ? (int) $data['start_count'] : null,
+                'api_remains' => isset($data['remains']) ? (int) $data['remains'] : null,
+            ]);
+
+            return response()->json([
+                'message' => 'OK',
+                'order' => $order,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Lỗi gọi API',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function cancelOrder(Request $request, $id)
+{
+    $order = \App\Models\Order::findOrFail($id);
+
+    if (!$request->user() || $order->user_id !== $request->user()->id) {
+        return response()->json([
+            'message' => 'Không có quyền thao tác đơn này',
+        ], 403);
+    }
+
+    if (!$order->external_order_id) {
+        return response()->json([
+            'message' => 'Đơn không có mã external_order_id',
+        ], 422);
+    }
+
+    $baseUrl = config('services.external_api.base_url');
+    $apiKey = config('services.external_api.token');
+
+    if (!$baseUrl || !$apiKey) {
+        return response()->json([
+            'message' => 'Thiếu cấu hình external api',
+        ], 500);
+    }
+
+    try {
+        $response = \Illuminate\Support\Facades\Http::asForm()->post($baseUrl, [
+            'key' => $apiKey,
+            'action' => 'cancel',
+            'order' => $order->external_order_id,
+        ]);
+
+        $data = $response->json();
+
+        if (
+            !$response->successful() ||
+            !$data ||
+            (int) ($data['cancel'] ?? 0) !== 1
+        ) {
+            return response()->json([
+                'message' => 'Huỷ đơn thất bại',
+                'api_response' => $data,
+            ], 422);
+        }
+
+        $order->update([
+            'status' => 'cancelled',
+            'external_status' => 'Cancelled',
+        ]);
+
+        return response()->json([
+            'message' => 'Huỷ đơn thành công',
+            'order' => $order->fresh(),
+            'api_response' => $data,
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'message' => 'Lỗi gọi API huỷ đơn',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 }

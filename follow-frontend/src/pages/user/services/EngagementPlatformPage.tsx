@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import api from "@/api/axios";
-import { ChevronLeft, Sparkles, Wallet } from "lucide-react";
+import { ChevronLeft, Check, ChevronDown, Sparkles, Wallet } from "lucide-react";
+import { Listbox, Transition } from "@headlessui/react";
 
 function FacebookIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -35,6 +36,27 @@ function TikTokIcon({ className = "h-5 w-5" }: { className?: string }) {
       <path d="M33.5 6C35.1 10.2 38.2 13.3 42 14.7V21C38.9 20.9 35.8 19.9 33.2 18.2V29.2C33.2 37.4 26.6 44 18.4 44C10.2 44 3.6 37.4 3.6 29.2C3.6 21 10.2 14.4 18.4 14.4C19.1 14.4 19.8 14.5 20.5 14.6V22.1C19.8 21.9 19.1 21.8 18.4 21.8C14.3 21.8 11 25.1 11 29.2C11 33.3 14.3 36.6 18.4 36.6C22.5 36.6 25.8 33.3 25.8 29.2V4H33.5V6Z" />
     </svg>
   );
+}
+
+function dropdownButtonClass(hasValue = false, disabled = false) {
+  return [
+    "flex h-[52px] w-full items-center justify-between rounded-2xl border px-4",
+    "text-sm md:text-[15px] transition duration-200",
+    "border-white/10 bg-[#071327]/90 backdrop-blur-md",
+    "shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
+    "outline-none hover:border-white/20",
+    "focus-within:border-[#2F80ED] focus-within:ring-2 focus-within:ring-[#2F80ED]/20",
+    hasValue ? "text-white" : "text-white/40",
+    disabled ? "cursor-not-allowed opacity-60" : "",
+  ].join(" ");
+}
+
+function dropdownPanelClass() {
+  return [
+    "absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl",
+    "border border-white/10 bg-[#0b1730]/95 backdrop-blur-xl",
+    "shadow-[0_24px_80px_rgba(0,0,0,0.45)]",
+  ].join(" ");
 }
 
 type ApiServiceItem = {
@@ -350,9 +372,7 @@ export default function EngagementPlatformPage() {
   const { platform = "" } = useParams();
   const navigate = useNavigate();
 
-  const current = useMemo(() => {
-    return engagementData[platform.toLowerCase()];
-  }, [platform]);
+  const current = useMemo(() => engagementData[platform.toLowerCase()], [platform]);
 
   const [serviceType, setServiceType] = useState("");
   const [services, setServices] = useState<ApiServiceItem[]>([]);
@@ -416,7 +436,6 @@ export default function EngagementPlatformPage() {
 
   const filteredServices = useMemo(() => {
     if (!selectedTypeMeta) return [];
-
     return platformServices.filter((item) =>
       matchesServiceType(
         item,
@@ -428,21 +447,15 @@ export default function EngagementPlatformPage() {
   }, [platformServices, selectedTypeMeta, platform]);
 
   const selectedPackage = useMemo(() => {
-    return filteredServices.find(
-      (item) => String(item.service) === selectedServiceId
-    );
+    return filteredServices.find((item) => String(item.service) === selectedServiceId);
   }, [filteredServices, selectedServiceId]);
 
-  const selectedPrice = useMemo(() => {
-    return getDisplayPrice(selectedPackage);
-  }, [selectedPackage]);
+  const selectedPrice = useMemo(() => getDisplayPrice(selectedPackage), [selectedPackage]);
 
   const totalPrice = useMemo(() => {
     const qty = Number(quantity || 0);
-
     if (!selectedPackage) return 0;
     if (!Number.isFinite(qty) || qty <= 0) return 0;
-
     return selectedPrice * qty;
   }, [selectedPackage, selectedPrice, quantity]);
 
@@ -532,21 +545,22 @@ export default function EngagementPlatformPage() {
       });
       return;
     }
-const confirm = await Swal.fire({
-  ...swalBaseOptions,
-  title: "Xác nhận đặt đơn?",
-  icon: "question",
-  html: alertHtml(`
-    <p>Số dư ví: <b style="color:#34d399;">${formatMoney(walletBalance)}</b></p>
-    <p>Giá gói: <b style="color:#60a5fa;">${formatMoney(selectedPrice)}</b></p>
-    <p>Số lượng: <b style="color:#f8fafc;">${quantity || 0}</b></p>
-    <p>Tổng tiền: <b style="color:#f59e0b;">${formatMoney(totalPrice)}</b></p>
-    <p style="margin-top:10px;">Bạn có chắc muốn tạo đơn hàng này không?</p>
-  `),
-  showCancelButton: true,
-  confirmButtonText: "Đồng ý",
-  cancelButtonText: "Huỷ",
-});
+
+    const confirm = await Swal.fire({
+      ...swalBaseOptions,
+      title: "Xác nhận đặt đơn?",
+      icon: "question",
+      html: alertHtml(`
+        <p>Số dư ví: <b style="color:#34d399;">${formatMoney(walletBalance)}</b></p>
+        <p>Giá gói: <b style="color:#60a5fa;">${formatMoney(selectedPrice)}</b></p>
+        <p>Số lượng: <b style="color:#f8fafc;">${quantity || 0}</b></p>
+        <p>Tổng tiền: <b style="color:#f59e0b;">${formatMoney(totalPrice)}</b></p>
+        <p style="margin-top:10px;">Bạn có chắc muốn tạo đơn hàng này không?</p>
+      `),
+      showCancelButton: true,
+      confirmButtonText: "Đồng ý",
+      cancelButtonText: "Huỷ",
+    });
 
     if (!confirm.isConfirmed) return;
 
@@ -570,27 +584,22 @@ const confirm = await Swal.fire({
       await api.post("/external/orders", payload);
       await refreshWallet();
 
-     await showAlert({
-  title: "Số dư không đủ!",
-  icon: "warning",
-  confirmText: "Nạp thêm",
-  content: `
-    <div style="display:flex; flex-direction:column; gap:8px;">
-      <div style="display:flex; justify-content:space-between; gap:16px;">
-        <span style="color:rgba(255,255,255,0.68)">Số dư hiện tại</span>
-        <b style="color:#34d399">${formatMoney(walletBalance)}</b>
-      </div>
-      <div style="display:flex; justify-content:space-between; gap:16px;">
-        <span style="color:rgba(255,255,255,0.68)">Giá gói</span>
-        <b style="color:#60a5fa">${formatMoney(selectedPrice)}</b>
-      </div>
-      <div style="display:flex; justify-content:space-between; gap:16px;">
-        <span style="color:rgba(255,255,255,0.68)">Tổng tiền</span>
-        <b style="color:#f59e0b">${formatMoney(totalPrice)}</b>
-      </div>
-    </div>
-  `,
-});
+      await showAlert({
+        title: "Tạo đơn thành công!",
+        icon: "success",
+        content: `
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; gap:16px;">
+              <span style="color:rgba(255,255,255,0.68)">Giá gói</span>
+              <b style="color:#60a5fa">${formatMoney(selectedPrice)}</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:16px;">
+              <span style="color:rgba(255,255,255,0.68)">Tổng tiền</span>
+              <b style="color:#f59e0b">${formatMoney(totalPrice)}</b>
+            </div>
+          </div>
+        `,
+      });
 
       setSelectedServiceId("");
       setQuantity("");
@@ -632,7 +641,7 @@ const confirm = await Swal.fire({
         </button>
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="rounded-2xl border border-white/10 bg-[#08152d] p-5">
+          <div className="rounded-2xl border border-white/10 bg-[#08152d] p-4 sm:p-5">
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#102345]">
                 <Sparkles size={16} className="text-orange-400" />
@@ -669,7 +678,7 @@ const confirm = await Swal.fire({
               </button>
             </div>
 
-            <div className="mb-4 flex items-center gap-3 rounded-xl border border-white/10 bg-[#071122] px-4 py-3">
+            <div className="mb-5 flex items-center gap-3 rounded-xl border border-white/10 bg-[#071122] px-4 py-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5">
                 {current.icon}
               </div>
@@ -679,60 +688,179 @@ const confirm = await Swal.fire({
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
               <div className="space-y-2">
-                <label className="text-sm text-white/70">Loại dịch vụ</label>
-                <select
-                  value={serviceType}
-                  onChange={(e) => handleChangeType(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white outline-none"
-                >
-                  <option value="">Chọn loại dịch vụ</option>
-                  {current.serviceTypes.map((item) => (
-                    <option key={item.key} value={item.key}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
+                <label className="text-sm font-medium text-white/70">Loại dịch vụ</label>
+
+                <Listbox value={serviceType} onChange={handleChangeType}>
+                  <div className="relative">
+                    <Listbox.Button className={dropdownButtonClass(!!serviceType)}>
+                      <span className="truncate pr-3">
+                        {selectedTypeMeta?.name || "Chọn loại dịch vụ"}
+                      </span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-white/45" />
+                    </Listbox.Button>
+
+                    <Transition
+                      as={Fragment}
+                      leave="transition ease-in duration-100"
+                      leaveFrom="opacity-100 translate-y-0"
+                      leaveTo="opacity-0 -translate-y-1"
+                    >
+                      <Listbox.Options className={dropdownPanelClass()}>
+                        <div className="max-h-80 overflow-y-auto p-2 md:p-3">
+                          {current.serviceTypes.map((item) => (
+                            <Listbox.Option
+                              key={item.key}
+                              value={item.key}
+                              className={({ active }) =>
+                                [
+                                  "relative cursor-pointer rounded-xl border px-4 py-3.5 pr-10",
+                                  "transition duration-150",
+                                  active
+                                    ? "border-[#2F80ED]/30 bg-[#2F80ED]/18 text-white"
+                                    : "border-transparent text-white/80",
+                                  serviceType === item.key ? "bg-[#2F80ED]/12 text-white" : "",
+                                ].join(" ")
+                              }
+                            >
+                              {({ active, selected }: { active: boolean; selected: boolean }) => (
+                                <>
+                                  <div className="font-medium text-sm md:text-[15px]">
+                                    {item.name}
+                                  </div>
+                                  <div
+                                    className={[
+                                      "mt-1 text-xs md:text-[13px]",
+                                      active || selected ? "text-white/70" : "text-white/45",
+                                    ].join(" ")}
+                                  >
+                                    {item.hint}
+                                  </div>
+
+                                  {selected && (
+                                    <Check className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#60A5FA]" />
+                                  )}
+                                </>
+                              )}
+                            </Listbox.Option>
+                          ))}
+                        </div>
+                      </Listbox.Options>
+                    </Transition>
+                  </div>
+                </Listbox>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-white/70">Gói dịch vụ</label>
-                <select
-                  value={selectedServiceId}
-                  onChange={(e) => setSelectedServiceId(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white outline-none"
-                >
-                  <option value="">
-                    {!serviceType
-                      ? "Chọn loại dịch vụ trước"
-                      : loadingServices
-                        ? "Đang tải dịch vụ..."
-                        : "Chọn gói"}
-                  </option>
+                <label className="text-sm font-medium text-white/70">Gói dịch vụ</label>
 
-                  {filteredServices.map((item) => (
-                    <option key={item.service} value={String(item.service)}>
-                      #{item.service} - {item.name} - {formatMoney(getDisplayPrice(item))}
-                    </option>
-                  ))}
-                </select>
+                <Listbox
+                  value={selectedServiceId}
+                  onChange={setSelectedServiceId}
+                  disabled={!serviceType}
+                >
+                  <div className="relative">
+                    <Listbox.Button
+                      className={dropdownButtonClass(!!selectedServiceId, !serviceType)}
+                    >
+                      <span className="truncate pr-3">
+                        {!serviceType
+                          ? "Chọn loại dịch vụ trước"
+                          : loadingServices
+                            ? "Đang tải dịch vụ..."
+                            : selectedPackage
+                              ? `#${selectedPackage.service} - ${selectedPackage.name}`
+                              : "Chọn gói"}
+                      </span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-white/45" />
+                    </Listbox.Button>
+
+                    <Transition
+                      as={Fragment}
+                      leave="transition ease-in duration-100"
+                      leaveFrom="opacity-100 translate-y-0"
+                      leaveTo="opacity-0 -translate-y-1"
+                    >
+                      <Listbox.Options className={dropdownPanelClass()}>
+                        <div className="max-h-80 overflow-y-auto p-2 md:p-3">
+                          {!serviceType ? (
+                            <div className="px-4 py-4 text-sm text-white/45">
+                              Chọn loại dịch vụ trước
+                            </div>
+                          ) : filteredServices.length === 0 ? (
+                            <div className="px-4 py-4 text-sm text-white/45">
+                              {loadingServices ? "Đang tải dịch vụ..." : "Không có gói phù hợp"}
+                            </div>
+                          ) : (
+                            filteredServices.map((item) => (
+                              <Listbox.Option
+                                key={item.service}
+                                value={String(item.service)}
+                                className={({ active }) =>
+                                  [
+                                    "relative cursor-pointer rounded-xl border px-4 py-3.5 pr-10",
+                                    "transition duration-150",
+                                    active
+                                      ? "border-[#2F80ED]/30 bg-[#2F80ED]/18 text-white"
+                                      : "border-transparent text-white/80",
+                                    selectedServiceId === String(item.service)
+                                      ? "bg-[#2F80ED]/12 text-white"
+                                      : "",
+                                  ].join(" ")
+                                }
+                              >
+                                {({ active, selected }: { active: boolean; selected: boolean }) => (
+                                  <>
+                                    <div className="truncate text-sm font-medium md:text-[15px]">
+                                      #{item.service} - {item.name}
+                                    </div>
+
+                                    <div className="mt-1.5 flex items-center justify-between gap-3 text-xs md:text-[13px]">
+                                      <span
+                                        className={
+                                          active || selected
+                                            ? "text-white/65"
+                                            : "text-white/45"
+                                        }
+                                      >
+                                        Min {item.min || "..."} • Max {item.max || "..."}
+                                      </span>
+
+                                      <span className="shrink-0 font-semibold text-emerald-300">
+                                        {formatMoney(getDisplayPrice(item))}
+                                      </span>
+                                    </div>
+
+                                    {selected && (
+                                      <Check className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#60A5FA]" />
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))
+                          )}
+                        </div>
+                      </Listbox.Options>
+                    </Transition>
+                  </div>
+                </Listbox>
               </div>
             </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-sm text-white/70">Link</label>
+            <div className="mt-5 grid gap-5 md:grid-cols-2 md:gap-6">
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-medium text-white/70">Link</label>
                 <input
                   value={link}
                   onChange={(e) => setLink(e.target.value)}
                   placeholder={selectedTypeMeta?.hint || "Nhập link"}
-                  className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white placeholder:text-white/25 outline-none"
+                  className="h-[52px] w-full rounded-2xl border border-white/10 bg-[#071327]/90 px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[#2F80ED] focus:ring-2 focus:ring-[#2F80ED]/20"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-white/70">Số lượng</label>
+                <label className="text-sm font-medium text-white/70">Số lượng</label>
                 <input
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
@@ -741,11 +869,11 @@ const confirm = await Swal.fire({
                       ? `${selectedPackage.min} - ${selectedPackage.max}`
                       : "Nhập số lượng"
                   }
-                  className="h-11 w-full rounded-xl border border-white/10 bg-[#071327] px-3 text-sm text-white placeholder:text-white/25 outline-none"
+                  className="h-[52px] w-full rounded-2xl border border-white/10 bg-[#071327]/90 px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[#2F80ED] focus:ring-2 focus:ring-[#2F80ED]/20"
                 />
               </div>
 
-              <div className="rounded-xl border border-white/10 bg-[#071327] px-4 py-3">
+              <div className="rounded-2xl border border-white/10 bg-[#071327]/90 px-4 py-4">
                 <div className="text-[11px] uppercase tracking-[0.15em] text-white/35">
                   Thông tin gói
                 </div>
@@ -756,39 +884,42 @@ const confirm = await Swal.fire({
                   Giá gói: {selectedPackage ? formatMoney(selectedPrice) : "Chưa có giá"}
                 </div>
                 <div className="mt-1 text-sm font-semibold text-emerald-300">
-                  Tổng tiền: {selectedPackage && Number(quantity) > 0 ? formatMoney(totalPrice) : "..."}
+                  Tổng tiền:{" "}
+                  {selectedPackage && Number(quantity) > 0
+                    ? formatMoney(totalPrice)
+                    : "..."}
                 </div>
               </div>
             </div>
 
             {isComment && (
-              <div className="mt-4 space-y-2">
-                <label className="text-sm text-white/70">Nội dung comment</label>
+              <div className="mt-5 space-y-2">
+                <label className="text-sm font-medium text-white/70">Nội dung comment</label>
                 <textarea
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
                   placeholder="Mỗi comment một dòng"
                   rows={4}
-                  className="w-full rounded-xl border border-white/10 bg-[#071327] px-3 py-3 text-sm text-white placeholder:text-white/25 outline-none"
+                  className="w-full rounded-2xl border border-white/10 bg-[#071327]/90 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[#2F80ED] focus:ring-2 focus:ring-[#2F80ED]/20"
                 />
               </div>
             )}
 
-            <div className="mt-4 space-y-2">
-              <label className="text-sm text-white/70">Ghi chú</label>
+            <div className="mt-5 space-y-2">
+              <label className="text-sm font-medium text-white/70">Ghi chú</label>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Ghi chú thêm nếu có"
                 rows={4}
-                className="w-full rounded-xl border border-white/10 bg-[#071327] px-3 py-3 text-sm text-white placeholder:text-white/25 outline-none"
+                className="w-full rounded-2xl border border-white/10 bg-[#071327]/90 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[#2F80ED] focus:ring-2 focus:ring-[#2F80ED]/20"
               />
             </div>
 
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="mt-4 h-11 w-full rounded-xl bg-[#2F80ED] text-sm font-semibold text-white disabled:opacity-60"
+              className="mt-5 h-[52px] w-full rounded-2xl bg-[#2F80ED] text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
             >
               {submitting ? "Đang xử lý..." : "Tạo đơn"}
             </button>
@@ -800,12 +931,8 @@ const confirm = await Swal.fire({
             <div className="mt-4 space-y-3 text-sm">
               <div className="text-white/70">Số dư ví: {formatMoney(walletBalance)}</div>
               <div className="text-white/70">Nền tảng: {current.label}</div>
-              <div className="text-white/70">
-                Loại: {selectedTypeMeta?.name || "..."}
-              </div>
-              <div className="text-white/70">
-                Gói: {selectedPackage?.name || "..."}
-              </div>
+              <div className="text-white/70">Loại: {selectedTypeMeta?.name || "..."}</div>
+              <div className="text-white/70">Gói: {selectedPackage?.name || "..."}</div>
               <div className="text-emerald-300">
                 Giá: {selectedPackage ? formatMoney(selectedPrice) : "..."}
               </div>
@@ -818,7 +945,8 @@ const confirm = await Swal.fire({
               <div className="break-all text-white/70">Link: {link || "..."}</div>
               <div className="text-white/70">Số lượng: {quantity || "..."}</div>
               <div className="text-emerald-300">
-                Tổng tiền: {selectedPackage && Number(quantity) > 0 ? formatMoney(totalPrice) : "..."}
+                Tổng tiền:{" "}
+                {selectedPackage && Number(quantity) > 0 ? formatMoney(totalPrice) : "..."}
               </div>
               <div className="text-white/70">
                 Trạng thái ví:{" "}

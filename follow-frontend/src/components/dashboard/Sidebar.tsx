@@ -217,17 +217,20 @@ function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_35%),radial-gradient(circle_at_right,rgba(217,70,239,0.12),transparent_30%)]" />
 
           <div className="relative flex items-center gap-3">
-            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-400 to-fuchsia-500 font-bold text-white shadow-[0_12px_32px_rgba(34,211,238,0.3)]">
-              F
-              <div className="absolute inset-0 rounded-2xl border border-white/20" />
-            </div>
+         <div className="relative flex items-center gap-3">
+  <img
+    src="/logo-sola.png"
+    alt="Sola Vietnam"
+    className="h-14 w-auto object-contain"
+  />
 
-            <div>
-              <h2 className="text-lg font-semibold text-white">Follow Market</h2>
-              <p className="text-xs uppercase tracking-[0.2em] text-white/45">
-                {role === "admin" ? "Admin Panel" : "User Panel"}
-              </p>
-            </div>
+  <div className="leading-tight">
+    <h2 className="text-lg font-semibold text-white">Sola Vietnam</h2>
+    <p className="text-xs uppercase tracking-[0.2em] text-white/45">
+      {role === "admin" ? "Admin Panel" : "Sola Vietnam"}
+    </p>
+  </div>
+</div>
           </div>
         </div>
 
