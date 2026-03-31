@@ -44,7 +44,6 @@ class ExternalServiceController extends Controller
             return null;
         }
 
-        // Nếu API trả về dạng { data: [...] }
         $services = isset($data['data']) && is_array($data['data'])
             ? $data['data']
             : $data;
@@ -101,55 +100,50 @@ class ExternalServiceController extends Controller
         return false;
     }
 
-  public function getServices()
-{
-    $data = $this->getExternalServicesData();
+    public function getServices()
+    {
+        $data = $this->getExternalServicesData();
 
-    if (!$data || !is_array($data)) {
-        return response()->json([
-            'message' => 'Không lấy được dịch vụ external'
-        ], 500);
-    }
-
-    // xử lý nếu API trả về dạng { data: [...] }
-    $services = isset($data['data']) && is_array($data['data'])
-        ? $data['data']
-        : $data;
-
-    // 🔥 lấy giá override từ DB
-    $priceRows = ExternalServicePrice::all()->keyBy('provider_service_id');
-
-    $mapped = collect($services)->map(function ($item) use ($priceRows) {
-        $serviceId = (int) ($item['service'] ?? 0);
-
-        $override = $priceRows->get($serviceId);
-
-        if ($override) {
-
-            $item['name'] = $override->name ?? ($item['name'] ?? '');
-            $item['desc'] = $override->desc ?? ($item['desc'] ?? '');
-            $item['original_rate'] = $override->original_rate;
-            $item['sell_rate'] = $override->sell_rate;
-            $item['rate_per'] = $override->rate_per;
-            $item['min'] = $override->min;
-            $item['max'] = $override->max;
-            $item['platform'] = $override->platform ?? ($item['platform'] ?? '');
-            $item['category'] = $override->category ?? ($item['category'] ?? '');
-            $item['status'] = $override->status ?? ($item['status'] ?? 'active');
-        } else {
-            // chưa có giá riêng → dùng giá API
-            $item['original_rate'] = $item['rate'] ?? 0;
-            $item['sell_rate'] = $item['rate'] ?? 0;
-            $item['rate_per'] = $item['rate_per'] ?? 1000;
+        if (!$data || !is_array($data)) {
+            return response()->json([
+                'message' => 'Không lấy được dịch vụ external'
+            ], 500);
         }
 
-        return $item;
-    })->values();
+        $services = isset($data['data']) && is_array($data['data'])
+            ? $data['data']
+            : $data;
 
-    return response()->json([
-        'data' => $mapped
-    ]);
-}
+        $priceRows = ExternalServicePrice::all()->keyBy('provider_service_id');
+
+        $mapped = collect($services)->map(function ($item) use ($priceRows) {
+            $serviceId = (int) ($item['service'] ?? 0);
+            $override = $priceRows->get($serviceId);
+
+            if ($override) {
+                $item['name'] = $override->name ?? ($item['name'] ?? '');
+                $item['desc'] = $override->desc ?? ($item['desc'] ?? '');
+                $item['original_rate'] = $override->original_rate;
+                $item['sell_rate'] = $override->sell_rate;
+                $item['rate_per'] = $override->rate_per;
+                $item['min'] = $override->min;
+                $item['max'] = $override->max;
+                $item['platform'] = $override->platform ?? ($item['platform'] ?? '');
+                $item['category'] = $override->category ?? ($item['category'] ?? '');
+                $item['status'] = $override->status ?? ($item['status'] ?? 'active');
+            } else {
+                $item['original_rate'] = $item['rate'] ?? 0;
+                $item['sell_rate'] = $item['rate'] ?? 0;
+                $item['rate_per'] = $item['rate_per'] ?? 1000;
+            }
+
+            return $item;
+        })->values();
+
+        return response()->json([
+            'data' => $mapped
+        ]);
+    }
 
     public function createOrder(Request $request)
     {
@@ -176,6 +170,27 @@ class ExternalServiceController extends Controller
             return response()->json([
                 'message' => 'Không tìm thấy dịch vụ external',
             ], 404);
+        }
+
+        $priceOverride = ExternalServicePrice::query()
+            ->where('provider_service_id', $serviceId)
+            ->first();
+
+        if ($priceOverride) {
+            $externalService['name'] = $priceOverride->name ?? ($externalService['name'] ?? '');
+            $externalService['desc'] = $priceOverride->desc ?? ($externalService['desc'] ?? '');
+            $externalService['original_rate'] = $priceOverride->original_rate;
+            $externalService['sell_rate'] = $priceOverride->sell_rate;
+            $externalService['rate_per'] = $priceOverride->rate_per;
+            $externalService['min'] = $priceOverride->min;
+            $externalService['max'] = $priceOverride->max;
+            $externalService['platform'] = $priceOverride->platform ?? ($externalService['platform'] ?? '');
+            $externalService['category'] = $priceOverride->category ?? ($externalService['category'] ?? '');
+            $externalService['status'] = $priceOverride->status ?? ($externalService['status'] ?? 'active');
+        } else {
+            $externalService['original_rate'] = $externalService['rate'] ?? 0;
+            $externalService['sell_rate'] = $externalService['rate'] ?? 0;
+            $externalService['rate_per'] = $externalService['rate_per'] ?? 1000;
         }
 
         $linkError = $this->validateLinkFormat($externalService, $data['link']);
@@ -224,8 +239,15 @@ class ExternalServiceController extends Controller
             ], 500);
         }
 
-        $rate = isset($externalService['rate']) ? (float) $externalService['rate'] : 0;
-        $totalPrice = $rate * $quantity;
+        $rawRate = (float) ($externalService['sell_rate'] ?? $externalService['rate'] ?? 0);
+        $ratePer = (int) ($externalService['rate_per'] ?? 1000);
+
+        if ($ratePer <= 0) {
+            $ratePer = 1000;
+        }
+
+        $unitPrice = $rawRate / $ratePer;
+        $totalPrice = $unitPrice * $quantity;
 
         $user = $request->user();
 
@@ -257,7 +279,17 @@ class ExternalServiceController extends Controller
         }
 
         try {
-            $order = DB::transaction(function () use ($request, $data, $serviceId, $quantity, $externalService, $rate, $totalPrice, $response, $user) {
+            $order = DB::transaction(function () use (
+                $request,
+                $data,
+                $serviceId,
+                $quantity,
+                $externalService,
+                $unitPrice,
+                $totalPrice,
+                $response,
+                $user
+            ) {
                 $serviceName = $externalService['name'] ?? ('#' . $serviceId);
 
                 $order = Order::create([
@@ -268,13 +300,13 @@ class ExternalServiceController extends Controller
                     'mode' => 'api',
                     'target_link' => $data['link'],
                     'quantity' => $quantity,
-                    'unit_price' => $rate,
+                    'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
                     'note' => $data['note'] ?? null,
                     'form_data' => !empty($data['comments'] ?? null)
                         ? ['comments' => $data['comments']]
                         : null,
-                    'selected_price' => $rate,
+                    'selected_price' => $unitPrice,
                     'status' => 'pending',
                 ]);
 

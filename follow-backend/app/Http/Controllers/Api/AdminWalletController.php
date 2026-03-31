@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminWalletController extends Controller
 {
@@ -27,27 +28,13 @@ class AdminWalletController extends Controller
                     ->where('status', 'completed')
                     ->sum('amount');
 
-                $balance = WalletTransaction::query()
-                    ->where('user_id', $user->id)
-                    ->where('status', 'completed')
-                    ->selectRaw("
-                        COALESCE(SUM(
-                            CASE
-                                WHEN type = 'deposit' THEN amount
-                                WHEN type = 'payment' THEN -amount
-                                ELSE 0
-                            END
-                        ), 0) as balance
-                    ")
-                    ->value('balance');
-
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'username' => $user->username,
                     'email' => $user->email,
                     'role' => $user->role,
-                    'wallet_balance' => (float) ($balance ?? 0),
+                    'wallet_balance' => (float) ($user->balance ?? 0),
                     'total_deposit' => (float) ($totalDeposit ?? 0),
                 ];
             });
@@ -75,7 +62,7 @@ class AdminWalletController extends Controller
             ->where('status', 'completed')
             ->sum('amount');
 
-        $totalBalanceAllUsers = (float) $totalDepositAll - (float) $totalPaymentAll;
+        $totalBalanceAllUsers = (float) User::query()->sum('balance');
 
         return response()->json([
             'data' => [
@@ -101,53 +88,46 @@ class AdminWalletController extends Controller
             'note' => ['nullable', 'string'],
         ]);
 
-        $user = User::findOrFail($data['user_id']);
-
-        $currentBalance = WalletTransaction::query()
-            ->where('user_id', $user->id)
-            ->where('status', 'completed')
-            ->selectRaw("
-                COALESCE(SUM(
-                    CASE
-                        WHEN type = 'deposit' THEN amount
-                        WHEN type = 'payment' THEN -amount
-                        ELSE 0
-                    END
-                ), 0) as balance
-            ")
-            ->value('balance');
-
-        $currentBalance = (float) ($currentBalance ?? 0);
         $amount = (float) $data['amount'];
 
-        if ($data['type'] === 'subtract' && $currentBalance < $amount) {
-            return response()->json([
-                'message' => 'Số dư không đủ để trừ',
-            ], 422);
-        }
+        $result = DB::transaction(function () use ($data, $amount) {
+            $user = User::query()->lockForUpdate()->findOrFail($data['user_id']);
+            $currentBalance = (float) ($user->balance ?? 0);
 
-        $transactionType = $data['type'] === 'add' ? 'deposit' : 'payment';
+            if ($data['type'] === 'subtract' && $currentBalance < $amount) {
+                abort(response()->json([
+                    'message' => 'Số dư không đủ để trừ',
+                ], 422));
+            }
 
-        WalletTransaction::create([
-            'user_id' => $user->id,
-            'title' => $data['type'] === 'add' ? 'Admin cộng tiền ví' : 'Admin trừ tiền ví',
-            'amount' => $amount,
-            'type' => $transactionType,
-            'status' => 'completed',
-            'payment_method' => 'admin_adjust',
-            'note' => $data['note'] ?? null,
-        ]);
+            $transactionType = $data['type'] === 'add' ? 'deposit' : 'payment';
 
-        $newBalance = $data['type'] === 'add'
-            ? $currentBalance + $amount
-            : $currentBalance - $amount;
+            $newBalance = $data['type'] === 'add'
+                ? $currentBalance + $amount
+                : $currentBalance - $amount;
+
+            WalletTransaction::create([
+                'user_id' => $user->id,
+                'title' => $data['type'] === 'add' ? 'Admin cộng tiền ví' : 'Admin trừ tiền ví',
+                'amount' => $amount,
+                'type' => $transactionType,
+                'status' => 'completed',
+                'payment_method' => 'admin_adjust',
+                'note' => $data['note'] ?? null,
+            ]);
+
+            $user->balance = $newBalance;
+            $user->save();
+
+            return [
+                'user_id' => $user->id,
+                'balance' => (float) $newBalance,
+            ];
+        });
 
         return response()->json([
             'message' => 'Điều chỉnh ví thành công',
-            'data' => [
-                'user_id' => $user->id,
-                'balance' => $newBalance,
-            ],
+            'data' => $result,
         ]);
     }
 }

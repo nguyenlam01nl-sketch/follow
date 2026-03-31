@@ -245,7 +245,14 @@ function formatMoney(value?: string | number) {
 
 function getDisplayPrice(item?: ApiServiceItem) {
   if (!item) return 0;
-  return Number(item.sell_rate ?? item.rate ?? 0);
+
+  const rawPrice = Number(item.sell_rate ?? item.rate ?? 0);
+  const ratePer = Number(item.rate_per ?? 1000);
+
+  if (!Number.isFinite(rawPrice) || rawPrice <= 0) return 0;
+  if (!Number.isFinite(ratePer) || ratePer <= 0) return rawPrice;
+
+  return rawPrice / ratePer;
 }
 
 function stripHtml(html?: string) {
@@ -294,6 +301,51 @@ function matchesServiceType(
   return matchers.some((keyword) => text.includes(keyword.toLowerCase()));
 }
 
+function alertHtml(content: string) {
+  return `
+    <div style="text-align:left; line-height:1.7; font-size:14px; color:#dbe7ff;">
+      ${content}
+    </div>
+  `;
+}
+
+const swalBaseOptions = {
+  background: "#08152d",
+  color: "#e5eefc",
+  backdrop: "rgba(2, 8, 23, 0.78)",
+  buttonsStyling: false,
+  customClass: {
+    popup: "rounded-[24px] border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.45)]",
+    title: "!text-white !text-[32px] !font-extrabold",
+    htmlContainer: "!text-left !text-[14px] !leading-7 !text-white/80",
+    confirmButton:
+      "!inline-flex !h-11 !items-center !justify-center !rounded-xl !bg-[#2F80ED] !px-6 !text-sm !font-semibold !text-white hover:!brightness-110",
+    cancelButton:
+      "!inline-flex !h-11 !items-center !justify-center !rounded-xl !border !border-white/10 !bg-white/5 !px-6 !text-sm !font-semibold !text-white/80 hover:!bg-white/10",
+    icon: "!border-[3px]",
+  },
+};
+
+function showAlert({
+  title,
+  icon = "info",
+  content,
+  confirmText = "OK",
+}: {
+  title: string;
+  icon?: "success" | "error" | "warning" | "info" | "question";
+  content: string;
+  confirmText?: string;
+}) {
+  return Swal.fire({
+    ...swalBaseOptions,
+    title,
+    icon,
+    html: alertHtml(content),
+    confirmButtonText: confirmText,
+  });
+}
+
 export default function EngagementPlatformPage() {
   const { platform = "" } = useParams();
   const navigate = useNavigate();
@@ -318,12 +370,6 @@ export default function EngagementPlatformPage() {
 
   const selectedTypeMeta = current?.serviceTypes.find((x) => x.key === serviceType);
   const isComment = serviceType === "comment";
-
-  const selectedPackage = useMemo(() => {
-    return filteredServices.find(
-      (item) => String(item.service) === selectedServiceId
-    );
-  }, [selectedServiceId]);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -381,9 +427,24 @@ export default function EngagementPlatformPage() {
     );
   }, [platformServices, selectedTypeMeta, platform]);
 
+  const selectedPackage = useMemo(() => {
+    return filteredServices.find(
+      (item) => String(item.service) === selectedServiceId
+    );
+  }, [filteredServices, selectedServiceId]);
+
   const selectedPrice = useMemo(() => {
     return getDisplayPrice(selectedPackage);
   }, [selectedPackage]);
+
+  const totalPrice = useMemo(() => {
+    const qty = Number(quantity || 0);
+
+    if (!selectedPackage) return 0;
+    if (!Number.isFinite(qty) || qty <= 0) return 0;
+
+    return selectedPrice * qty;
+  }, [selectedPackage, selectedPrice, quantity]);
 
   const handleChangeType = (value: string) => {
     setServiceType(value);
@@ -405,12 +466,15 @@ export default function EngagementPlatformPage() {
 
   const handleSubmit = async () => {
     if (!selectedServiceId || !link || !quantity) {
-      await Swal.fire({
+      await showAlert({
         title: "Thiếu thông tin!",
-        text: "Vui lòng nhập đủ gói dịch vụ, link và số lượng.",
         icon: "warning",
-        confirmButtonColor: "#2F80ED",
-        confirmButtonText: "OK",
+        content: `
+          <p>Vui lòng nhập đủ:</p>
+          <p>• Gói dịch vụ</p>
+          <p>• Link</p>
+          <p>• Số lượng</p>
+        `,
       });
       return;
     }
@@ -420,81 +484,69 @@ export default function EngagementPlatformPage() {
     const max = Number(selectedPackage?.max || 0);
 
     if (!Number.isInteger(qty) || qty <= 0) {
-      await Swal.fire({
+      await showAlert({
         title: "Số lượng không hợp lệ!",
-        text: "Vui lòng nhập số lượng là số nguyên dương.",
         icon: "warning",
-        confirmButtonColor: "#2F80ED",
-        confirmButtonText: "OK",
+        content: `<p>Vui lòng nhập số lượng là <b>số nguyên dương</b>.</p>`,
       });
       return;
     }
 
     if (min > 0 && qty < min) {
-      await Swal.fire({
+      await showAlert({
         title: "Số lượng quá nhỏ!",
-        text: `Số lượng tối thiểu là ${min}`,
         icon: "warning",
-        confirmButtonColor: "#2F80ED",
-        confirmButtonText: "OK",
+        content: `<p>Số lượng tối thiểu là <b>${min}</b></p>`,
       });
       return;
     }
 
     if (max > 0 && qty > max) {
-      await Swal.fire({
+      await showAlert({
         title: "Số lượng quá lớn!",
-        text: `Số lượng tối đa là ${max}`,
         icon: "warning",
-        confirmButtonColor: "#2F80ED",
-        confirmButtonText: "OK",
+        content: `<p>Số lượng tối đa là <b>${max}</b></p>`,
       });
       return;
     }
 
     if (isComment && !commentContent.trim()) {
-      await Swal.fire({
+      await showAlert({
         title: "Thiếu nội dung comment!",
-        text: "Dịch vụ comment bắt buộc phải nhập nội dung comment.",
         icon: "warning",
-        confirmButtonColor: "#2F80ED",
-        confirmButtonText: "OK",
+        content: `<p>Dịch vụ comment bắt buộc phải nhập <b>nội dung comment</b>.</p>`,
       });
       return;
     }
 
-    if (selectedPrice > walletBalance) {
-      await Swal.fire({
+    if (totalPrice > walletBalance) {
+      await showAlert({
         title: "Số dư không đủ!",
-        html: `
-          <div style="text-align:left">
-            <p>Số dư hiện tại: <b>${formatMoney(walletBalance)}</b></p>
-            <p>Giá dịch vụ: <b>${formatMoney(selectedPrice)}</b></p>
-          </div>
-        `,
         icon: "warning",
-        confirmButtonColor: "#2F80ED",
-        confirmButtonText: "Nạp thêm",
+        confirmText: "Nạp thêm",
+        content: `
+          <p>Số dư hiện tại: <b>${formatMoney(walletBalance)}</b></p>
+          <p>Giá gói: <b>${formatMoney(selectedPrice)}</b></p>
+          <p>Tổng tiền: <b>${formatMoney(totalPrice)}</b></p>
+        `,
       });
       return;
     }
-
-    const confirm = await Swal.fire({
-      title: "Xác nhận đặt đơn?",
-      html: `
-        <div style="text-align:left">
-          <p>Số dư ví: <b>${formatMoney(walletBalance)}</b></p>
-          <p>Giá dịch vụ: <b>${formatMoney(selectedPrice)}</b></p>
-          <p style="margin-top:8px;">Bạn có chắc muốn tạo đơn hàng này không?</p>
-        </div>
-      `,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#2F80ED",
-      cancelButtonColor: "#9CA3AF",
-      confirmButtonText: "Đồng ý",
-      cancelButtonText: "Huỷ",
-    });
+const confirm = await Swal.fire({
+  ...swalBaseOptions,
+  title: "Xác nhận đặt đơn?",
+  icon: "question",
+  html: alertHtml(`
+    <p>Số dư ví: <b style="color:#34d399;">${formatMoney(walletBalance)}</b></p>
+    <p>Giá gói: <b style="color:#60a5fa;">${formatMoney(selectedPrice)}</b></p>
+    <p>Số lượng: <b style="color:#f8fafc;">${quantity || 0}</b></p>
+    <p>Tổng tiền: <b style="color:#f59e0b;">${formatMoney(totalPrice)}</b></p>
+    <p style="margin-top:10px;">Bạn có chắc muốn tạo đơn hàng này không?</p>
+  `),
+  showCancelButton: true,
+  confirmButtonText: "Đồng ý",
+  cancelButtonText: "Huỷ",
+});
 
     if (!confirm.isConfirmed) return;
 
@@ -518,13 +570,27 @@ export default function EngagementPlatformPage() {
       await api.post("/external/orders", payload);
       await refreshWallet();
 
-      await Swal.fire({
-        title: "Thành công!",
-        text: "Tạo đơn thành công",
-        icon: "success",
-        confirmButtonColor: "#2F80ED",
-        confirmButtonText: "OK",
-      });
+     await showAlert({
+  title: "Số dư không đủ!",
+  icon: "warning",
+  confirmText: "Nạp thêm",
+  content: `
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; justify-content:space-between; gap:16px;">
+        <span style="color:rgba(255,255,255,0.68)">Số dư hiện tại</span>
+        <b style="color:#34d399">${formatMoney(walletBalance)}</b>
+      </div>
+      <div style="display:flex; justify-content:space-between; gap:16px;">
+        <span style="color:rgba(255,255,255,0.68)">Giá gói</span>
+        <b style="color:#60a5fa">${formatMoney(selectedPrice)}</b>
+      </div>
+      <div style="display:flex; justify-content:space-between; gap:16px;">
+        <span style="color:rgba(255,255,255,0.68)">Tổng tiền</span>
+        <b style="color:#f59e0b">${formatMoney(totalPrice)}</b>
+      </div>
+    </div>
+  `,
+});
 
       setSelectedServiceId("");
       setQuantity("");
@@ -534,12 +600,10 @@ export default function EngagementPlatformPage() {
     } catch (error: any) {
       const errorMsg = error?.response?.data?.message || "Tạo đơn thất bại";
 
-      await Swal.fire({
+      await showAlert({
         title: "Lỗi!",
-        text: errorMsg,
         icon: "error",
-        confirmButtonColor: "#2F80ED",
-        confirmButtonText: "OK",
+        content: `<p>${errorMsg}</p>`,
       });
     } finally {
       setSubmitting(false);
@@ -688,8 +752,11 @@ export default function EngagementPlatformPage() {
                 <div className="mt-1 text-sm font-medium text-white">
                   {selectedPackage?.name || "Chưa chọn gói"}
                 </div>
-                <div className="mt-1 text-xs text-emerald-300">
-                  {selectedPackage ? formatMoney(selectedPrice) : "Chưa có giá"}
+                <div className="mt-1 text-xs text-white/65">
+                  Giá gói: {selectedPackage ? formatMoney(selectedPrice) : "Chưa có giá"}
+                </div>
+                <div className="mt-1 text-sm font-semibold text-emerald-300">
+                  Tổng tiền: {selectedPackage && Number(quantity) > 0 ? formatMoney(totalPrice) : "..."}
                 </div>
               </div>
             </div>
@@ -750,10 +817,13 @@ export default function EngagementPlatformPage() {
               </div>
               <div className="break-all text-white/70">Link: {link || "..."}</div>
               <div className="text-white/70">Số lượng: {quantity || "..."}</div>
+              <div className="text-emerald-300">
+                Tổng tiền: {selectedPackage && Number(quantity) > 0 ? formatMoney(totalPrice) : "..."}
+              </div>
               <div className="text-white/70">
                 Trạng thái ví:{" "}
-                {selectedPackage ? (
-                  selectedPrice <= walletBalance ? (
+                {selectedPackage && Number(quantity) > 0 ? (
+                  totalPrice <= walletBalance ? (
                     <span className="text-emerald-300">Đủ số dư</span>
                   ) : (
                     <span className="text-red-300">Không đủ số dư</span>
