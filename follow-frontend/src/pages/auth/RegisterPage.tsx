@@ -13,11 +13,9 @@ function RegisterPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    full_name: "",
     username: "",
     email: "",
     password: "",
-    confirm_password: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -31,13 +29,7 @@ function RegisterPage() {
     e.preventDefault();
     setError("");
 
-    if (
-      !form.full_name ||
-      !form.username ||
-      !form.email ||
-      !form.password ||
-      !form.confirm_password
-    ) {
+    if (!form.username || !form.email || !form.password) {
       const message = "Vui lòng nhập đầy đủ thông tin";
       setError(message);
 
@@ -45,20 +37,6 @@ function RegisterPage() {
         icon: "warning",
         title: "Thiếu thông tin",
         text: message,
-        confirmButtonText: "Đã hiểu",
-      });
-      return;
-    }
-
-    if (form.password !== form.confirm_password) {
-      const message = "Mật khẩu xác nhận không khớp";
-      setError(message);
-
-      await Swal.fire({
-        icon: "warning",
-        title: "Mật khẩu chưa khớp",
-        text: message,
-        confirmButtonText: "Kiểm tra lại",
       });
       return;
     }
@@ -67,7 +45,6 @@ function RegisterPage() {
       setLoading(true);
 
       const res = await api.post("/register", {
-        full_name: form.full_name,
         username: form.username,
         email: form.email,
         password: form.password,
@@ -82,8 +59,7 @@ function RegisterPage() {
       await Swal.fire({
         icon: "success",
         title: "Đăng ký thành công",
-        text: "Tài khoản của bạn đã được tạo",
-        confirmButtonText: "Tiếp tục",
+        text: "Tài khoản đã được tạo",
       });
 
       navigate("/dashboard");
@@ -100,7 +76,6 @@ function RegisterPage() {
         icon: "error",
         title: "Đăng ký thất bại",
         text: message,
-        confirmButtonText: "Thử lại",
       });
     } finally {
       setLoading(false);
@@ -111,7 +86,7 @@ function RegisterPage() {
     <AuthLayout>
       <AuthCard
         title="Tạo tài khoản"
-        subtitle="Khởi tạo tài khoản mới để bắt đầu sử dụng nền tảng Sola Vietnam."
+        subtitle="Đăng ký nhanh để sử dụng Sola Vietnam"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -119,14 +94,6 @@ function RegisterPage() {
               {error}
             </div>
           )}
-
-          <AuthInput
-            label="Họ và tên"
-            name="full_name"
-            value={form.full_name}
-            onChange={handleChange}
-            placeholder="Nguyễn Văn A"
-          />
 
           <AuthInput
             label="Username"
@@ -153,22 +120,12 @@ function RegisterPage() {
             placeholder="Tạo mật khẩu"
           />
 
-          <PasswordInput
-            label="Xác nhận mật khẩu"
-            name="confirm_password"
-            value={form.confirm_password}
-            onChange={handleChange}
-            placeholder="Nhập lại mật khẩu"
-          />
-
           <div className="pt-1">
             <button
               type="submit"
               disabled={loading}
               className="group relative h-12 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-400 to-violet-500 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(34,211,238,0.28)] transition duration-300 hover:scale-[1.01] hover:shadow-[0_20px_45px_rgba(34,211,238,0.36)] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <span className="absolute inset-0 bg-white/0 transition group-hover:bg-white/8" />
-              <span className="absolute inset-y-0 left-[-30%] w-[30%] skew-x-[-20deg] bg-white/20 blur-md transition-all duration-700 group-hover:left-[120%]" />
               <span className="relative">
                 {loading ? "Đang tạo tài khoản..." : "Đăng ký"}
               </span>

@@ -45,15 +45,19 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $data = $request->validate([
-            'username' => 'required|string',
+            'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('username', $data['username'])->first();
+        $login = trim($data['login']);
+
+        $user = User::where('email', $login)
+            ->orWhere('username', $login)
+            ->first();
 
         if (!$user || !Hash::check($data['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'username' => ['Sai username hoặc mật khẩu'],
+                'login' => ['Sai username/email hoặc mật khẩu'],
             ]);
         }
 

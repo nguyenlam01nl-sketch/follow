@@ -11,7 +11,7 @@ import api from "../../api/axios";
 
 function LoginPage() {
   const [form, setForm] = useState({
-    username: "",
+    login: "",
     password: "",
   });
 
@@ -31,8 +31,8 @@ function LoginPage() {
     e.preventDefault();
     setError("");
 
-    if (!form.username.trim() || !form.password.trim()) {
-      const message = "Vui lòng nhập đầy đủ username và mật khẩu";
+    if (!form.login.trim() || !form.password.trim()) {
+      const message = "Vui lòng nhập username hoặc email và mật khẩu";
       setError(message);
 
       await Swal.fire({
@@ -48,7 +48,7 @@ function LoginPage() {
       setLoading(true);
 
       const res = await api.post("/login", {
-        username: form.username.trim(),
+        login: form.login.trim(),
         password: form.password,
       });
 
@@ -75,9 +75,11 @@ function LoginPage() {
     } catch (err: any) {
       const message =
         err?.response?.data?.message ||
+        err?.response?.data?.errors?.login?.[0] ||
+        err?.response?.data?.errors?.email?.[0] ||
         err?.response?.data?.errors?.username?.[0] ||
         err?.response?.data?.errors?.password?.[0] ||
-        "Sai username hoặc mật khẩu";
+        "Sai username/email hoặc mật khẩu";
 
       setError(message);
 
@@ -106,11 +108,11 @@ function LoginPage() {
           )}
 
           <AuthInput
-            label="Username"
-            name="username"
-            value={form.username}
+            label="Username hoặc Email"
+            name="login"
+            value={form.login}
             onChange={handleChange}
-            placeholder="Nhập username"
+            placeholder="Nhập username hoặc email"
           />
 
           <PasswordInput
