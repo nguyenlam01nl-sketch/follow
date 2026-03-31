@@ -9,6 +9,8 @@ use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Models\ExternalServicePrice;
 
 class ExternalServiceController extends Controller
@@ -157,6 +159,41 @@ class ExternalServiceController extends Controller
 
         return (int) $remains;
     }
+
+  private function sendOrderCreatedEmail(Order $order, array $responseData = []): void
+{
+    $recipients = [
+        'nguyenlamit2001@gmail.com',
+        'nguyenlam01nl@gmail.com',
+        'leoshinenguyen36211@gmail.com',
+    ];
+
+    $subject = 'Có đơn hàng external mới - Sola Vietnam';
+
+    $externalOrderId = $order->external_order_id ?? 'Không có';
+    $externalStatus = $order->external_status ?? 'Không có';
+    $apiCharge = $order->api_charge !== null ? $order->api_charge : 'Không có';
+    $apiStartCount = $order->api_start_count !== null ? $order->api_start_count : 'Không có';
+    $apiRemains = $order->api_remains !== null ? $order->api_remains : 'Không có';
+
+    $comments = null;
+    if (is_array($order->form_data) && !empty($order->form_data['comments'])) {
+        $comments = $order->form_data['comments'];
+    }
+
+    Mail::send('emails.new-external-order', [
+        'order' => $order,
+        'comments' => $comments,
+        'externalOrderId' => $externalOrderId,
+        'externalStatus' => $externalStatus,
+        'apiCharge' => $apiCharge,
+        'apiStartCount' => $apiStartCount,
+        'apiRemains' => $apiRemains,
+        'rawResponse' => json_encode($responseData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+    ], function ($message) use ($recipients, $subject) {
+        $message->to($recipients)->subject($subject);
+    });
+}
 
     public function getServices()
     {
@@ -406,6 +443,14 @@ class ExternalServiceController extends Controller
 
                 return $order;
             });
+
+            try {
+                $this->sendOrderCreatedEmail($order, is_array($responseData) ? $responseData : []);
+            } catch (\Exception $mailException) {
+                Log::error('Gửi email thông báo đơn hàng thất bại: ' . $mailException->getMessage(), [
+                    'order_id' => $order->id ?? null,
+                ]);
+            }
 
             return response()->json([
                 'message' => 'Đã tạo đơn thành công',
