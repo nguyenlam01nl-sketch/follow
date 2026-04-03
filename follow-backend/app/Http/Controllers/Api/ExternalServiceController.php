@@ -25,10 +25,19 @@ class ExternalServiceController extends Controller
                 return null;
             }
 
-            $response = Http::asForm()->post($baseUrl, [
-                'key' => $apiKey,
-                'action' => 'services',
-            ]);
+     $response = Http::withOptions([
+    'allow_redirects' => false,
+])->asForm()->post($baseUrl, [
+    'key' => $apiKey,
+    'action' => 'services',
+]);
+
+Log::info('External services debug', [
+    'url' => $baseUrl,
+    'status' => $response->status(),
+    'headers' => $response->headers(),
+    'body' => $response->body(),
+]);
 
             if (!$response->successful()) {
                 return null;
@@ -364,8 +373,19 @@ class ExternalServiceController extends Controller
             $payload['comments'] = $data['comments'];
         }
 
-        $response = Http::asForm()->post($baseUrl, $payload);
-        $responseData = $response->json();
+     $response = Http::withOptions([
+    'allow_redirects' => false,
+])->asForm()->post($baseUrl, $payload);
+
+Log::info('External create order debug', [
+    'url' => $baseUrl,
+    'payload' => $payload,
+    'status' => $response->status(),
+    'headers' => $response->headers(),
+    'body' => $response->body(),
+]);
+
+$responseData = $response->json();
 
         if (!$response->successful()) {
             return response()->json(
