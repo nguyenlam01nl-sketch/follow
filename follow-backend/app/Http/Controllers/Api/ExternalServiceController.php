@@ -478,12 +478,17 @@ $responseData = $response->json();
                 'external_response' => $responseData,
                 'balance' => (float) $request->user()->fresh()->balance,
             ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Lỗi lưu đơn vào database',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+      } catch (\Exception $e) {
+    Log::error('Create external order DB failed', [
+        'message' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+    ]);
+
+    return response()->json([
+        'message' => 'Lỗi lưu đơn vào database',
+        'error' => $e->getMessage(),
+    ], 500);
+}
     }
 
     public function update(Request $request, $serviceId)
