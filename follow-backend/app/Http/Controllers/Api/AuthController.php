@@ -64,7 +64,7 @@ class AuthController extends Controller
         ];
 
         try {
-            Mail::send('emails.suspicious-affiliate', $payload, function ($message) use ($emails, $payload) {
+            Mail::send('emails.suspicious-affiliate', $payload, function ($message) use ($emails) {
                 $message->to($emails)
                     ->subject('Cảnh báo hoạt động bất thường - Affiliate Sola Vietnam');
             });
@@ -92,7 +92,9 @@ class AuthController extends Controller
 
         $registerIp = $request->ip();
 
-        $accountsFromSameIp = User::where('register_ip', $registerIp)->count();
+        $accountsFromSameIp = User::query()
+            ->where('register_ip', $registerIp)
+            ->count();
 
         if ($accountsFromSameIp >= self::MAX_ACCOUNTS_PER_IP) {
             $this->sendSuspiciousActivityEmail(
@@ -106,12 +108,10 @@ class AuthController extends Controller
         }
 
         $referrer = null;
+        $refCode = trim((string) ($data['ref_code'] ?? ''));
 
-        if (!empty($data['ref_code'])) {
-            $referrer = $referralService->findValidReferrerOrNull(
-                $data['ref_code'],
-                $registerIp
-            );
+        if ($refCode !== '') {
+            $referrer = $referralService->findValidReferrerOrNull($refCode, $registerIp);
 
             if (!$referrer) {
                 $this->sendSuspiciousActivityEmail(
@@ -120,13 +120,13 @@ class AuthController extends Controller
                 );
 
                 return response()->json([
-                    'message' => 'Chúng tôi đã thấy hoạt động bất thường',
+                    'message' => 'Mã giới thiệu không hợp lệ hoặc hoạt động bất thường',
                 ], 422);
             }
         }
 
         $user = DB::transaction(function () use ($data, $registerIp, $referralService, $referrer) {
-            $user = User::create([
+            $user = User::query()->create([
                 'name' => $data['username'],
                 'username' => $data['username'],
                 'email' => $data['email'],
@@ -139,7 +139,10 @@ class AuthController extends Controller
                 'referred_by' => $referrer?->id,
             ]);
 
-            $referralService->giveSignupCredit($user);
+            // Chỉ cộng thưởng khi thực sự có người giới thiệu hợp lệ
+            if ($referrer && $user->referred_by) {
+                $referralService->giveSignupCredit($user);
+            }
 
             return $user->fresh();
         });
@@ -174,7 +177,8 @@ class AuthController extends Controller
 
         $login = trim($data['login']);
 
-        $user = User::where('email', $login)
+        $user = User::query()
+            ->where('email', $login)
             ->orWhere('username', $login)
             ->orWhere('phone', $login)
             ->first();

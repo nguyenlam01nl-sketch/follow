@@ -81,6 +81,23 @@ class ReferralService
 
     public function giveSignupCredit(User $user): void
     {
+        // ❗ 1. Không có ref → không thưởng
+        if (!$user->referred_by) {
+            return;
+        }
+
+        // ❗ 2. Lấy người giới thiệu
+        $referrer = User::find($user->referred_by);
+
+        // ❗ 3. Check hợp lệ + chống cùng IP
+        if (
+            !$referrer ||
+            ($referrer->register_ip && $user->register_ip && $referrer->register_ip === $user->register_ip)
+        ) {
+            return;
+        }
+
+        // ✅ OK thì mới cộng tiền
         DB::transaction(function () use ($user) {
             $lockedUser = User::query()->lockForUpdate()->findOrFail($user->id);
 
@@ -89,12 +106,12 @@ class ReferralService
 
             WalletTransaction::create([
                 'user_id' => $lockedUser->id,
-                'title' => 'Thưởng đăng ký tài khoản mới',
+                'title' => 'Thưởng đăng ký qua giới thiệu',
                 'amount' => self::NEW_USER_CREDIT,
                 'type' => 'deposit',
                 'status' => 'completed',
                 'payment_method' => 'signup_bonus',
-                'note' => 'Tặng 10.000đ cho tài khoản mới đăng ký',
+                'note' => 'Tặng 10.000đ khi đăng ký bằng mã giới thiệu',
             ]);
         });
     }
