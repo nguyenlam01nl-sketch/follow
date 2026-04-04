@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\WalletTransaction;
+use App\Services\AdminMailService;
 use Illuminate\Http\Request;
 
 class WalletController extends Controller
@@ -25,7 +26,7 @@ class WalletController extends Controller
         return response()->json($transactions);
     }
 
-    public function createDeposit(Request $request)
+    public function createDeposit(Request $request, AdminMailService $adminMailService)
     {
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:1000'],
@@ -47,6 +48,20 @@ class WalletController extends Controller
             'payment_method' => $data['payment_method'] ?? 'bank_transfer',
             'note' => $transferContent,
         ]);
+
+        $adminMailService->send(
+            'emails.admin-deposit-notification',
+            [
+                'transaction' => $transaction,
+                'user' => $user,
+            ],
+            'Có yêu cầu nạp tiền mới - Sola Vietnam',
+            [
+                'transaction_id' => $transaction->id ?? null,
+                'user_id' => $user->id ?? null,
+                'type' => 'deposit',
+            ]
+        );
 
         return response()->json([
             'message' => 'Đã tạo yêu cầu nạp tiền',

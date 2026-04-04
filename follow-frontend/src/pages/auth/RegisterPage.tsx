@@ -15,6 +15,7 @@ function RegisterPage() {
   const [form, setForm] = useState({
     username: "",
     email: "",
+    phone: "",
     password: "",
   });
 
@@ -29,7 +30,7 @@ function RegisterPage() {
     e.preventDefault();
     setError("");
 
-    if (!form.username || !form.email || !form.password) {
+    if (!form.username || !form.email || !form.phone || !form.password) {
       const message = "Vui lòng nhập đầy đủ thông tin";
       setError(message);
 
@@ -47,6 +48,7 @@ function RegisterPage() {
       const res = await api.post("/register", {
         username: form.username,
         email: form.email,
+        phone: form.phone,
         password: form.password,
       });
 
@@ -68,6 +70,7 @@ function RegisterPage() {
         error?.response?.data?.message ||
         error?.response?.data?.errors?.username?.[0] ||
         error?.response?.data?.errors?.email?.[0] ||
+        error?.response?.data?.errors?.phone?.[0] ||
         "Đăng ký thất bại";
 
       setError(message);
@@ -110,6 +113,15 @@ function RegisterPage() {
             value={form.email}
             onChange={handleChange}
             placeholder="you@example.com"
+          />
+
+          <AuthInput
+            label="Số điện thoại"
+            type="text"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="Nhập số điện thoại"
           />
 
           <PasswordInput

@@ -8,14 +8,19 @@ use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ExternalServiceController;
 use App\Http\Controllers\Api\AdminServiceController;
-use App\Http\Controllers\Api\AdminWalletController; 
+use App\Http\Controllers\Api\AdminWalletController;
 use App\Http\Controllers\Api\AdminExternalServiceController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AdminOrderController;
 use App\Http\Controllers\Api\AdminUserController;
-// Public
+use App\Http\Controllers\Api\FeedbackController;
+use App\Http\Controllers\Api\AdminEmailNotificationController;
+use App\Http\Controllers\Api\CheckController;
+use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\AdminReportController;
 
+// Public
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -49,6 +54,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wallet/transactions', [WalletController::class, 'transactions']);
     Route::post('/wallet/deposit', [WalletController::class, 'createDeposit']);
 
+    Route::post('/feedback', [FeedbackController::class, 'store']);
+    Route::get('/feedback', [FeedbackController::class, 'index']);
+    Route::get('/feedback/history', [FeedbackController::class, 'history']);
+    Route::get('/feedback/{id}', [FeedbackController::class, 'show']);
+    Route::patch('/feedback/{id}/status', [FeedbackController::class, 'updateStatus']);
+
+    // CHECK + REPORT USER
+    Route::post('/check', [CheckController::class, 'check']);
+    Route::post('/report', [ReportController::class, 'store']);
+    Route::get('/report/history', [ReportController::class, 'history']);
+
     Route::prefix('admin')->group(function () {
         Route::put('/external-services/{service}', [AdminExternalServiceController::class, 'update']);
 
@@ -66,10 +82,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/notifications', [AdminDashboardController::class, 'notifications']);
         Route::post('/notifications', [AdminDashboardController::class, 'storeNotification']);
 
-
         Route::get('/users', [AdminUserController::class, 'index']);
         Route::get('/users/{id}', [AdminUserController::class, 'show']);
         Route::patch('/users/{id}', [AdminUserController::class, 'update']);
         Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
+
+        Route::post('/email-notifications/send', [AdminEmailNotificationController::class, 'sendToAllUsers']);
+
+        // ADMIN REPORTS
+        Route::get('/reports', [AdminReportController::class, 'index']);
+        Route::get('/reports/{id}', [AdminReportController::class, 'show']);
+        Route::patch('/reports/{id}/approve', [AdminReportController::class, 'approve']);
+        Route::patch('/reports/{id}/reject', [AdminReportController::class, 'reject']);
     });
 });

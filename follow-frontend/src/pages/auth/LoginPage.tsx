@@ -32,7 +32,7 @@ function LoginPage() {
     setError("");
 
     if (!form.login.trim() || !form.password.trim()) {
-      const message = "Vui lòng nhập username hoặc email và mật khẩu";
+      const message = "Vui lòng nhập username, email hoặc số điện thoại và mật khẩu";
       setError(message);
 
       await Swal.fire({
@@ -78,8 +78,9 @@ function LoginPage() {
         err?.response?.data?.errors?.login?.[0] ||
         err?.response?.data?.errors?.email?.[0] ||
         err?.response?.data?.errors?.username?.[0] ||
+        err?.response?.data?.errors?.phone?.[0] ||
         err?.response?.data?.errors?.password?.[0] ||
-        "Sai username/email hoặc mật khẩu";
+        "Sai username, email, số điện thoại hoặc mật khẩu";
 
       setError(message);
 
@@ -108,11 +109,11 @@ function LoginPage() {
           )}
 
           <AuthInput
-            label="Username hoặc Email"
+            label="Username hoặc Email hoặc Số điện thoại"
             name="login"
             value={form.login}
             onChange={handleChange}
-            placeholder="Nhập username hoặc email"
+            placeholder="Nhập username, email hoặc số điện thoại"
           />
 
           <PasswordInput

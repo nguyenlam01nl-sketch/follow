@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Service;
 use App\Models\ServiceNotification;
 use App\Models\WalletTransaction;
+use App\Services\AdminMailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -92,7 +93,7 @@ class OrderController extends Controller
         return response()->json($order);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, AdminMailService $adminMailService)
     {
         $data = $request->validate([
             'service_id' => ['required', 'exists:services,id'],
@@ -274,6 +275,20 @@ class OrderController extends Controller
 
                 return $order;
             });
+
+            $adminMailService->send(
+                'emails.admin-order-notification',
+                [
+                    'order' => $order,
+                    'user' => $user,
+                ],
+                'Có đơn hàng mới - Sola Vietnam',
+                [
+                    'order_id' => $order->id ?? null,
+                    'user_id' => $user->id ?? null,
+                    'type' => 'order',
+                ]
+            );
         } catch (\Exception $e) {
             Log::error('Order creation failed', [
                 'error' => $e->getMessage(),
@@ -301,7 +316,7 @@ class OrderController extends Controller
 
         if (!$order->external_order_id) {
             return response()->json([
-                'message' => 'Không có external_order_id'
+                'message' => 'Không có external_order_id',
             ], 400);
         }
 
@@ -317,16 +332,21 @@ class OrderController extends Controller
             if (!$data || isset($data['error'])) {
                 return response()->json([
                     'message' => 'API lỗi',
-                    'error' => $data['error'] ?? null
+                    'error' => $data['error'] ?? null,
                 ], 500);
             }
 
-            // map status
             $status = strtolower($data['status'] ?? '');
 
-            if ($status === 'success') $status = 'completed';
-            if ($status === 'processing') $status = 'processing';
-            if ($status === 'pending') $status = 'pending';
+            if ($status === 'success') {
+                $status = 'completed';
+            }
+            if ($status === 'processing') {
+                $status = 'processing';
+            }
+            if ($status === 'pending') {
+                $status = 'pending';
+            }
 
             $order->update([
                 'external_status' => $data['status'] ?? null,
@@ -349,65 +369,65 @@ class OrderController extends Controller
     }
 
     public function cancelOrder(Request $request, $id)
-{
-    $order = \App\Models\Order::findOrFail($id);
+    {
+        $order = \App\Models\Order::findOrFail($id);
 
-    if (!$request->user() || $order->user_id !== $request->user()->id) {
-        return response()->json([
-            'message' => 'Không có quyền thao tác đơn này',
-        ], 403);
-    }
-
-    if (!$order->external_order_id) {
-        return response()->json([
-            'message' => 'Đơn không có mã external_order_id',
-        ], 422);
-    }
-
-    $baseUrl = config('services.external_api.base_url');
-    $apiKey = config('services.external_api.token');
-
-    if (!$baseUrl || !$apiKey) {
-        return response()->json([
-            'message' => 'Thiếu cấu hình external api',
-        ], 500);
-    }
-
-    try {
-        $response = \Illuminate\Support\Facades\Http::asForm()->post($baseUrl, [
-            'key' => $apiKey,
-            'action' => 'cancel',
-            'order' => $order->external_order_id,
-        ]);
-
-        $data = $response->json();
-
-        if (
-            !$response->successful() ||
-            !$data ||
-            (int) ($data['cancel'] ?? 0) !== 1
-        ) {
+        if (!$request->user() || $order->user_id !== $request->user()->id) {
             return response()->json([
-                'message' => 'Huỷ đơn thất bại',
-                'api_response' => $data,
+                'message' => 'Không có quyền thao tác đơn này',
+            ], 403);
+        }
+
+        if (!$order->external_order_id) {
+            return response()->json([
+                'message' => 'Đơn không có mã external_order_id',
             ], 422);
         }
 
-        $order->update([
-            'status' => 'cancelled',
-            'external_status' => 'Cancelled',
-        ]);
+        $baseUrl = config('services.external_api.base_url');
+        $apiKey = config('services.external_api.token');
 
-        return response()->json([
-            'message' => 'Huỷ đơn thành công',
-            'order' => $order->fresh(),
-            'api_response' => $data,
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'message' => 'Lỗi gọi API huỷ đơn',
-            'error' => $e->getMessage(),
-        ], 500);
+        if (!$baseUrl || !$apiKey) {
+            return response()->json([
+                'message' => 'Thiếu cấu hình external api',
+            ], 500);
+        }
+
+        try {
+            $response = Http::asForm()->post($baseUrl, [
+                'key' => $apiKey,
+                'action' => 'cancel',
+                'order' => $order->external_order_id,
+            ]);
+
+            $data = $response->json();
+
+            if (
+                !$response->successful() ||
+                !$data ||
+                (int) ($data['cancel'] ?? 0) !== 1
+            ) {
+                return response()->json([
+                    'message' => 'Huỷ đơn thất bại',
+                    'api_response' => $data,
+                ], 422);
+            }
+
+            $order->update([
+                'status' => 'cancelled',
+                'external_status' => 'Cancelled',
+            ]);
+
+            return response()->json([
+                'message' => 'Huỷ đơn thành công',
+                'order' => $order->fresh(),
+                'api_response' => $data,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Lỗi gọi API huỷ đơn',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-}
 }

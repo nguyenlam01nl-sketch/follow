@@ -9,6 +9,7 @@ import AccountPage from "@/pages/user/account/AccountPage";
 import ServiceOrderPage from "@/pages/user/services/ServiceOrderPage";
 import EngagementPlatformPage from "@/pages/user/services/EngagementPlatformPage";
 import ProtectedRoute from "./ProtectedRoute";
+
 import AdminDashboardPage from "@/pages/admin/dashboard/AdminDashboardPage";
 import AdminServicesPage from "@/pages/admin/services/AdminServicesPage";
 import AdminServiceEditPage from "@/pages/admin/services/AdminServiceEditPage";
@@ -16,6 +17,15 @@ import AdminEngagementPlatformPage from "@/pages/admin/services/AdminEngagementP
 import AdminWalletPage from "@/pages/admin/wallet/AdminWalletPage";
 import AdminOrderPage from "@/pages/admin/orders/AdminOrderPage";
 import AdminUsersPage from "@/pages/admin/users/AdminUsersPage";
+import AdminFeedbackPage from "@/pages/admin/feedback/AdminFeedbackPage";
+import AdminEmailNotificationsPage from "@/pages/admin/notification/AdminEmailNotificationsPage";
+import AdminReportPage from "@/pages/admin/report/AdminReportPage";
+
+import FeedbackPage from "@/pages/user/feedback/FeedbackPage";
+import FeedbackHistoryPage from "@/pages/user/feedback/FeedbackHistoryPage";
+
+import ReportPage from "@/pages/user/report/ReportPage";
+import ReportHistoryPage from "@/pages/user/report/ReportHistoryPage";
 
 function AppRoutes() {
   return (
@@ -37,21 +47,39 @@ function AppRoutes() {
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/wallet" element={<WalletPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
+        <Route path="/feedback/history" element={<FeedbackHistoryPage />} />
+
+        <Route path="/report" element={<ReportPage />} />
+        <Route path="/report/history" element={<ReportHistoryPage />} />
       </Route>
 
       {/* 👑 ADMIN */}
       <Route element={<ProtectedRoute role="admin" />}>
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/services" element={<AdminServicesPage />} />
-        <Route path="/admin/services/:serviceId/edit" element={<AdminServiceEditPage />} />
+        <Route
+          path="/admin/services/:serviceId/edit"
+          element={<AdminServiceEditPage />}
+        />
         <Route path="/admin/orders" element={<AdminOrderPage />} />
         <Route
           path="/admin/services/engagement/:platform"
           element={<AdminEngagementPlatformPage />}
         />
+        <Route path="/admin/wallet" element={<AdminWalletPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
+        <Route
+          path="/admin/email-notifications"
+          element={<AdminEmailNotificationsPage />}
+        />
       </Route>
-      <Route path="/admin/wallet" element={<AdminWalletPage />} />
-      <Route path="/admin/users" element={<AdminUsersPage />} />
+      <Route path="/admin/reports" element={<AdminReportPage />} />
+
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
