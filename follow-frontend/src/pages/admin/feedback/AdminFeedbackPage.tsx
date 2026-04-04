@@ -142,7 +142,7 @@ export default function AdminFeedbackPage() {
     try {
       setLoading(true);
 
-      const res = await api.get("/feedback", {
+      const res = await api.get("/admin/feedback", {
         params: {
           page: targetPage,
           keyword,
@@ -191,7 +191,7 @@ export default function AdminFeedbackPage() {
     try {
       setSubmittingId(id);
 
-      await api.patch(`/feedback/${id}/status`, { status });
+      await api.patch(`/admin/feedback/${id}/status`, { status });
 
       Swal.fire({
         icon: "success",

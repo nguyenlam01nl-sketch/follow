@@ -33,7 +33,10 @@ class AdminWalletController extends Controller
                     'name' => $user->name,
                     'username' => $user->username,
                     'email' => $user->email,
+                    'phone' => $user->phone,
                     'role' => $user->role,
+                    'ref_code' => $user->ref_code,
+                    'referred_by' => $user->referred_by,
                     'wallet_balance' => (float) ($user->balance ?? 0),
                     'total_deposit' => (float) ($totalDeposit ?? 0),
                 ];
@@ -95,9 +98,9 @@ class AdminWalletController extends Controller
             $currentBalance = (float) ($user->balance ?? 0);
 
             if ($data['type'] === 'subtract' && $currentBalance < $amount) {
-                abort(response()->json([
+                return response()->json([
                     'message' => 'Số dư không đủ để trừ',
-                ], 422));
+                ], 422)->throwResponse();
             }
 
             $transactionType = $data['type'] === 'add' ? 'deposit' : 'payment';
@@ -106,7 +109,7 @@ class AdminWalletController extends Controller
                 ? $currentBalance + $amount
                 : $currentBalance - $amount;
 
-            WalletTransaction::create([
+            $walletTransaction = WalletTransaction::create([
                 'user_id' => $user->id,
                 'title' => $data['type'] === 'add' ? 'Admin cộng tiền ví' : 'Admin trừ tiền ví',
                 'amount' => $amount,
@@ -122,6 +125,7 @@ class AdminWalletController extends Controller
             return [
                 'user_id' => $user->id,
                 'balance' => (float) $newBalance,
+                'wallet_transaction_id' => $walletTransaction->id,
             ];
         });
 

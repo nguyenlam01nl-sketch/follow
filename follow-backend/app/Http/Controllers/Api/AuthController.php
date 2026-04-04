@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\AdminMailService;
+use App\Services\ReferralService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -13,6 +15,8 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    private const MAX_ACCOUNTS_PER_IP = 3;
+
     private function sendRegisterEmail(User $user, AdminMailService $adminMailService): void
     {
         try {
@@ -40,23 +44,105 @@ class AuthController extends Controller
         );
     }
 
-    public function register(Request $request, AdminMailService $adminMailService)
+    private function sendSuspiciousActivityEmail(Request $request, ?string $reason = null): void
     {
+        $emails = [
+            'gmail1@example.com',
+            'gmail2@example.com',
+            'gmail3@example.com',
+        ];
+
+        $payload = [
+            'reason' => $reason,
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'username' => $request->input('username'),
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone'),
+            'ref_code' => $request->input('ref_code'),
+            'time' => now()->toDateTimeString(),
+        ];
+
+        try {
+            Mail::send('emails.suspicious-affiliate', $payload, function ($message) use ($emails, $payload) {
+                $message->to($emails)
+                    ->subject('Cảnh báo hoạt động bất thường - Affiliate Sola Vietnam');
+            });
+        } catch (\Exception $e) {
+            Log::error('Gửi email cảnh báo hoạt động bất thường thất bại: ' . $e->getMessage(), [
+                'payload' => $payload,
+            ]);
+        }
+
+        Log::warning('Phát hiện hoạt động bất thường khi đăng ký', $payload);
+    }
+
+    public function register(
+        Request $request,
+        AdminMailService $adminMailService,
+        ReferralService $referralService
+    ) {
         $data = $request->validate([
             'username' => 'required|string|max:50|unique:users,username',
             'email' => 'required|email|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
             'password' => 'required|min:6',
+            'ref_code' => 'nullable|string|max:50',
         ]);
 
-        $user = User::create([
-            'name' => $data['username'],
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'phone' => $data['phone'],
-            'password' => Hash::make($data['password']),
-            'role' => 'user',
-        ]);
+        $registerIp = $request->ip();
+
+        $accountsFromSameIp = User::where('register_ip', $registerIp)->count();
+
+        if ($accountsFromSameIp >= self::MAX_ACCOUNTS_PER_IP) {
+            $this->sendSuspiciousActivityEmail(
+                $request,
+                'Tạo quá nhiều tài khoản từ cùng một IP'
+            );
+
+            return response()->json([
+                'message' => 'Chúng tôi đã thấy hoạt động bất thường',
+            ], 429);
+        }
+
+        $referrer = null;
+
+        if (!empty($data['ref_code'])) {
+            $referrer = $referralService->findValidReferrerOrNull(
+                $data['ref_code'],
+                $registerIp
+            );
+
+            if (!$referrer) {
+                $this->sendSuspiciousActivityEmail(
+                    $request,
+                    'Đăng ký bằng mã affiliate không hợp lệ hoặc trùng IP với người giới thiệu'
+                );
+
+                return response()->json([
+                    'message' => 'Chúng tôi đã thấy hoạt động bất thường',
+                ], 422);
+            }
+        }
+
+        $user = DB::transaction(function () use ($data, $registerIp, $referralService, $referrer) {
+            $user = User::create([
+                'name' => $data['username'],
+                'username' => $data['username'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'password' => Hash::make($data['password']),
+                'role' => 'user',
+                'balance' => 0,
+                'ref_code' => $referralService->generateUniqueRefCode($data['username']),
+                'register_ip' => $registerIp,
+                'referred_by' => $referrer?->id,
+            ]);
+
+            $referralService->giveSignupCredit($user);
+
+            return $user->fresh();
+        });
 
         $this->sendRegisterEmail($user, $adminMailService);
 
@@ -70,6 +156,9 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'role' => $user->role,
+                'balance' => (float) ($user->balance ?? 0),
+                'ref_code' => $user->ref_code,
+                'referred_by' => $user->referred_by,
             ],
             'token' => $token,
             'message' => 'Đăng ký thành công',
@@ -106,6 +195,9 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'role' => $user->role,
+                'balance' => (float) ($user->balance ?? 0),
+                'ref_code' => $user->ref_code,
+                'referred_by' => $user->referred_by,
             ],
             'token' => $token,
             'message' => 'Đăng nhập thành công',

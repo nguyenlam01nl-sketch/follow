@@ -14,6 +14,8 @@ import {
   MessageSquare,
   Mail,
     ShieldAlert,
+      Network,
+
 
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -83,6 +85,7 @@ const adminMenu: MenuItem[] = [
   { to: "/admin/reports", label: "Báo cáo lừa đảo", icon: ShieldAlert },
   { to: "/admin/users", label: "Người dùng", icon: Users },
   { to: "/admin/email-notifications", label: "Thông báo mail", icon: Mail },
+  { to: "/admin/affiliate", label: "Affiliate", icon: Network },
 ];
 
 const userMenu: MenuItem[] = [
@@ -92,6 +95,7 @@ const userMenu: MenuItem[] = [
   { to: "/wallet", label: "Ví tiền", icon: Wallet },
   { to: "/feedback", label: "Góp ý", icon: MessageSquare },
   { to: "/report", label: "Báo cáo lừa đảo", icon: ShieldAlert },
+  { to: "/affiliate", label: "Affiliate", icon: Network },
   { to: "/account", label: "Tài khoản", icon: User },
 ];
 
@@ -107,6 +111,8 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
       { to: "/admin/reports", label: "Reports", icon: ShieldAlert },
       { to: "/admin/users", label: "Người dùng", icon: Users },
       { to: "/admin/email-notifications", label: "Mail", icon: Mail },
+          { to: "/admin/affiliate", label: "Affiliate", icon: Network },
+
     ];
   }
 
@@ -117,6 +123,8 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
     { to: "/wallet", label: "Ví", icon: Wallet },
     { to: "/report", label: "Báo cáo", icon: ShieldAlert },
     { to: "/account", label: "Tài khoản", icon: User },
+      { to: "/affiliate", label: "Affiliate", icon: Network },
+
   ];
 }, [role]);
 

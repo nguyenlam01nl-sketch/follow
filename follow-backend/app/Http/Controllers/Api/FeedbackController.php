@@ -72,4 +72,52 @@ class FeedbackController extends Controller
 
         return response()->json($feedback);
     }
+
+    // ADMIN: lấy toàn bộ feedback
+    public function index(Request $request)
+    {
+        $query = Feedback::with(['user:id,name,email'])->latest();
+
+        if ($request->filled('keyword')) {
+            $keyword = trim($request->keyword);
+
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                    ->orWhere('content', 'like', "%{$keyword}%")
+                    ->orWhereHas('user', function ($userQuery) use ($keyword) {
+                        $userQuery->where('name', 'like', "%{$keyword}%")
+                            ->orWhere('email', 'like', "%{$keyword}%");
+                    });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        return response()->json($query->paginate(10));
+    }
+
+    // ADMIN: cập nhật trạng thái
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,reviewed,resolved,rejected',
+        ]);
+
+        $feedback = Feedback::findOrFail($id);
+
+        $feedback->update([
+            'status' => $request->status,
+        ]);
+
+        return response()->json([
+            'message' => 'Cập nhật trạng thái góp ý thành công',
+            'data' => $feedback,
+        ]);
+    }
 }

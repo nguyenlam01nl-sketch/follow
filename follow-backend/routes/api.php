@@ -19,8 +19,12 @@ use App\Http\Controllers\Api\AdminEmailNotificationController;
 use App\Http\Controllers\Api\CheckController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\AdminReportController;
+use App\Http\Controllers\Api\AdminAffiliateController;
+use App\Http\Controllers\Api\ReferralController;
 
-// Public
+// ========================
+// PUBLIC
+// ========================
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -32,16 +36,24 @@ Route::get('/external/services', [ExternalServiceController::class, 'getServices
 
 Route::get('/notifications', [AdminDashboardController::class, 'userNotifications']);
 
-// Protected
+
+// ========================
+// PROTECTED (LOGIN)
+// ========================
 Route::middleware('auth:sanctum')->group(function () {
+
+    // ===== AUTH =====
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // ===== DASHBOARD =====
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
+    // ===== ACCOUNT =====
     Route::get('/account', [AccountController::class, 'me']);
     Route::put('/account/profile', [AccountController::class, 'updateProfile']);
     Route::put('/account/password', [AccountController::class, 'changePassword']);
 
+    // ===== ORDERS =====
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
@@ -50,49 +62,87 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/external/orders', [ExternalServiceController::class, 'createOrder']);
 
+    // ===== WALLET =====
     Route::get('/wallet', [WalletController::class, 'index']);
     Route::get('/wallet/transactions', [WalletController::class, 'transactions']);
     Route::post('/wallet/deposit', [WalletController::class, 'createDeposit']);
 
+    // ========================
+    // FEEDBACK (USER)
+    // ========================
     Route::post('/feedback', [FeedbackController::class, 'store']);
-    Route::get('/feedback', [FeedbackController::class, 'index']);
     Route::get('/feedback/history', [FeedbackController::class, 'history']);
     Route::get('/feedback/{id}', [FeedbackController::class, 'show']);
-    Route::patch('/feedback/{id}/status', [FeedbackController::class, 'updateStatus']);
 
-    // CHECK + REPORT USER
+    // ========================
+    // CHECK + REPORT
+    // ========================
     Route::post('/check', [CheckController::class, 'check']);
     Route::post('/report', [ReportController::class, 'store']);
     Route::get('/report/history', [ReportController::class, 'history']);
 
+    // ========================
+    // REFERRAL
+    // ========================
+    Route::get('/referral/me', [ReferralController::class, 'myReferralData']);
+    Route::post('/referral/apply-code', [ReferralController::class, 'applyReferralCode']);
+
+
+
+    // ========================
+    // ADMIN
+    // ========================
     Route::prefix('admin')->group(function () {
+
+        // ===== SERVICES =====
         Route::put('/external-services/{service}', [AdminExternalServiceController::class, 'update']);
 
         Route::get('/services/{service}', [AdminServiceController::class, 'show']);
         Route::put('/services/{service}', [AdminServiceController::class, 'update']);
 
+        // ===== ORDERS =====
         Route::get('/orders', [AdminOrderController::class, 'index']);
         Route::put('/orders/{order}', [AdminOrderController::class, 'update']);
 
+        // ===== WALLET =====
         Route::get('/wallet/users', [AdminWalletController::class, 'users']);
         Route::get('/wallet/stats', [AdminWalletController::class, 'stats']);
         Route::post('/wallet/adjust', [AdminWalletController::class, 'adjust']);
 
+        // ===== DASHBOARD =====
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
         Route::get('/notifications', [AdminDashboardController::class, 'notifications']);
         Route::post('/notifications', [AdminDashboardController::class, 'storeNotification']);
 
+        // ===== USERS =====
         Route::get('/users', [AdminUserController::class, 'index']);
         Route::get('/users/{id}', [AdminUserController::class, 'show']);
         Route::patch('/users/{id}', [AdminUserController::class, 'update']);
         Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
 
+        // ===== EMAIL =====
         Route::post('/email-notifications/send', [AdminEmailNotificationController::class, 'sendToAllUsers']);
 
-        // ADMIN REPORTS
+        // ========================
+        // ADMIN REPORT
+        // ========================
         Route::get('/reports', [AdminReportController::class, 'index']);
         Route::get('/reports/{id}', [AdminReportController::class, 'show']);
         Route::patch('/reports/{id}/approve', [AdminReportController::class, 'approve']);
         Route::patch('/reports/{id}/reject', [AdminReportController::class, 'reject']);
+
+        // ========================
+        // ADMIN FEEDBACK (🔥 FIX LỖI CHO BÉ)
+        // ========================
+        Route::get('/feedback', [FeedbackController::class, 'index']);
+        Route::patch('/feedback/{id}/status', [FeedbackController::class, 'updateStatus']);
+
+        // ========================
+        // AFFILIATE
+        // ========================
+        Route::get('/affiliate/overview', [AdminAffiliateController::class, 'overview']);
+        Route::get('/affiliate/referrers', [AdminAffiliateController::class, 'referrers']);
+        Route::get('/affiliate/referrals', [AdminAffiliateController::class, 'referrals']);
+        Route::get('/affiliate/commissions', [AdminAffiliateController::class, 'commissions']);
     });
 });

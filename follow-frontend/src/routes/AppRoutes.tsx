@@ -27,6 +27,9 @@ import FeedbackHistoryPage from "@/pages/user/feedback/FeedbackHistoryPage";
 import ReportPage from "@/pages/user/report/ReportPage";
 import ReportHistoryPage from "@/pages/user/report/ReportHistoryPage";
 
+import AffiliatePage from "@/pages/user/affiliate/AffiliatePage";
+import AdminAffiliatePage from "@/pages/admin/affiliate/AdminAffiliatePage";
+
 function AppRoutes() {
   return (
     <Routes>
@@ -52,6 +55,8 @@ function AppRoutes() {
 
         <Route path="/report" element={<ReportPage />} />
         <Route path="/report/history" element={<ReportHistoryPage />} />
+        <Route path="/affiliate" element={<AffiliatePage />} />
+
       </Route>
 
       {/* 👑 ADMIN */}
@@ -76,6 +81,7 @@ function AppRoutes() {
         />
       </Route>
       <Route path="/admin/reports" element={<AdminReportPage />} />
+      <Route path="/admin/affiliate" element={<AdminAffiliatePage />} />
 
 
       {/* Fallback */}

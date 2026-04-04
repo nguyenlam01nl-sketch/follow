@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
 import AuthLayout from "../../layouts/AuthLayout";
@@ -11,19 +11,34 @@ import api from "../../api/axios";
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [form, setForm] = useState({
     username: "",
     email: "",
     phone: "",
     password: "",
+    ref_code: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const ref = searchParams.get("ref") || "";
+    if (ref) {
+      setForm((prev) => ({
+        ...prev,
+        ref_code: ref,
+      }));
+    }
+  }, [searchParams]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -45,12 +60,15 @@ function RegisterPage() {
     try {
       setLoading(true);
 
-      const res = await api.post("/register", {
-        username: form.username,
-        email: form.email,
-        phone: form.phone,
+      const payload = {
+        username: form.username.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
         password: form.password,
-      });
+        ref_code: form.ref_code.trim() || undefined,
+      };
+
+      const res = await api.post("/register", payload);
 
       localStorage.setItem("token", res.data.token);
 
@@ -71,6 +89,7 @@ function RegisterPage() {
         error?.response?.data?.errors?.username?.[0] ||
         error?.response?.data?.errors?.email?.[0] ||
         error?.response?.data?.errors?.phone?.[0] ||
+        error?.response?.data?.errors?.ref_code?.[0] ||
         "Đăng ký thất bại";
 
       setError(message);
@@ -123,6 +142,21 @@ function RegisterPage() {
             onChange={handleChange}
             placeholder="Nhập số điện thoại"
           />
+
+          <AuthInput
+            label="Mã giới thiệu"
+            type="text"
+            name="ref_code"
+            value={form.ref_code}
+            onChange={handleChange}
+            placeholder="Nhập mã giới thiệu nếu có"
+          />
+
+          {form.ref_code && (
+            <p className="text-xs text-cyan-200/80">
+              Mã giới thiệu đã được áp dụng cho tài khoản này.
+            </p>
+          )}
 
           <PasswordInput
             label="Mật khẩu"
