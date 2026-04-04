@@ -4,7 +4,7 @@ type Props = {
   onClick: () => void;
 };
 
-function CategoryCard({ name, icon, onClick }: Props) {
+export default function CategoryCard({ name, icon, onClick }: Props) {
   return (
     <button
       onClick={onClick}
