@@ -34,13 +34,14 @@ const swalBaseOptions = {
   buttonsStyling: false,
   customClass: {
     popup:
-      "rounded-[24px] border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.45)]",
-    title: "!text-white !text-[28px] !font-extrabold",
-    htmlContainer: "!text-left !text-[14px] !leading-7 !text-white/80",
+      "rounded-[22px] border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.45)]",
+    title: "!text-white !text-[24px] sm:!text-[28px] !font-extrabold",
+    htmlContainer:
+      "!text-left !text-[13px] sm:!text-[14px] !leading-6 sm:!leading-7 !text-white/80",
     confirmButton:
-      "!inline-flex !h-11 !items-center !justify-center !rounded-xl !bg-[#2F80ED] !px-6 !text-sm !font-semibold !text-white hover:!brightness-110",
+      "!inline-flex !h-10 sm:!h-11 !items-center !justify-center !rounded-xl !bg-[#2F80ED] !px-5 sm:!px-6 !text-sm !font-semibold !text-white hover:!brightness-110",
     cancelButton:
-      "!inline-flex !h-11 !items-center !justify-center !rounded-xl !border !border-white/10 !bg-white/5 !px-6 !text-sm !font-semibold !text-white/80 hover:!bg-white/10",
+      "!inline-flex !h-10 sm:!h-11 !items-center !justify-center !rounded-xl !border !border-white/10 !bg-white/5 !px-5 sm:!px-6 !text-sm !font-semibold !text-white/80 hover:!bg-white/10",
     icon: "!border-[3px]",
   },
 };
@@ -61,11 +62,11 @@ function OrdersPage() {
   const [page, setPage] = useState(1);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
 
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 10;
 
   const formatMoney = (value: number | string) => {
     const num = Number(value || 0);
-    return `${num.toLocaleString("vi-VN")} VND`;
+    return `${num.toLocaleString("vi-VN")}đ`;
   };
 
   const formatDateTime = (value: string) => {
@@ -81,15 +82,15 @@ function OrdersPage() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "pending":
-        return "Chờ xử lý";
+        return "Chờ";
       case "processing":
         return "Đang chạy";
       case "completed":
-        return "Hoàn thành";
+        return "Xong";
       case "partial":
         return "Một phần";
       case "cancelled":
-        return "Đã huỷ";
+        return "Huỷ";
       case "failed":
         return "Lỗi";
       case "refunded":
@@ -245,34 +246,36 @@ function OrdersPage() {
     return filtered.slice(start, start + ITEMS_PER_PAGE);
   }, [filtered, page]);
 
+  const filterOptions = [
+    { key: "all", label: "Tất cả" },
+    { key: "pending", label: "Chờ" },
+    { key: "processing", label: "Đang chạy" },
+    { key: "completed", label: "Xong" },
+    { key: "partial", label: "Một phần" },
+    { key: "failed", label: "Lỗi" },
+    { key: "cancelled", label: "Huỷ" },
+  ];
+
   return (
     <DashboardLayout>
-      <div className="space-y-4 px-3 sm:px-4">
+      <div className="space-y-3 px-2.5 sm:px-4">
         <div>
-          <h1 className="text-lg font-semibold text-white sm:text-xl">
+          <h1 className="text-base font-semibold text-white sm:text-lg">
             Đơn hàng
           </h1>
-          <p className="text-xs text-white/50">
-            Quản lý đơn hàng của bé Panda
+          <p className="text-[11px] text-white/50 sm:text-xs">
+            Quản lý đơn hàng của bạn
           </p>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-4 shadow-[0_10px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl">
-          <div className="flex flex-col gap-3">
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {[
-                { key: "all", label: "Tất cả" },
-                { key: "pending", label: "Chờ" },
-                { key: "processing", label: "Đang chạy" },
-                { key: "completed", label: "Xong" },
-                { key: "partial", label: "Một phần" },
-                { key: "failed", label: "Lỗi" },
-                { key: "cancelled", label: "Huỷ" },
-              ].map((f) => (
+        <div className="rounded-[18px] border border-white/10 bg-white/[0.04] p-3 sm:rounded-[22px] sm:p-4 backdrop-blur-xl">
+          <div className="flex flex-col gap-2.5">
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {filterOptions.map((f) => (
                 <button
                   key={f.key}
                   onClick={() => setFilter(f.key)}
-                  className={`whitespace-nowrap rounded-full px-4 py-2 text-sm transition ${
+                  className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] sm:px-4 sm:py-2 sm:text-sm transition ${
                     filter === f.key
                       ? "bg-white text-slate-900"
                       : "border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
@@ -287,127 +290,129 @@ function OrdersPage() {
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Tìm đơn theo mã, dịch vụ, link, mã ngoài..."
-              className="w-full rounded-2xl border border-white/10 bg-[#0c1730]/70 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none"
+              placeholder="Tìm mã đơn, dịch vụ, link..."
+              className="w-full rounded-xl border border-white/10 bg-[#0c1730]/70 px-3 py-2.5 text-xs text-white placeholder:text-white/35 outline-none sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
             />
           </div>
         </div>
 
-        <div className="hidden grid-cols-7 gap-4 px-3 text-xs uppercase tracking-[0.18em] text-white/35 xl:grid">
-          <div>ID</div>
-          <div>Dịch vụ</div>
-          <div>Link</div>
-          <div>Số lượng</div>
-          <div>Số lượng bắt đầu</div>
-          <div>Giá</div>
-          <div>Trạng thái</div>
-        </div>
-
-        <div className="space-y-4">
-          {loading ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-white/60">
-              Đang tải...
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-white/60">
-              Không có đơn nào
-            </div>
-          ) : (
-            paginatedOrders.map((order) => (
-              <div
-                key={order.id}
-                className="rounded-[28px] border border-white/10 bg-white/[0.04] p-4 shadow-[0_10px_40px_rgba(0,0,0,0.2)] backdrop-blur-xl"
-              >
-                <div className="grid gap-4 xl:grid-cols-7 xl:items-center">
-                  <div className="space-y-1">
-                    <div className="text-lg font-semibold text-white">
-                      #ORD-{order.id}
-                    </div>
-                    {order.external_order_id ? (
-                      <div className="text-xs text-white/50">
-                        Mã ngoài: {order.external_order_id}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="line-clamp-3 text-base leading-7 text-white/90">
-                      {order.service_name}
-                    </div>
-                    {order.platform ? (
-                      <div className="mt-1 text-xs text-white/45">
-                        {order.platform}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="min-w-0">
-                    {order.target_link ? (
-                      <a
-                        href={order.target_link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block break-all text-sm leading-6 text-sky-300 underline underline-offset-2 hover:text-sky-200"
-                      >
-                        {order.target_link}
-                      </a>
-                    ) : (
-                      <div className="text-sm text-white/55">Không có link</div>
-                    )}
-                  </div>
-
-                  <div className="text-base font-medium text-white">
-                    {order.quantity ?? 1}
-                  </div>
-
-                  <div className="text-base font-medium text-white">
-                    {order.api_start_count ?? "--"}
-                  </div>
-
-                  <div className="text-base font-medium text-white">
-                    {formatMoney(order.total_price || 0)}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium ${getStatusClass(
-                        order.status
-                      )}`}
-                    >
-                      {getStatusLabel(order.status)}
-                    </span>
-
-                    {["pending", "processing"].includes(order.status) ? (
-                      <button
-                        onClick={() => cancelOrder(order.id)}
-                        disabled={cancellingId === order.id}
-                        className="rounded-full border border-rose-400/20 bg-rose-500/15 px-4 py-2 text-xs font-medium text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {cancellingId === order.id ? "Đang huỷ..." : "Huỷ đơn"}
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="mt-4 border-t border-white/10 pt-4 text-xs text-white/40">
-                  Cập nhật: {formatDateTime(order.updated_at)}
-                </div>
+        <div className="rounded-[18px] border border-white/10 bg-white/[0.04] backdrop-blur-xl">
+          <div className="overflow-x-auto">
+            <div className="min-w-[860px]">
+              <div className="grid grid-cols-[110px_minmax(240px,1.8fr)_70px_80px_120px_120px_90px] gap-3 border-b border-white/10 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/40 sm:px-4">
+                <div>Mã</div>
+                <div>Dịch vụ</div>
+                <div>SL</div>
+                <div>Start</div>
+                <div>Giá</div>
+                <div>Trạng thái</div>
+                <div>Huỷ</div>
               </div>
-            ))
-          )}
+
+              {loading ? (
+                <div className="px-3 py-4 text-sm text-white/60 sm:px-4">
+                  Đang tải...
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="px-3 py-4 text-sm text-white/60 sm:px-4">
+                  Không có đơn nào
+                </div>
+              ) : (
+                paginatedOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="grid grid-cols-[110px_minmax(240px,1.8fr)_70px_80px_120px_120px_90px] gap-3 border-b border-white/8 px-3 py-2.5 text-xs text-white/80 last:border-b-0 sm:px-4"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold text-white">
+                        #ORD-{order.id}
+                      </div>
+                      {order.external_order_id ? (
+                        <div className="truncate text-[10px] text-white/40">
+                          {order.external_order_id}
+                        </div>
+                      ) : (
+                        <div className="text-[10px] text-white/25">—</div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-white">
+                        {order.service_name}
+                      </div>
+                     {order.target_link ? (
+  <a
+    href={order.target_link}
+    target="_blank"
+    rel="noreferrer"
+    className="block truncate text-[11px] text-sky-300 underline underline-offset-2 hover:text-sky-200"
+    title={order.target_link}
+  >
+    {order.target_link}
+  </a>
+) : (
+  <div className="truncate text-[11px] text-white/35">
+    {order.platform || "—"}
+  </div>
+)}
+                      <div className="truncate text-[10px] text-white/30">
+                        {formatDateTime(order.updated_at)}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center text-white">
+                      {order.quantity ?? 1}
+                    </div>
+
+                    <div className="flex items-center text-white">
+                      {order.api_start_count ?? "--"}
+                    </div>
+
+                    <div className="flex items-center font-semibold text-white">
+                      {formatMoney(order.total_price || 0)}
+                    </div>
+
+                    <div className="flex items-center">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium ${getStatusClass(
+                          order.status
+                        )}`}
+                      >
+                        {getStatusLabel(order.status)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-start">
+                      {["pending", "processing"].includes(order.status) ? (
+                        <button
+                          onClick={() => cancelOrder(order.id)}
+                          disabled={cancellingId === order.id}
+                          className="rounded-full border border-rose-400/20 bg-rose-500/15 px-3 py-1 text-[10px] font-medium text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {cancellingId === order.id ? "Đang..." : "Huỷ"}
+                        </button>
+                      ) : (
+                        <span className="text-[10px] text-white/25">—</span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
 
         {!loading && filtered.length > 0 && (
-          <div className="flex items-center justify-center gap-3 pt-2">
+          <div className="flex items-center justify-center gap-2 pt-1">
             <button
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page === 1}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm text-white disabled:opacity-40 sm:h-9 sm:w-9"
             >
               ‹
             </button>
 
-            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/80 sm:text-xs">
               {page}/{totalPages || 1}
             </span>
 
@@ -416,7 +421,7 @@ function OrdersPage() {
                 setPage((prev) => Math.min(prev + 1, totalPages || 1))
               }
               disabled={page === totalPages || totalPages === 0}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm text-white disabled:opacity-40 sm:h-9 sm:w-9"
             >
               ›
             </button>

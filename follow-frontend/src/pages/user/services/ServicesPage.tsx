@@ -191,10 +191,10 @@ export default function ServicesPage() {
   }, []);
 
   const engagementPlatforms = [
-    { key: "facebook", label: "Tăng tương tác Facebook", icon: Share2 },
-    { key: "instagram", label: "Tăng tương tác Instagram", icon: Globe },
-    { key: "tiktok", label: "Tăng tương tác TikTok", icon: MusicNoteIcon },
-    { key: "youtube", label: "Tăng tương tác YouTube", icon: Video },
+    { key: "facebook", label: "Facebook", icon: Share2 },
+    { key: "instagram", label: "Instagram", icon: Globe },
+    { key: "tiktok", label: "TikTok", icon: MusicNoteIcon },
+    { key: "youtube", label: "YouTube", icon: Video },
   ];
 
   const sections = useMemo(() => {
@@ -206,77 +206,71 @@ export default function ServicesPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 sm:space-y-8">
-        <div className="border-b border-white/6 pb-3">
-          <div className="text-[10px] sm:text-xs uppercase tracking-[0.18em] sm:tracking-[0.24em] text-white/40">
-            Trang chủ &nbsp; &gt; &nbsp; Automxh
+      <div className="w-full min-w-0 space-y-4 overflow-x-hidden">
+        <div className="border-b border-white/6 pb-2">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-white/40">
+            Trang chủ &gt; Dịch vụ
           </div>
         </div>
 
         {loading && (
-          <div className="rounded-[20px] sm:rounded-[24px] border border-white/10 bg-[#08152d] p-4 sm:p-6 text-sm sm:text-base text-white/60">
+          <div className="rounded-xl border border-white/10 bg-[#08152d] p-3 text-sm text-white/60">
             Đang tải dịch vụ...
           </div>
         )}
 
         {!loading && error && (
-          <div className="rounded-[20px] sm:rounded-[24px] border border-red-400/20 bg-red-400/10 p-4 sm:p-6 text-sm sm:text-base text-red-200">
+          <div className="rounded-xl border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-200">
             {error}
           </div>
         )}
 
         {!loading && !error && sections.length === 0 && (
-          <div className="rounded-[20px] sm:rounded-[24px] border border-white/10 bg-[#08152d] p-4 sm:p-6 text-sm sm:text-base text-white/60">
+          <div className="rounded-xl border border-white/10 bg-[#08152d] p-3 text-sm text-white/60">
             Không có dữ liệu dịch vụ.
           </div>
         )}
 
-        <section className="space-y-4 sm:space-y-5 border-b border-white/10 pb-6 sm:pb-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-white/[0.05]">
-                <Zap size={18} className="text-orange-400 sm:h-[22px] sm:w-[22px]" />
+        <section className="space-y-3 border-b border-white/10 pb-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05]">
+                <Zap size={15} className="text-orange-400" />
               </div>
 
-              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
-                TĂNG TƯƠNG TÁC
+              <h2 className="truncate text-base font-bold tracking-tight text-white sm:text-lg">
+                Tăng tương tác
               </h2>
             </div>
 
-            <div className="w-fit rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-medium uppercase tracking-wide text-orange-200">
+            <div className="w-fit rounded-full border border-orange-400/20 bg-orange-400/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-orange-200">
               {engagementPlatforms.length} nền tảng
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {engagementPlatforms.map((item) => {
               const Icon = item.icon;
 
               return (
                 <motion.button
                   key={item.key}
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.18 }}
+                  whileHover={{ y: -2 }}
+                  transition={{ duration: 0.15 }}
                   onClick={() => navigate(`/services/engagement/${item.key}`)}
-                  className="group relative min-h-[140px] sm:min-h-[160px] rounded-[18px] sm:rounded-[22px] border border-white/8 bg-[#08152d] p-4 sm:p-5 text-left transition hover:border-white/14 hover:bg-[#0b1a35]"
+                  className="group w-full min-w-0 overflow-hidden rounded-xl border border-white/8 bg-[#08152d] p-3 text-left transition hover:border-white/14 hover:bg-[#0b1a35]"
                 >
-                  <div className="mb-4 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-white/[0.05]">
-                    <Icon size={18} className="text-orange-400 sm:h-[22px] sm:w-[22px]" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.05]">
+                    <Icon size={15} className="text-orange-400" />
                   </div>
 
-                  <h3 className="text-base sm:text-lg font-bold uppercase leading-6 text-white">
+                  <h3 className="mt-2 truncate text-xs font-semibold text-white sm:text-sm">
                     {item.label}
                   </h3>
 
-                  <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-white/40">
-                    Follow, like, view, comment, share, member, subscribe...
+                  <p className="mt-1 line-clamp-1 text-[10px] text-white/45 sm:text-[11px]">
+                    Follow, like, view...
                   </p>
-
-                  <div className="mt-3 sm:mt-4">
-                    <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] sm:px-3 sm:text-[11px] text-white/55">
-                      Social Boost
-                    </span>
-                  </div>
                 </motion.button>
               );
             })}
@@ -292,48 +286,45 @@ export default function ServicesPage() {
             return (
               <section
                 key={platform.platform}
-                className={`space-y-4 sm:space-y-5 border-b ${meta.sectionBorder} pb-6 sm:pb-8`}
+                className={`space-y-3 border-b ${meta.sectionBorder} pb-4`}
               >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl sm:rounded-2xl bg-white/[0.05]">
-                      <Icon size={18} className={`${meta.iconClass} sm:h-[22px] sm:w-[22px]`} />
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05]">
+                      <Icon className={meta.iconClass} size={15} />
                     </div>
 
-                    <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+                    <h2 className="truncate text-base font-bold tracking-tight text-white sm:text-lg">
                       {meta.label}
                     </h2>
                   </div>
 
                   <div
-                    className={`w-fit rounded-full border px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-medium uppercase tracking-wide ${meta.badgeClass}`}
+                    className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide ${meta.badgeClass}`}
                   >
                     {platform.services.length} dịch vụ
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {platform.services.map((service) => {
                     const ServiceIcon = getServiceIcon(service);
 
                     return (
                       <motion.button
                         key={service.id}
-                        whileHover={{ y: -4 }}
-                        transition={{ duration: 0.18 }}
+                        whileHover={{ y: -2 }}
+                        transition={{ duration: 0.15 }}
                         onClick={() => navigate(`/services/${service.id}`)}
-                        className="group relative min-h-[160px] sm:min-h-[190px] rounded-[18px] sm:rounded-[22px] border border-white/8 bg-[#08152d] p-4 sm:p-5 text-left transition hover:border-white/14 hover:bg-[#0b1a35]"
+                        className="group w-full min-w-0 overflow-hidden rounded-xl border border-white/8 bg-[#08152d] p-3 text-left transition hover:border-white/14 hover:bg-[#0b1a35]"
                       >
-                        <div className="mb-4 flex items-start justify-between gap-3">
-                          <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-white/[0.05]">
-                            <ServiceIcon
-                              size={18}
-                              className="text-orange-400 sm:h-[22px] sm:w-[22px]"
-                            />
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05]">
+                            <ServiceIcon size={15} className="text-orange-400" />
                           </div>
 
                           <span
-                            className={`rounded-full px-2.5 py-1 text-[10px] sm:px-3 sm:text-[11px] font-semibold uppercase tracking-wide ${
+                            className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
                               service.mode === "api"
                                 ? "bg-cyan-400/10 text-cyan-200"
                                 : "bg-fuchsia-400/10 text-fuchsia-200"
@@ -343,21 +334,16 @@ export default function ServicesPage() {
                           </span>
                         </div>
 
-                        <h3 className="line-clamp-2 min-h-[44px] sm:min-h-[52px] text-base sm:text-lg font-bold uppercase leading-6 text-white">
+                        <h3 className="mt-2 line-clamp-2 text-xs font-semibold leading-4 text-white sm:text-sm">
                           {service.name}
                         </h3>
 
-                        <p className="mt-1.5 sm:mt-2 line-clamp-2 text-xs sm:text-sm text-white/40">
-                          {service.description ||
-                            "Cung cấp đa dạng các gói dịch vụ chất lượng cao."}
+                        <p className="mt-1 truncate text-[10px] text-white/45 sm:text-[11px]">
+                          {formatLabel(service.group_key)}
                         </p>
 
-                        <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
-                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] sm:px-3 sm:text-[11px] text-white/55">
-                            {formatLabel(service.group_key)}
-                          </span>
-
-                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] sm:px-3 sm:text-[11px] text-white/55">
+                        <div className="mt-2">
+                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2 py-0.5 text-[10px] text-white/55">
                             {Number(service.price).toLocaleString()}đ
                           </span>
                         </div>

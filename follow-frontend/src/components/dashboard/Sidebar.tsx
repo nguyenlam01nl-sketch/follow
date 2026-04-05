@@ -13,10 +13,8 @@ import {
   X,
   MessageSquare,
   Mail,
-    ShieldAlert,
-      Network,
-
-
+  ShieldAlert,
+  Network,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import api from "../../api/axios";
@@ -76,62 +74,53 @@ function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     navigate("/login");
   };
 
-const adminMenu: MenuItem[] = [
-  { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/admin/services", label: "Dịch vụ", icon: ShoppingBag },
-  { to: "/admin/orders", label: "Đơn hàng", icon: FileText },
-  { to: "/admin/wallet", label: "Ví tiền", icon: Wallet },
-  { to: "/admin/feedback", label: "Góp ý", icon: MessageSquare },
-  { to: "/admin/reports", label: "Báo cáo lừa đảo", icon: ShieldAlert },
-  { to: "/admin/users", label: "Người dùng", icon: Users },
-  { to: "/admin/email-notifications", label: "Thông báo mail", icon: Mail },
-  { to: "/admin/affiliate", label: "Affiliate", icon: Network },
-];
+  const adminMenu: MenuItem[] = [
+    { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/admin/services", label: "Dịch vụ", icon: ShoppingBag },
+    { to: "/admin/orders", label: "Đơn hàng", icon: FileText },
+    { to: "/admin/wallet", label: "Ví tiền", icon: Wallet },
+    { to: "/admin/feedback", label: "Góp ý", icon: MessageSquare },
+    { to: "/admin/reports", label: "Báo cáo lừa đảo", icon: ShieldAlert },
+    { to: "/admin/users", label: "Người dùng", icon: Users },
+    { to: "/admin/email-notifications", label: "Thông báo mail", icon: Mail },
+    { to: "/admin/affiliate", label: "Affiliate", icon: Network },
+  ];
 
-const userMenu: MenuItem[] = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/services", label: "Dịch vụ", icon: ShoppingBag },
-  { to: "/orders", label: "Đơn hàng", icon: FileText },
-  { to: "/wallet", label: "Ví tiền", icon: Wallet },
-  { to: "/feedback", label: "Góp ý", icon: MessageSquare },
-  { to: "/report", label: "Báo cáo lừa đảo", icon: ShieldAlert },
-  { to: "/affiliate", label: "Affiliate", icon: Network },
-  { to: "/account", label: "Tài khoản", icon: User },
-];
-
-const menuItems: MenuItem[] = role === "admin" ? adminMenu : userMenu;
-
-const mobileQuickMenu: MenuItem[] = useMemo(() => {
-  if (role === "admin") {
-    return [
-      { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/admin/services", label: "Dịch vụ", icon: ShoppingBag },
-      { to: "/admin/orders", label: "Đơn hàng", icon: FileText },
-      { to: "/admin/wallet", label: "Ví tiền", icon: Wallet },
-      { to: "/admin/reports", label: "Reports", icon: ShieldAlert },
-      { to: "/admin/users", label: "Người dùng", icon: Users },
-      { to: "/admin/email-notifications", label: "Mail", icon: Mail },
-          { to: "/admin/affiliate", label: "Affiliate", icon: Network },
-
-    ];
-  }
-
-  return [
-    { to: "/dashboard", label: "Home", icon: House },
+  const userMenu: MenuItem[] = [
+    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/services", label: "Dịch vụ", icon: ShoppingBag },
     { to: "/orders", label: "Đơn hàng", icon: FileText },
-    { to: "/wallet", label: "Ví", icon: Wallet },
-    { to: "/report", label: "Báo cáo", icon: ShieldAlert },
+    { to: "/wallet", label: "Ví tiền", icon: Wallet },
+    { to: "/feedback", label: "Góp ý", icon: MessageSquare },
+    { to: "/report", label: "Báo cáo lừa đảo", icon: ShieldAlert },
+    { to: "/affiliate", label: "Affiliate", icon: Network },
     { to: "/account", label: "Tài khoản", icon: User },
-      { to: "/affiliate", label: "Affiliate", icon: Network },
-
   ];
-}, [role]);
+
+  const menuItems: MenuItem[] = role === "admin" ? adminMenu : userMenu;
+
+  const mobileQuickMenu: MenuItem[] = useMemo(() => {
+    if (role === "admin") {
+      return [
+        { to: "/admin/dashboard", label: "Home", icon: LayoutDashboard },
+        { to: "/admin/services", label: "Dịch vụ", icon: ShoppingBag },
+        { to: "/admin/orders", label: "Đơn", icon: FileText },
+        { to: "/admin/wallet", label: "Ví", icon: Wallet },
+      ];
+    }
+
+    return [
+      { to: "/dashboard", label: "Home", icon: House },
+      { to: "/services", label: "Dịch vụ", icon: ShoppingBag },
+      { to: "/orders", label: "Đơn hàng", icon: FileText },
+      { to: "/wallet", label: "Ví", icon: Wallet },
+    ];
+  }, [role]);
 
   return (
     <>
       <div
-        className={`fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-[3px] transition-all duration-300 xl:hidden ${
+        className={`fixed inset-0 z-50 bg-slate-950/72 backdrop-blur-[2px] transition-all duration-300 xl:hidden ${
           mobileOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
@@ -140,29 +129,29 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
       />
 
       <aside
-        className={`fixed left-0 top-0 z-[60] flex h-screen w-[84%] max-w-[330px] flex-col border-r border-white/10 bg-[linear-gradient(180deg,rgba(8,18,40,0.98)_0%,rgba(3,10,24,0.98)_100%)] shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl transition-transform duration-300 xl:hidden ${
+        className={`fixed left-0 top-0 z-[60] flex h-screen w-[82%] max-w-[300px] flex-col border-r border-white/10 bg-[linear-gradient(180deg,rgba(8,18,40,0.98)_0%,rgba(3,10,24,0.98)_100%)] shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-transform duration-300 xl:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="relative overflow-hidden border-b border-white/10 px-4 py-4">
+        <div className="relative overflow-hidden border-b border-white/10 px-3.5 py-3.5">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_35%),radial-gradient(circle_at_right,rgba(217,70,239,0.16),transparent_30%)]" />
 
-          <div className="relative flex items-start justify-between gap-3">
+          <div className="relative flex items-center justify-between gap-3">
             <LogoSola size="md" variant="sidebar" />
 
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] border border-white/10 bg-white/5 text-white/75 transition hover:bg-white/10 hover:text-white"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/75 transition hover:bg-white/10 hover:text-white"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4.5 w-4.5" />
             </button>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 pb-24">
-          <div className="mb-3 px-3">
-            <p className="text-[11px] uppercase tracking-[0.28em] text-white/30">
+        <div className="min-h-0 flex-1 overflow-y-auto px-2.5 py-3 pb-24">
+          <div className="mb-2 px-2.5">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-white/30">
               Main Menu
             </p>
           </div>
@@ -177,9 +166,9 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
                   key={item.to}
                   to={item.to}
                   onClick={() => setMobileOpen(false)}
-                  className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl px-4 py-3 transition-all duration-200 ${
+                  className={`group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 transition-all duration-200 ${
                     active
-                      ? "bg-gradient-to-r from-cyan-500/20 via-sky-500/16 to-fuchsia-500/20 text-white ring-1 ring-white/10 shadow-[0_0_20px_rgba(34,211,238,0.16)]"
+                      ? "bg-gradient-to-r from-cyan-500/20 via-sky-500/16 to-fuchsia-500/20 text-white ring-1 ring-white/10 shadow-[0_0_20px_rgba(34,211,238,0.14)]"
                       : "text-white/70 hover:bg-white/6 hover:text-white"
                   }`}
                 >
@@ -188,13 +177,13 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
                   )}
 
                   <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition ${
+                    className={`flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-lg border transition ${
                       active
                         ? "border-white/12 bg-white/10"
                         : "border-white/8 bg-white/[0.03] group-hover:bg-white/8"
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                   </span>
 
                   <div className="min-w-0 flex-1">
@@ -207,9 +196,9 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
         </div>
 
         <div className="border-t border-white/10 bg-white/[0.02] p-3">
-          <div className="rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+          <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/20 to-fuchsia-500/20 text-sm font-semibold text-white ring-1 ring-white/10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400/20 to-fuchsia-500/20 text-sm font-semibold text-white ring-1 ring-white/10">
                 {(user?.name || "U").charAt(0).toUpperCase()}
               </div>
 
@@ -217,7 +206,7 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
                 <p className="truncate text-sm font-semibold text-white">
                   {user?.name || "Người dùng"}
                 </p>
-                <p className="mt-0.5 text-xs text-white/45">
+                <p className="mt-0.5 text-[11px] text-white/45">
                   {role === "admin" ? "Administrator" : "User"}
                 </p>
               </div>
@@ -225,7 +214,7 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
 
             <button
               onClick={handleLogout}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm font-medium text-white/85 transition hover:bg-white/10 hover:text-white"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm font-medium text-white/85 transition hover:bg-white/10 hover:text-white"
             >
               <LogOut className="h-4 w-4" />
               Đăng xuất
@@ -234,32 +223,30 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
         </div>
       </aside>
 
-      <aside className="hidden h-screen w-[285px] shrink-0 border-r border-white/10 bg-[linear-gradient(180deg,rgba(10,20,40,0.92)_0%,rgba(6,12,26,0.95)_100%)] backdrop-blur-2xl xl:flex xl:flex-col">
-        <div className="relative overflow-hidden border-b border-white/10 px-6 py-6">
+      <aside className="hidden h-screen w-[270px] shrink-0 border-r border-white/10 bg-[linear-gradient(180deg,rgba(10,20,40,0.92)_0%,rgba(6,12,26,0.95)_100%)] backdrop-blur-2xl xl:flex xl:flex-col">
+        <div className="relative overflow-hidden border-b border-white/10 px-5 py-5">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_35%),radial-gradient(circle_at_right,rgba(217,70,239,0.12),transparent_30%)]" />
 
           <div className="relative flex items-center gap-3">
-            <div className="relative flex items-center gap-3">
-              <img
-                src="/logo-sola.png"
-                alt="Sola Vietnam"
-                className="h-14 w-auto object-contain"
-              />
+            <img
+              src="/logo-sola.png"
+              alt="Sola Vietnam"
+              className="h-12 w-auto object-contain"
+            />
 
-              <div className="leading-tight">
-                <h2 className="text-lg font-semibold text-white">
-                  Sola Vietnam
-                </h2>
-                <p className="text-xs uppercase tracking-[0.2em] text-white/45">
-                  {role === "admin" ? "Admin Panel" : "Sola Vietnam"}
-                </p>
-              </div>
+            <div className="leading-tight">
+              <h2 className="text-base font-semibold text-white">
+                Sola Vietnam
+              </h2>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">
+                {role === "admin" ? "Admin Panel" : "Sola Vietnam"}
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
-          <p className="mb-3 px-2 text-[11px] uppercase tracking-[0.24em] text-white/30">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3.5 py-4">
+          <p className="mb-2 px-2 text-[10px] uppercase tracking-[0.22em] text-white/30">
             Main Menu
           </p>
 
@@ -275,18 +262,18 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
           </div>
         </div>
 
-        <div className="border-t border-white/10 p-4">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+        <div className="border-t border-white/10 p-3.5">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
             <p className="text-sm font-semibold text-white">
               {user?.name || "Người dùng"}
             </p>
-            <p className="mt-1 text-xs text-white/45">
+            <p className="mt-1 text-[11px] text-white/45">
               {role === "admin" ? "Administrator" : "User"}
             </p>
 
             <button
               onClick={handleLogout}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
             >
               <LogOut className="h-4 w-4" />
               Đăng xuất
@@ -295,7 +282,7 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
         </div>
       </aside>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-slate-950/88 px-2 py-2 backdrop-blur-2xl xl:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-slate-950/90 px-2 py-2 backdrop-blur-xl xl:hidden">
         <div className="grid grid-cols-4 gap-1.5">
           {mobileQuickMenu.map((item) => {
             const active = location.pathname === item.to;
@@ -306,14 +293,14 @@ const mobileQuickMenu: MenuItem[] = useMemo(() => {
                 key={item.to}
                 to={item.to}
                 onClick={() => setMobileOpen(false)}
-                className={`flex flex-col items-center justify-center rounded-2xl px-2 py-2 text-[11px] transition ${
+                className={`flex min-w-0 flex-col items-center justify-center rounded-xl px-2 py-2 text-[10px] transition ${
                   active
                     ? "bg-gradient-to-r from-cyan-500/15 to-fuchsia-500/15 text-white"
                     : "text-white/55 hover:bg-white/5 hover:text-white/85"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                <span className="mt-1 truncate">{item.label}</span>
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="mt-1 max-w-full truncate">{item.label}</span>
               </NavLink>
             );
           })}

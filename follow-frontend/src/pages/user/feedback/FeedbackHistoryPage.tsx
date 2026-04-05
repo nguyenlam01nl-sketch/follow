@@ -211,11 +211,11 @@ export default function FeedbackHistoryPage() {
         title: item.title,
         html: `
           <div style="text-align:left; color:#e5eefc; line-height:1.7;">
-            <div style="margin-bottom:10px;"><b>Loại:</b> ${typeMeta.label}</div>
-            <div style="margin-bottom:10px;"><b>Trạng thái:</b> ${statusMeta.label}</div>
-            <div style="margin-bottom:10px;"><b>Ngày gửi:</b> ${formatDate(item.created_at)}</div>
-            <div style="margin-top:14px;"><b>Nội dung:</b></div>
-            <div style="margin-top:8px; white-space:pre-wrap; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px;">
+            <div style="margin-bottom:8px;"><b>Loại:</b> ${typeMeta.label}</div>
+            <div style="margin-bottom:8px;"><b>Trạng thái:</b> ${statusMeta.label}</div>
+            <div style="margin-bottom:8px;"><b>Ngày gửi:</b> ${formatDate(item.created_at)}</div>
+            <div style="margin-top:12px;"><b>Nội dung:</b></div>
+            <div style="margin-top:8px; white-space:pre-wrap; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:12px;">
               ${item.content}
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function FeedbackHistoryPage() {
         color: "#fff",
         confirmButtonColor: "#f97316",
         confirmButtonText: "Đóng",
-        width: 720,
+        width: 680,
       });
     } catch (error) {
       Swal.fire({
@@ -250,24 +250,21 @@ export default function FeedbackHistoryPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 sm:space-y-8">
-        <div className="border-b border-white/6 pb-3">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 sm:text-xs sm:tracking-[0.24em]">
+      <div className="space-y-4 px-2.5 sm:space-y-5 sm:px-4">
+        <div className="border-b border-white/6 pb-2.5">
+          <div className="text-[10px] uppercase tracking-[0.16em] text-white/35 sm:text-[11px]">
             Trang chủ &nbsp; &gt; &nbsp; Đóng góp ý kiến &nbsp; &gt; &nbsp; Lịch sử
           </div>
         </div>
 
-        <section className="space-y-4 sm:space-y-5 border-b border-white/10 pb-6 sm:pb-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] sm:h-11 sm:w-11 sm:rounded-2xl">
-                <Clock3
-                  size={18}
-                  className="text-orange-400 sm:h-[22px] sm:w-[22px]"
-                />
+        <section className="space-y-3 border-b border-white/10 pb-4 sm:space-y-4 sm:pb-5">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.05] sm:h-9 sm:w-9">
+                <Clock3 size={16} className="text-orange-400" />
               </div>
 
-              <h2 className="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+              <h2 className="text-base font-extrabold tracking-tight text-white sm:text-lg">
                 LỊCH SỬ GÓP Ý
               </h2>
             </div>
@@ -276,60 +273,57 @@ export default function FeedbackHistoryPage() {
               <button
                 type="button"
                 onClick={() => navigate("/feedback")}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white/85 transition hover:bg-white/[0.08]"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-white/85 transition hover:bg-white/[0.08]"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Quay lại góp ý
               </button>
 
-              <div className="w-fit rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-orange-200 sm:px-4 sm:text-xs">
+              <div className="w-fit rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-orange-200">
                 {stats.total} góp ý
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-            <div className="rounded-[20px] border border-white/10 bg-[#08152d] p-4">
-              <p className="text-sm text-white/45">Chờ xem</p>
-              <p className="mt-2 text-2xl font-bold text-amber-200">
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+            <div className="rounded-[16px] border border-white/10 bg-[#08152d] px-3 py-2.5">
+              <p className="text-[11px] text-white/45 sm:text-xs">Chờ xem</p>
+              <p className="mt-1 text-lg font-bold text-amber-200 sm:text-xl">
                 {stats.pending}
               </p>
             </div>
 
-            <div className="rounded-[20px] border border-white/10 bg-[#08152d] p-4">
-              <p className="text-sm text-white/45">Đã xem</p>
-              <p className="mt-2 text-2xl font-bold text-sky-200">
+            <div className="rounded-[16px] border border-white/10 bg-[#08152d] px-3 py-2.5">
+              <p className="text-[11px] text-white/45 sm:text-xs">Đã xem</p>
+              <p className="mt-1 text-lg font-bold text-sky-200 sm:text-xl">
                 {stats.reviewed}
               </p>
             </div>
 
-            <div className="rounded-[20px] border border-white/10 bg-[#08152d] p-4">
-              <p className="text-sm text-white/45">Đã xử lý</p>
-              <p className="mt-2 text-2xl font-bold text-emerald-200">
+            <div className="rounded-[16px] border border-white/10 bg-[#08152d] px-3 py-2.5">
+              <p className="text-[11px] text-white/45 sm:text-xs">Đã xử lý</p>
+              <p className="mt-1 text-lg font-bold text-emerald-200 sm:text-xl">
                 {stats.resolved}
               </p>
             </div>
           </div>
         </section>
 
-        <section className="space-y-4 sm:space-y-5 border-b border-white/10 pb-6 sm:pb-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] sm:h-11 sm:w-11 sm:rounded-2xl">
-              <Filter
-                size={18}
-                className="text-orange-400 sm:h-[22px] sm:w-[22px]"
-              />
+        <section className="space-y-3 border-b border-white/10 pb-4 sm:space-y-4 sm:pb-5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.05] sm:h-9 sm:w-9">
+              <Filter size={16} className="text-orange-400" />
             </div>
 
-            <h2 className="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+            <h2 className="text-base font-extrabold tracking-tight text-white sm:text-lg">
               BỘ LỌC
             </h2>
           </div>
 
-          <div className="rounded-[20px] sm:rounded-[24px] border border-white/10 bg-[#08152d] p-4 sm:p-6">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-[16px] border border-white/10 bg-[#08152d] p-3 sm:rounded-[18px] sm:p-4">
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
               <div className="xl:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-white/70">
+                <label className="mb-1.5 block text-xs font-medium text-white/70">
                   Tìm kiếm
                 </label>
 
@@ -343,14 +337,14 @@ export default function FeedbackHistoryPage() {
                         if (e.key === "Enter") handleSearch();
                       }}
                       placeholder="Nhập tiêu đề hoặc nội dung góp ý"
-                      className="w-full rounded-2xl border border-white/10 bg-white/[0.03] py-3 pl-10 pr-4 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-orange-400"
+                      className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 pl-10 pr-3 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-orange-400"
                     />
                   </div>
 
                   <button
                     type="button"
                     onClick={handleSearch}
-                    className="rounded-2xl bg-orange-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-400"
+                    className="rounded-xl bg-orange-500 px-3 py-2.5 text-xs font-semibold text-white transition hover:bg-orange-400 sm:text-sm"
                   >
                     Tìm
                   </button>
@@ -358,13 +352,13 @@ export default function FeedbackHistoryPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-white/70">
+                <label className="mb-1.5 block text-xs font-medium text-white/70">
                   Trạng thái
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-orange-400"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm text-white outline-none transition focus:border-orange-400"
                 >
                   <option value="" className="bg-slate-900">
                     Tất cả
@@ -385,13 +379,13 @@ export default function FeedbackHistoryPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-white/70">
+                <label className="mb-1.5 block text-xs font-medium text-white/70">
                   Loại ý kiến
                 </label>
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-orange-400"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm text-white outline-none transition focus:border-orange-400"
                 >
                   <option value="" className="bg-slate-900">
                     Tất cả
@@ -411,30 +405,34 @@ export default function FeedbackHistoryPage() {
           </div>
         </section>
 
-        <section className="space-y-4 sm:space-y-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] sm:h-11 sm:w-11 sm:rounded-2xl">
-              <Eye
-                size={18}
-                className="text-orange-400 sm:h-[22px] sm:w-[22px]"
-              />
+        <section className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.05] sm:h-9 sm:w-9">
+              <Eye size={16} className="text-orange-400" />
             </div>
 
-            <h2 className="text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+            <h2 className="text-base font-extrabold tracking-tight text-white sm:text-lg">
               DANH SÁCH ĐÃ GỬI
             </h2>
           </div>
 
           {loading ? (
-            <div className="rounded-[20px] sm:rounded-[24px] border border-white/10 bg-[#08152d] p-4 sm:p-6 text-sm text-white/60 sm:text-base">
+            <div className="rounded-[16px] border border-white/10 bg-[#08152d] p-4 text-sm text-white/60">
               Đang tải lịch sử góp ý...
             </div>
           ) : items.length === 0 ? (
-            <div className="rounded-[20px] sm:rounded-[24px] border border-white/10 bg-[#08152d] p-4 sm:p-6 text-sm text-white/60 sm:text-base">
+            <div className="rounded-[16px] border border-white/10 bg-[#08152d] p-4 text-sm text-white/60">
               Bạn chưa có góp ý nào.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="rounded-[16px] border border-white/10 bg-[#08152d] overflow-hidden">
+              <div className="grid grid-cols-[minmax(0,1fr)_90px_88px] gap-2 border-b border-white/10 px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-white/35 sm:grid-cols-[minmax(0,1.5fr)_120px_110px_90px] sm:px-4">
+                <div>Nội dung</div>
+                <div className="text-right">Ngày gửi</div>
+                <div className="text-right">Trạng thái</div>
+                <div className="hidden sm:block text-right">Chi tiết</div>
+              </div>
+
               {items.map((item) => {
                 const typeMeta = getTypeMeta(item.type);
                 const statusMeta = getStatusMeta(item.status);
@@ -444,48 +442,58 @@ export default function FeedbackHistoryPage() {
                 return (
                   <div
                     key={item.id}
-                    className="rounded-[20px] sm:rounded-[24px] border border-white/10 bg-[#08152d] p-4 sm:p-5"
+                    className="grid grid-cols-[minmax(0,1fr)_90px_88px] gap-2 border-b border-white/8 px-3 py-2.5 text-xs last:border-b-0 sm:grid-cols-[minmax(0,1.5fr)_120px_110px_90px] sm:px-4 hover:bg-white/[0.03] transition"
                   >
-                    <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-3 flex flex-wrap gap-2">
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${typeMeta.badge}`}
-                          >
-                            <TypeIcon className="h-3.5 w-3.5" />
-                            {typeMeta.label}
-                          </span>
-
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${statusMeta.className}`}
-                          >
-                            <StatusIcon className="h-3.5 w-3.5" />
-                            {statusMeta.label}
-                          </span>
-                        </div>
-
-                        <h3 className="text-base font-bold text-white sm:text-lg">
-                          {item.title}
-                        </h3>
-
-                        <p className="mt-2 line-clamp-3 text-sm leading-6 text-white/55">
-                          {item.content}
-                        </p>
-
-                        <div className="mt-4 text-xs text-white/40">
-                          Ngày gửi: {formatDate(item.created_at)}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap xl:w-[180px] xl:justify-end">
-                        <button
-                          type="button"
-                          onClick={() => handleViewDetail(item.id)}
-                          className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white/85 transition hover:bg-white/[0.08]"
+                    <div className="min-w-0">
+                      <div className="mb-1 flex flex-wrap gap-1.5">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold ${typeMeta.badge}`}
                         >
-                          Xem chi tiết
-                        </button>
+                          <TypeIcon className="h-3 w-3" />
+                          {typeMeta.label}
+                        </span>
                       </div>
+
+                      <div className="truncate font-medium text-white">
+                        {item.title}
+                      </div>
+
+                      <div className="truncate text-[10px] text-white/40">
+                        {item.content}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end text-[11px] text-white/55 sm:text-xs">
+                      {formatDate(item.created_at)}
+                    </div>
+
+                    <div className="flex items-center justify-end">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[9px] sm:text-[10px] font-medium ${statusMeta.className}`}
+                      >
+                        <StatusIcon className="h-3 w-3" />
+                        {statusMeta.label}
+                      </span>
+                    </div>
+
+                    <div className="hidden sm:flex items-center justify-end">
+                      <button
+                        type="button"
+                        onClick={() => handleViewDetail(item.id)}
+                        className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-white/85 transition hover:bg-white/[0.08]"
+                      >
+                        Xem
+                      </button>
+                    </div>
+
+                    <div className="col-span-3 flex justify-end sm:hidden">
+                      <button
+                        type="button"
+                        onClick={() => handleViewDetail(item.id)}
+                        className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-white/85 transition hover:bg-white/[0.08]"
+                      >
+                        Xem chi tiết
+                      </button>
                     </div>
                   </div>
                 );
@@ -494,13 +502,13 @@ export default function FeedbackHistoryPage() {
           )}
 
           {!!pagination && pagination.last_page > 1 && (
-            <div className="flex justify-center pt-2">
+            <div className="flex justify-center pt-1">
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <button
                   type="button"
                   disabled={page === 1}
                   onClick={() => fetchHistory(page - 1)}
-                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/80 transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-white/80 transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Trước
                 </button>
@@ -513,7 +521,7 @@ export default function FeedbackHistoryPage() {
                     key={pageNumber}
                     type="button"
                     onClick={() => fetchHistory(pageNumber)}
-                    className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                       pageNumber === page
                         ? "bg-orange-500 text-white"
                         : "border border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08]"
@@ -527,7 +535,7 @@ export default function FeedbackHistoryPage() {
                   type="button"
                   disabled={page === pagination.last_page}
                   onClick={() => fetchHistory(page + 1)}
-                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/80 transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-white/80 transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Sau
                 </button>

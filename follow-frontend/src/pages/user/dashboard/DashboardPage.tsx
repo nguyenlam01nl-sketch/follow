@@ -144,236 +144,237 @@ function DashboardPage() {
     <DashboardLayout>
       <>
         {showPopup && latestNotification && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-3 sm:px-4">
-            <div className="w-full max-w-md rounded-2xl border border-white/12 bg-[#0f172a]/95 p-4 shadow-2xl backdrop-blur-2xl sm:rounded-[28px] sm:p-5">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3">
+            <div className="w-full max-w-[340px] rounded-2xl border border-white/12 bg-[#0f172a]/95 p-3.5 shadow-2xl backdrop-blur-xl sm:max-w-md sm:p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs text-white/45 sm:text-sm">Thông báo mới</p>
-                  <h2 className="mt-1 text-base font-semibold text-white sm:text-xl">
+                  <p className="text-[10px] text-white/45 sm:text-xs">Thông báo mới</p>
+                  <h2 className="mt-1 line-clamp-2 text-sm font-semibold text-white sm:text-lg">
                     {latestNotification.title}
                   </h2>
                 </div>
 
                 <button
                   onClick={handleClosePopup}
-                  className="shrink-0 rounded-lg border border-white/12 bg-white/8 px-2.5 py-1.5 text-xs text-white/70 transition hover:bg-white/12 hover:text-white sm:rounded-xl sm:px-3 sm:py-2 sm:text-sm"
+                  className="shrink-0 rounded-lg border border-white/12 bg-white/8 px-2.5 py-1.5 text-[11px] text-white/70 transition hover:bg-white/12 hover:text-white"
                 >
                   Đóng
                 </button>
               </div>
 
-              <div className="mt-3 rounded-xl border border-white/10 bg-white/6 p-3 sm:mt-4 sm:rounded-2xl sm:p-4">
-                <p className="text-xs leading-6 text-white/75 sm:text-sm sm:leading-7">
+              <div className="mt-3 rounded-xl border border-white/10 bg-white/6 p-3">
+                <p className="text-xs leading-5 text-white/75 sm:text-sm sm:leading-6">
                   {latestNotification.content}
                 </p>
-                <p className="mt-2 text-[11px] text-white/35 sm:mt-3 sm:text-xs">
+                <p className="mt-2 text-[10px] text-white/35">
                   {new Date(latestNotification.created_at).toLocaleString("vi-VN")}
                 </p>
               </div>
 
-              <p className="mt-3 text-[11px] text-white/40 sm:mt-4 sm:text-xs">
+              <p className="mt-3 text-[10px] text-white/40">
                 Sau khi đóng, thông báo này sẽ không hiện lại trong 1 ngày.
               </p>
             </div>
           </div>
         )}
 
-        <div className="space-y-4 sm:space-y-5 lg:space-y-6">
-          <section className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
-            <div className="[&>*]:rounded-2xl [&>*]:p-3 sm:[&>*]:rounded-[28px] sm:[&>*]:p-5">
-              <StatCard
-                title="Tổng đơn hàng"
-                value={loading ? "..." : String(dashboard?.stats.total_orders ?? 0)}
-                subtext="Tổng số đơn đã tạo"
-                icon="🧾"
-              />
-            </div>
+        <div className="w-full max-w-none space-y-3 sm:space-y-4">
+          <section className="grid w-full grid-cols-2 gap-2">
+            <StatCard
+              title="Tổng đơn hàng"
+              value={loading ? "..." : String(dashboard?.stats.total_orders ?? 0)}
+              subtext="Tổng số đơn"
+              icon="🧾"
+            />
 
-            <div className="[&>*]:rounded-2xl [&>*]:p-3 sm:[&>*]:rounded-[28px] sm:[&>*]:p-5">
-              <StatCard
-                title="Đã chi tiêu"
-                value={loading ? "..." : formatVND(dashboard?.stats.total_spent ?? 0)}
-                subtext="Tổng tiền từ các đơn hàng"
-                icon="💸"
-              />
-            </div>
+            <StatCard
+              title="Đã chi tiêu"
+              value={loading ? "..." : formatVND(dashboard?.stats.total_spent ?? 0)}
+              subtext="Tổng tiền đã dùng"
+              icon="💸"
+            />
 
-            <div className="[&>*]:rounded-2xl [&>*]:p-3 sm:[&>*]:rounded-[28px] sm:[&>*]:p-5">
-              <StatCard
-                title="Số dư ví"
-                value={loading ? "..." : formatVND(dashboard?.stats.balance ?? 0)}
-                subtext="Số dư hiện tại trong tài khoản"
-                icon="💰"
-              />
-            </div>
+            <StatCard
+              title="Số dư ví"
+              value={loading ? "..." : formatVND(dashboard?.stats.balance ?? 0)}
+              subtext="Số dư hiện tại"
+              icon="💰"
+            />
 
-            <div className="[&>*]:rounded-2xl [&>*]:p-3 sm:[&>*]:rounded-[28px] sm:[&>*]:p-5">
-              <StatCard
-                title="Dịch vụ"
-                value={loading ? "..." : String(dashboard?.stats.active_services ?? 0)}
-                subtext="Số dịch vụ đang mở bán"
-                icon="🛍️"
-              />
-            </div>
+            <StatCard
+              title="Dịch vụ"
+              value={loading ? "..." : String(dashboard?.stats.active_services ?? 0)}
+              subtext="Đang mở bán"
+              icon="🛍️"
+            />
           </section>
 
-          <section className="grid gap-4 lg:gap-5 xl:grid-cols-[1.4fr_0.8fr] xl:gap-6">
-            <div className="rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-2xl sm:rounded-[28px] sm:p-5 lg:p-6">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs text-white/45 sm:text-sm">Recent activity</p>
-                  <h2 className="mt-1 text-base font-semibold text-white sm:text-xl">
-                    Đơn hàng gần đây
-                  </h2>
-                </div>
+   <section className="grid gap-3 xl:grid-cols-[1.35fr_0.85fr]">
+  <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-white/12 bg-white/8 p-3 backdrop-blur-xl">
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-[10px] text-white/45">Recent activity</p>
+        <h2 className="mt-1 text-sm font-semibold text-white">
+          Đơn hàng gần đây
+        </h2>
+      </div>
 
-                <button
-                  onClick={() => navigate("/orders")}
-                  className="rounded-lg border border-white/12 bg-white/8 px-3 py-1.5 text-xs text-white/70 transition hover:bg-white/12 hover:text-white sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
-                >
-                  Xem tất cả
-                </button>
+      <button
+        onClick={() => navigate("/orders")}
+        className="shrink-0 rounded-lg border border-white/12 bg-white/8 px-2.5 py-1.5 text-[11px] text-white/70 transition hover:bg-white/12 hover:text-white"
+      >
+        Xem tất cả
+      </button>
+    </div>
+
+    <div className="mt-3 space-y-2">
+      {loading ? (
+        <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/6 px-3 py-2.5 text-xs text-white/60">
+          Đang tải dữ liệu...
+        </div>
+      ) : dashboard?.recent_orders?.length ? (
+        dashboard.recent_orders.slice(0, 3).map((order) => (
+          <div
+            key={order.id}
+            className="w-full min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/6 px-3 py-2.5"
+          >
+            <div className="flex min-w-0 flex-col gap-2">
+              <div className="min-w-0 overflow-hidden">
+                <p className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-white">
+                  {order.service_name}
+                </p>
+                <p className="mt-1 block w-full overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-white/45">
+                  #{order.code} • {formatVND(order.total_price)}
+                </p>
               </div>
 
-              <div className="mt-4 space-y-2.5 sm:mt-5 sm:space-y-3">
-                {loading ? (
-                  <div className="rounded-xl border border-white/10 bg-white/6 px-3 py-3 text-sm text-white/60 sm:rounded-2xl sm:px-4 sm:py-4">
-                    Đang tải dữ liệu...
-                  </div>
-                ) : dashboard?.recent_orders?.length ? (
-                  dashboard.recent_orders.map((order) => (
-                    <div
-                      key={order.id}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/6 px-3 py-3 sm:rounded-2xl sm:px-4 sm:py-4"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-white sm:text-base">
-                          {order.service_name}
-                        </p>
-                        <p className="mt-1 truncate text-xs text-white/45 sm:text-sm">
-                          #{order.code} • {formatVND(order.total_price)}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] sm:px-3 sm:text-xs ${getStatusClass(order.status)}`}
-                      >
-                        {getStatusLabel(order.status)}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-xl border border-white/10 bg-white/6 px-3 py-3 text-sm text-white/60 sm:rounded-2xl sm:px-4 sm:py-4">
-                    Bạn chưa có đơn hàng nào.
-                  </div>
-                )}
-              </div>
+              <span
+                className={`inline-flex w-fit max-w-full rounded-full border px-2.5 py-1 text-[10px] ${getStatusClass(
+                  order.status
+                )}`}
+              >
+                {getStatusLabel(order.status)}
+              </span>
             </div>
+          </div>
+        ))
+      ) : (
+        <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/6 px-3 py-2.5 text-xs text-white/60">
+          Bạn chưa có đơn hàng nào.
+        </div>
+      )}
+    </div>
+  </div>
 
-            <div className="space-y-4 sm:space-y-5 lg:space-y-6">
-              <div className="rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-2xl sm:rounded-[28px] sm:p-5 lg:p-6">
-                <p className="text-xs text-white/45 sm:text-sm">Wallet</p>
-                <h2 className="mt-1 text-base font-semibold text-white sm:text-xl">
-                  Số dư hiện tại
-                </h2>
+  <div className="w-full min-w-0 space-y-3 overflow-hidden">
+    <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-white/12 bg-white/8 p-3 backdrop-blur-xl">
+      <p className="text-[10px] text-white/45">Wallet</p>
+      <h2 className="mt-1 text-sm font-semibold text-white">
+        Số dư hiện tại
+      </h2>
 
-                <div className="mt-4 rounded-2xl bg-gradient-to-r from-cyan-400/20 via-sky-400/20 to-fuchsia-500/20 p-4 sm:mt-5 sm:rounded-3xl sm:p-5">
-                  <p className="text-xs text-white/55 sm:text-sm">Available balance</p>
-                  <p className="mt-2 text-xl font-semibold text-white sm:text-3xl">
-                    {loading ? "..." : formatVND(dashboard?.stats.balance ?? 0)}
-                  </p>
-                </div>
+      <div className="mt-3 w-full min-w-0 overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-400/20 via-sky-400/20 to-fuchsia-500/20 p-3">
+        <p className="text-[10px] text-white/55">Available balance</p>
+        <p className="mt-2 w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-semibold text-white">
+          {loading ? "..." : formatVND(dashboard?.stats.balance ?? 0)}
+        </p>
+      </div>
 
-                <button
-                  onClick={() => navigate("/wallet")}
-                  className="mt-4 w-full rounded-xl bg-gradient-to-r from-cyan-400 via-sky-400 to-fuchsia-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(34,211,238,0.25)] transition hover:scale-[1.01] sm:mt-5 sm:rounded-2xl sm:py-3"
-                >
-                  Nạp tiền
-                </button>
-              </div>
+      <button
+        onClick={() => navigate("/wallet")}
+        className="mt-3 w-full rounded-xl bg-gradient-to-r from-cyan-400 via-sky-400 to-fuchsia-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:scale-[1.01]"
+      >
+        Nạp tiền
+      </button>
+    </div>
 
-              <div className="rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-2xl sm:rounded-[28px] sm:p-5 lg:p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs text-white/45 sm:text-sm">Notifications</p>
-                    <h2 className="mt-1 text-base font-semibold text-white sm:text-xl">
-                      Thông báo
-                    </h2>
-                  </div>
+    <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-white/12 bg-white/8 p-3 backdrop-blur-xl">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] text-white/45">Notifications</p>
+          <h2 className="mt-1 text-sm font-semibold text-white">
+            Thông báo
+          </h2>
+        </div>
 
-                  {latestNotification && (
-                    <button
-                      onClick={() => setShowPopup(true)}
-                      className="rounded-lg border border-white/12 bg-white/8 px-3 py-1.5 text-xs text-white/70 transition hover:bg-white/12 hover:text-white sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
-                    >
-                      Xem popup
-                    </button>
-                  )}
-                </div>
+        {latestNotification && (
+          <button
+            onClick={() => setShowPopup(true)}
+            className="shrink-0 rounded-lg border border-white/12 bg-white/8 px-2.5 py-1.5 text-[11px] text-white/70 transition hover:bg-white/12 hover:text-white"
+          >
+            Xem
+          </button>
+        )}
+      </div>
 
-                <div className="mt-4 space-y-2.5 sm:mt-5 sm:space-y-3">
-                  {notificationLoading ? (
-                    <div className="rounded-xl border border-white/10 bg-white/6 px-3 py-3 text-sm text-white/60 sm:rounded-2xl sm:px-4 sm:py-4">
-                      Đang tải thông báo...
-                    </div>
-                  ) : notifications.length ? (
-                    notifications.map((item) => (
-                      <div
-                        key={item.id}
-                        className="rounded-xl border border-white/10 bg-white/6 px-3 py-3 sm:rounded-2xl sm:px-4 sm:py-4"
-                      >
-                        <p className="text-sm font-semibold text-white">{item.title}</p>
-                        <p className="mt-1 text-xs leading-5 text-white/60 sm:text-sm sm:leading-6">
-                          {item.content}
-                        </p>
-                        <p className="mt-2 text-[11px] text-white/35 sm:text-xs">
-                          {new Date(item.created_at).toLocaleString("vi-VN")}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="rounded-xl border border-white/10 bg-white/6 px-3 py-3 text-sm text-white/60 sm:rounded-2xl sm:px-4 sm:py-4">
-                      Chưa có thông báo nào.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-2xl sm:rounded-[28px] sm:p-5 lg:p-6">
-                <p className="text-xs text-white/45 sm:text-sm">Quick actions</p>
-                <h2 className="mt-1 text-base font-semibold text-white sm:text-xl">
-                  Thao tác nhanh
-                </h2>
-
-                <div className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:gap-3">
-                  <button
-                    onClick={() => navigate("/services")}
-                    className="rounded-xl border border-white/12 bg-white/8 px-3 py-2.5 text-xs text-white/75 transition hover:bg-white/12 hover:text-white sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
-                  >
-                    Tạo đơn mới
-                  </button>
-                  <button
-                    onClick={() => navigate("/services")}
-                    className="rounded-xl border border-white/12 bg-white/8 px-3 py-2.5 text-xs text-white/75 transition hover:bg-white/12 hover:text-white sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
-                  >
-                    Xem dịch vụ
-                  </button>
-                  <button
-                    onClick={() => navigate("/orders")}
-                    className="rounded-xl border border-white/12 bg-white/8 px-3 py-2.5 text-xs text-white/75 transition hover:bg-white/12 hover:text-white sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
-                  >
-                    Lịch sử đơn
-                  </button>
-                  <button
-                    onClick={() => navigate("/account")}
-                    className="rounded-xl border border-white/12 bg-white/8 px-3 py-2.5 text-xs text-white/75 transition hover:bg-white/12 hover:text-white sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
-                  >
-                    Tài khoản
-                  </button>
-                </div>
-              </div>
+      <div className="mt-3 space-y-2">
+        {notificationLoading ? (
+          <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/6 px-3 py-2.5 text-xs text-white/60">
+            Đang tải thông báo...
+          </div>
+        ) : notifications.length ? (
+          notifications.slice(0, 2).map((item) => (
+            <div
+              key={item.id}
+              className="w-full min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/6 px-3 py-2.5"
+            >
+              <p className="truncate text-sm font-semibold text-white">
+                {item.title}
+              </p>
+              <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-white/60">
+                {item.content}
+              </p>
+              <p className="mt-2 text-[10px] text-white/35">
+                {new Date(item.created_at).toLocaleString("vi-VN")}
+              </p>
             </div>
-          </section>
+          ))
+        ) : (
+          <div className="w-full min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/6 px-3 py-2.5 text-xs text-white/60">
+            Chưa có thông báo nào.
+          </div>
+        )}
+      </div>
+    </div>
+
+    <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-white/12 bg-white/8 p-3 backdrop-blur-xl">
+      <p className="text-[10px] text-white/45">Quick actions</p>
+      <h2 className="mt-1 text-sm font-semibold text-white">
+        Thao tác nhanh
+      </h2>
+
+      <div className="mt-3 grid grid-cols-1 gap-2">
+        <button
+          onClick={() => navigate("/services")}
+          className="w-full overflow-hidden rounded-xl border border-white/12 bg-white/8 px-3 py-2.5 text-center text-xs text-white/75 transition hover:bg-white/12 hover:text-white"
+        >
+          <span className="block truncate">Tạo đơn mới</span>
+        </button>
+
+        <button
+          onClick={() => navigate("/services")}
+          className="w-full overflow-hidden rounded-xl border border-white/12 bg-white/8 px-3 py-2.5 text-center text-xs text-white/75 transition hover:bg-white/12 hover:text-white"
+        >
+          <span className="block truncate">Xem dịch vụ</span>
+        </button>
+
+        <button
+          onClick={() => navigate("/orders")}
+          className="w-full overflow-hidden rounded-xl border border-white/12 bg-white/8 px-3 py-2.5 text-center text-xs text-white/75 transition hover:bg-white/12 hover:text-white"
+        >
+          <span className="block truncate">Lịch sử đơn</span>
+        </button>
+
+        <button
+          onClick={() => navigate("/account")}
+          className="w-full overflow-hidden rounded-xl border border-white/12 bg-white/8 px-3 py-2.5 text-center text-xs text-white/75 transition hover:bg-white/12 hover:text-white"
+        >
+          <span className="block truncate">Tài khoản</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
         </div>
       </>
     </DashboardLayout>
