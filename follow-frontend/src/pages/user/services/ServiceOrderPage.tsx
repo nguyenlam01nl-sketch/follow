@@ -211,6 +211,14 @@ export default function ServiceOrderPage() {
         selected_price: totalPrice,
       });
 
+      if (typeof window !== "undefined" && (window as any).gtag) {
+  (window as any).gtag('event', 'conversion', {
+    send_to: 'AW-18064301149/XXXXXXXX',
+    value: totalPrice,
+    currency: 'VND'
+  });
+}
+
       await refreshWallet();
 
       await Swal.fire({

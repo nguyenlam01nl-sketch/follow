@@ -582,7 +582,14 @@ export default function EngagementPlatformPage() {
       }
 
       await api.post("/external/orders", payload);
-      await refreshWallet();
+      await refreshWallet();// 🔥 Google Ads Conversion
+if (typeof window !== "undefined" && (window as any).gtag) {
+  (window as any).gtag('event', 'conversion', {
+    send_to: 'AW-18064301149/XXXXXXXX', // ⚠️ lát mình lấy cho bé
+    value: totalPrice,
+    currency: 'VND'
+  });
+}
 
       await showAlert({
         title: "Tạo đơn thành công!",

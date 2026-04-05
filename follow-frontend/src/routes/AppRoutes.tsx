@@ -30,6 +30,9 @@ import ReportHistoryPage from "@/pages/user/report/ReportHistoryPage";
 import AffiliatePage from "@/pages/user/affiliate/AffiliatePage";
 import AdminAffiliatePage from "@/pages/admin/affiliate/AdminAffiliatePage";
 
+import OrderSuccessPage from "@/pages/user/success/OrderSuccessPage";
+
+
 function AppRoutes() {
   return (
     <Routes>
@@ -57,6 +60,7 @@ function AppRoutes() {
         <Route path="/report/history" element={<ReportHistoryPage />} />
         <Route path="/affiliate" element={<AffiliatePage />} />
 
+        <Route path="/order-success" element={<OrderSuccessPage />} />
       </Route>
 
       {/* 👑 ADMIN */}
