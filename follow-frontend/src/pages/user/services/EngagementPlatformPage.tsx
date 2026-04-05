@@ -581,23 +581,23 @@ export default function EngagementPlatformPage() {
         payload.note = note;
       }
 
-  await api.post("/external/orders", payload);
-await refreshWallet();
+      await api.post("/external/orders", payload);
+      await refreshWallet();
 
-// Google Ads conversion
-if (typeof window !== "undefined" && (window as any).gtag) {
-  (window as any).gtag("event", "conversion", {
-    send_to: "AW-18064301149/338SCIymiZYcEN243aVD",
-    value: Number(totalPrice || 0),
-    currency: "VND",
-    transaction_id: `external-${Date.now()}`,
-  });
-}
+      // Google Ads conversion
+      if (typeof window !== "undefined" && (window as any).gtag) {
+        (window as any).gtag("event", "conversion", {
+          send_to: "AW-18064301149/338SCIymiZYcEN243aVD",
+          value: Number(totalPrice || 0),
+          currency: "VND",
+          transaction_id: `external-${Date.now()}`,
+        });
+      }
 
-await showAlert({
-  title: "Tạo đơn thành công!",
-  icon: "success",
-  content: `
+      await showAlert({
+        title: "Tạo đơn thành công!",
+        icon: "success",
+        content: `
     <div style="display:flex; flex-direction:column; gap:8px;">
       <div style="display:flex; justify-content:space-between; gap:16px;">
         <span style="color:rgba(255,255,255,0.68)">Giá gói</span>
@@ -609,24 +609,8 @@ await showAlert({
       </div>
     </div>
   `,
-});
-
-      await showAlert({
-        title: "Tạo đơn thành công!",
-        icon: "success",
-        content: `
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <div style="display:flex; justify-content:space-between; gap:16px;">
-              <span style="color:rgba(255,255,255,0.68)">Giá gói</span>
-              <b style="color:#60a5fa">${formatMoney(selectedPrice)}</b>
-            </div>
-            <div style="display:flex; justify-content:space-between; gap:16px;">
-              <span style="color:rgba(255,255,255,0.68)">Tổng tiền</span>
-              <b style="color:#f59e0b">${formatMoney(totalPrice)}</b>
-            </div>
-          </div>
-        `,
       });
+
 
       setSelectedServiceId("");
       setQuantity("");
