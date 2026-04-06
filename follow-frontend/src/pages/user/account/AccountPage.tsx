@@ -193,7 +193,7 @@ function AccountPage() {
     const result = await Swal.fire({
       icon: "question",
       title: "Đổi mật khẩu?",
-      text: "Bé có chắc muốn cập nhật mật khẩu mới không?",
+      text: "Bạn có chắc muốn cập nhật mật khẩu mới không?",
       showCancelButton: true,
       confirmButtonText: "Đồng ý",
       cancelButtonText: "Hủy",

@@ -17,6 +17,7 @@ import {
   Video,
   Zap,
   Pencil,
+  Plus,
 } from "lucide-react";
 
 type ServiceItem = {
@@ -221,6 +222,10 @@ export default function AdminServicesPage() {
     }));
   }, [tree]);
 
+  const totalServices = useMemo(() => {
+    return sections.reduce((sum, platform) => sum + platform.services.length, 0);
+  }, [sections]);
+
   return (
     <DashboardLayout>
       <div className="space-y-10">
@@ -229,6 +234,45 @@ export default function AdminServicesPage() {
             Admin &nbsp; &gt; &nbsp; Services
           </div>
         </div>
+
+        <section className="rounded-[30px] border border-white/10 bg-[#08152d] p-6">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.22em] text-white/40">
+                Service Management
+              </div>
+
+              <h1 className="mt-3 text-3xl font-extrabold text-white">
+                QUẢN LÝ DỊCH VỤ
+              </h1>
+
+              <p className="mt-2 max-w-3xl text-sm text-white/45">
+                Quản lý toàn bộ dịch vụ hệ thống, chỉnh sửa từng dịch vụ hiện có
+                hoặc tạo mới một dịch vụ riêng hoàn toàn.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-white/40">
+                  Tổng dịch vụ
+                </p>
+                <p className="mt-1 text-2xl font-extrabold text-white">
+                  {totalServices}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate("/admin/services/create")}
+                className="inline-flex h-[58px] items-center justify-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-5 font-bold text-emerald-300 transition hover:bg-emerald-400/15"
+              >
+                <Plus size={18} />
+                Thêm dịch vụ mới
+              </button>
+            </div>
+          </div>
+        </section>
 
         {loading && (
           <div className="rounded-[28px] border border-white/10 bg-[#08152d] p-6 text-white/60">
@@ -330,6 +374,40 @@ export default function AdminServicesPage() {
                 </div>
 
                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                  <motion.button
+                    whileHover={{ y: -4 }}
+                    transition={{ duration: 0.18 }}
+                    onClick={() =>
+                      navigate("/admin/services/create", {
+                        state: { platform: platform.platform },
+                      })
+                    }
+                    className="group relative flex min-h-[240px] flex-col justify-between rounded-[24px] border border-dashed border-emerald-400/25 bg-emerald-400/[0.04] p-5 text-left transition hover:border-emerald-400/40 hover:bg-emerald-400/[0.07]"
+                  >
+                    <div>
+                      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400/10">
+                        <Plus size={22} className="text-emerald-300" />
+                      </div>
+
+                      <h3 className="min-h-[56px] text-[22px] font-extrabold uppercase leading-7 text-white">
+                        THÊM DỊCH VỤ MỚI
+                      </h3>
+
+                      <p className="mt-2 text-sm text-white/45">
+                        Tạo nhanh dịch vụ mới cho nền tảng{" "}
+                        <span className="font-semibold text-white">
+                          {formatLabel(platform.platform)}
+                        </span>
+                        .
+                      </p>
+                    </div>
+
+                    <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
+                      <Plus size={14} />
+                      Tạo mới
+                    </div>
+                  </motion.button>
+
                   {platform.services.map((service) => {
                     const ServiceIcon = getServiceIcon(service);
 

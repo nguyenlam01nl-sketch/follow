@@ -29,7 +29,9 @@ class Service extends Model
         'requires_quantity' => 'boolean',
         'requires_link' => 'boolean',
         'requires_note' => 'boolean',
-        'price' => 'integer',
+        'price' => 'float',
+        'min_quantity' => 'integer',
+        'max_quantity' => 'integer',
         'form_schema' => 'array',
     ];
 }

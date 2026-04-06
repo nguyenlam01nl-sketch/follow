@@ -46,7 +46,7 @@ function AuthLayout({ children }: Props) {
                   Sola Vietnam
                 </h2>
                 <p className="mt-1 text-[11px] uppercase tracking-[0.24em] text-white/45">
-                  Digital Services Platform
+                  UY TÍN NHẤT VIỆT NAM !
                 </p>
               </div>
             </div>
@@ -66,15 +66,14 @@ function AuthLayout({ children }: Props) {
             <h1 className="text-5xl font-semibold leading-tight tracking-tight xl:text-6xl">
               Sola Vietnam
               <span className="block bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-300 bg-clip-text text-transparent">
-                Nền tảng dịch vụ mạng xã hội
+                Nền tản hỗ trợ tất cả dịch vụ mạng xã hội
                 <br />
-                Uy tín nhất Việt Nam
+                uy tín nhất Việt Nam !
               </span>
             </h1>
 
             <p className="mt-6 max-w-lg text-base leading-8 text-white/65 xl:text-lg">
-              Hỗ trợ tăng trưởng mạng xã hội, quản lý đơn hàng và vận hành dịch vụ
-              trên một giao diện gọn gàng, nhanh và dễ sử dụng.
+              Hệ thống tăng tương tác mạng xã hội hàng đầu Việt Nam. Đặc biệt còn có dịch vụ xoá tài khoản Facebook, Instagram, TikTok... nhanh chóng và bảo mật thông tin. Hãy trải nghiệm dịch vụ của chúng tôi ngay hôm nay!
             </p>
 
             <div className="mt-10 grid max-w-lg grid-cols-3 gap-4">
@@ -84,13 +83,13 @@ function AuthLayout({ children }: Props) {
               </div>
 
               <div className="rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-xl">
-                <p className="text-2xl font-semibold text-white">Fast</p>
+                <p className="text-2xl font-semibold text-white">Tốc độ</p>
                 <p className="mt-1 text-sm text-white/55">Xử lý nhanh</p>
               </div>
 
               <div className="rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-xl">
-                <p className="text-2xl font-semibold text-white">Secure</p>
-                <p className="mt-1 text-sm text-white/55">Đăng nhập an toàn</p>
+                <p className="text-2xl font-semibold text-white">Bảo mật</p>
+                <p className="mt-1 text-sm text-white/55">Thông tin khách hàng được bảo vệ</p>
               </div>
             </div>
           </div>

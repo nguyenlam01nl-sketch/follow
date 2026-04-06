@@ -166,7 +166,7 @@ function AdminOrderPage() {
 
     const result = await Swal.fire({
       title: "Cập nhật trạng thái?",
-      text: `Bé có chắc muốn đổi đơn #${order.code} sang "${getStatusLabel(newStatus)}" không?`,
+      text: `Bạn có chắc muốn đổi đơn #${order.code} sang "${getStatusLabel(newStatus)}" không?`,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Xác nhận",
@@ -337,7 +337,7 @@ function AdminOrderPage() {
             <p className="text-sm text-white/45">Admin orders</p>
             <h1 className="text-3xl font-semibold text-white">Quản lý đơn hàng</h1>
             <p className="mt-2 text-sm text-white/55">
-              Bé Panda theo dõi, tìm kiếm và cập nhật trạng thái đơn hàng tại đây.
+              Bạn theo dõi, tìm kiếm và cập nhật trạng thái đơn hàng tại đây.
             </p>
           </div>
 

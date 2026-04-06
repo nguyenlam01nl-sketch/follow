@@ -39,6 +39,18 @@ function formatMoney(value?: string | number) {
   return `${num.toLocaleString("vi-VN")} VND`;
 }
 
+function slugifyPackageValue(text: string) {
+  return (
+    text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || `goi-${Date.now()}`
+  );
+}
+
 export default function AdminServiceEditPage() {
   const navigate = useNavigate();
   const { serviceId } = useParams();
@@ -135,23 +147,31 @@ export default function AdminServiceEditPage() {
     });
   };
 
-  const addRadioOption = () => {
+  const addRadioOption = (newOption: FieldOption) => {
     setForm((prev) => {
-      if (radioFieldIndex === -1) return prev;
+      let nextSchema = [...prev.form_schema];
 
-      const nextSchema = [...prev.form_schema];
-      const targetField = { ...nextSchema[radioFieldIndex] };
+      let index = nextSchema.findIndex((field) => field.type === "radio");
+
+      if (index === -1) {
+        nextSchema.push({
+          type: "radio",
+          name: "package",
+          label: "Chọn gói",
+          required: true,
+          options: [],
+        });
+
+        index = nextSchema.length - 1;
+      }
+
+      const targetField = { ...nextSchema[index] };
       const options = [...(targetField.options || [])];
 
-      options.push({
-        label: "Gói mới",
-        value: `goi-${Date.now()}`,
-        price: 0,
-        description: "",
-      });
+      options.push(newOption);
 
       targetField.options = options;
-      nextSchema[radioFieldIndex] = targetField;
+      nextSchema[index] = targetField;
 
       return {
         ...prev,
@@ -161,20 +181,98 @@ export default function AdminServiceEditPage() {
   };
 
   const handleAddRadioOption = async () => {
+    const existedValues =
+      radioField?.options?.map((item) => item.value?.trim().toLowerCase()) || [];
+
     const result = await Swal.fire({
-      title: "Thêm gói mới?",
-      text: "Hệ thống sẽ tạo một gói radio mới cho dịch vụ này.",
-      icon: "question",
+      title: "Thêm gói dịch vụ",
+      html: `
+        <div style="display:flex; flex-direction:column; gap:12px; text-align:left;">
+          <div>
+            <label style="display:block; margin-bottom:6px; font-size:13px; color:#cbd5e1;">
+              Tên gói
+            </label>
+            <input id="swal-package-label" class="swal2-input" placeholder="Ví dụ: Gói 1 tháng" style="margin:0; width:100%;" />
+          </div>
+
+          <div>
+            <label style="display:block; margin-bottom:6px; font-size:13px; color:#cbd5e1;">
+              Value
+            </label>
+            <input id="swal-package-value" class="swal2-input" placeholder="Ví dụ: goi-1-thang" style="margin:0; width:100%;" />
+          </div>
+
+          <div>
+            <label style="display:block; margin-bottom:6px; font-size:13px; color:#cbd5e1;">
+              Mô tả
+            </label>
+            <textarea id="swal-package-description" class="swal2-textarea" placeholder="Mô tả ngắn về gói dịch vụ" style="margin:0; width:100%; min-height:100px;"></textarea>
+          </div>
+
+          <div>
+            <label style="display:block; margin-bottom:6px; font-size:13px; color:#cbd5e1;">
+              Giá
+            </label>
+            <input id="swal-package-price" type="number" min="0" class="swal2-input" placeholder="Ví dụ: 50000" style="margin:0; width:100%;" />
+          </div>
+        </div>
+      `,
+      background: "#08152d",
+      color: "#fff",
       showCancelButton: true,
       confirmButtonColor: "#10b981",
       cancelButtonColor: "#9CA3AF",
-      confirmButtonText: "Thêm",
+      confirmButtonText: "Thêm gói",
       cancelButtonText: "Huỷ",
+      focusConfirm: false,
+      preConfirm: () => {
+        const label = (
+          document.getElementById("swal-package-label") as HTMLInputElement
+        )?.value?.trim();
+
+        const valueInput = (
+          document.getElementById("swal-package-value") as HTMLInputElement
+        )?.value?.trim();
+
+        const description = (
+          document.getElementById("swal-package-description") as HTMLTextAreaElement
+        )?.value?.trim();
+
+        const priceRaw = (
+          document.getElementById("swal-package-price") as HTMLInputElement
+        )?.value?.trim();
+
+        const price = Number(priceRaw || 0);
+
+        if (!label) {
+          Swal.showValidationMessage("Vui lòng nhập tên gói");
+          return false;
+        }
+
+        if (!priceRaw || price < 0) {
+          Swal.showValidationMessage("Vui lòng nhập giá hợp lệ");
+          return false;
+        }
+
+        const safeValue = valueInput || slugifyPackageValue(label);
+
+        if (existedValues.includes(safeValue.toLowerCase())) {
+          Swal.showValidationMessage("Value này đã tồn tại");
+          return false;
+        }
+
+        return {
+          label,
+          value: safeValue,
+          description,
+          price,
+        };
+      },
     });
 
-    if (!result.isConfirmed) return;
+    if (!result.isConfirmed || !result.value) return;
 
-    addRadioOption();
+    addRadioOption(result.value);
 
     await Swal.fire({
       toast: true,
@@ -392,25 +490,78 @@ export default function AdminServiceEditPage() {
                   />
                 </div>
 
-                {radioField && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-sm font-semibold uppercase tracking-wide text-white/55">
-                        Chọn máy chủ dịch vụ
-                      </label>
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold uppercase tracking-wide text-white/55">
+                    Giá service gốc
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.price}
+                    onChange={(e) => handleFormChange("price", e.target.value)}
+                    className="h-14 w-full rounded-2xl border border-white/10 bg-[#050b1a] px-4 text-white outline-none"
+                  />
+                </div>
 
-                      <button
-                        type="button"
-                        onClick={handleAddRadioOption}
-                        className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-300"
-                      >
-                        <Plus size={14} />
-                        Thêm gói
-                      </button>
-                    </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold uppercase tracking-wide text-white/55">
+                      Mode
+                    </label>
+                    <select
+                      value={form.mode}
+                      onChange={(e) =>
+                        handleFormChange("mode", e.target.value as "api" | "manual")
+                      }
+                      className="h-14 w-full rounded-2xl border border-white/10 bg-[#050b1a] px-4 text-white outline-none"
+                    >
+                      <option value="manual">manual</option>
+                      <option value="api">api</option>
+                    </select>
+                  </div>
 
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold uppercase tracking-wide text-white/55">
+                      Status
+                    </label>
+                    <input
+                      value={form.status}
+                      onChange={(e) => handleFormChange("status", e.target.value)}
+                      className="h-14 w-full rounded-2xl border border-white/10 bg-[#050b1a] px-4 text-white outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold uppercase tracking-wide text-white/55">
+                    Unit
+                  </label>
+                  <input
+                    value={form.unit}
+                    onChange={(e) => handleFormChange("unit", e.target.value)}
+                    className="h-14 w-full rounded-2xl border border-white/10 bg-[#050b1a] px-4 text-white outline-none"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-semibold uppercase tracking-wide text-white/55">
+                      Chọn máy chủ dịch vụ
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={handleAddRadioOption}
+                      className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-300"
+                    >
+                      <Plus size={14} />
+                      Thêm gói
+                    </button>
+                  </div>
+
+                  {radioField?.options?.length ? (
                     <div className="space-y-4">
-                      {radioField.options?.map((opt, index) => (
+                      {radioField.options.map((opt, index) => (
                         <div
                           key={`${opt.value}-${index}`}
                           className="rounded-[22px] border border-white/10 bg-white/[0.03] p-5"
@@ -494,8 +645,12 @@ export default function AdminServiceEditPage() {
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-6 text-center text-sm text-white/45">
+                      Chưa có gói nào. Bấm <span className="font-semibold text-white">“Thêm gói”</span> để tạo mới.
+                    </div>
+                  )}
+                </div>
 
                 <button
                   onClick={handleSave}
@@ -518,12 +673,20 @@ export default function AdminServiceEditPage() {
                 <p>Slug: {form.slug || "..."}</p>
                 <p>Mode: {form.mode || "..."}</p>
                 <p>Status: {form.status || "..."}</p>
+                <p>Unit: {form.unit || "..."}</p>
               </div>
 
               <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
                 <p className="text-sm text-white/45">Giá service gốc</p>
                 <p className="mt-1 text-2xl font-extrabold text-emerald-400">
                   {formatMoney(form.price)}
+                </p>
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
+                <p className="text-sm text-white/45">Số gói hiện có</p>
+                <p className="mt-1 text-2xl font-extrabold text-white">
+                  {radioField?.options?.length || 0}
                 </p>
               </div>
             </div>

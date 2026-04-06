@@ -36,7 +36,6 @@ Route::get('/external/services', [ExternalServiceController::class, 'getServices
 
 Route::get('/notifications', [AdminDashboardController::class, 'userNotifications']);
 
-
 // ========================
 // PROTECTED (LOGIN)
 // ========================
@@ -87,8 +86,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/referral/me', [ReferralController::class, 'myReferralData']);
     Route::post('/referral/apply-code', [ReferralController::class, 'applyReferralCode']);
 
-
-
     // ========================
     // ADMIN
     // ========================
@@ -97,6 +94,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // ===== SERVICES =====
         Route::put('/external-services/{service}', [AdminExternalServiceController::class, 'update']);
 
+        Route::get('/services', [AdminServiceController::class, 'index']);
+        Route::post('/services', [AdminServiceController::class, 'store']);
         Route::get('/services/{service}', [AdminServiceController::class, 'show']);
         Route::put('/services/{service}', [AdminServiceController::class, 'update']);
 
@@ -132,7 +131,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/reports/{id}/reject', [AdminReportController::class, 'reject']);
 
         // ========================
-        // ADMIN FEEDBACK (🔥 FIX LỖI CHO BÉ)
+        // ADMIN FEEDBACK
         // ========================
         Route::get('/feedback', [FeedbackController::class, 'index']);
         Route::patch('/feedback/{id}/status', [FeedbackController::class, 'updateStatus']);
