@@ -8,17 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('register_ip', 45)
-                ->nullable()
-                ->after('ref_rewarded_at');
-        });
+        if (!Schema::hasColumn('users', 'register_ip')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('register_ip', 45)
+                    ->nullable()
+                    ->after('ref_rewarded_at');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('register_ip');
-        });
+        if (Schema::hasColumn('users', 'register_ip')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('register_ip');
+            });
+        }
     }
 };

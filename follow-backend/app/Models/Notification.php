@@ -11,6 +11,8 @@ class Notification extends Model
         'content',
         'is_popup',
         'is_active',
+            'link',
+
     ];
 
     protected $casts = [

@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Order;
-use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
@@ -20,6 +18,7 @@ class AdminDashboardController extends Controller
         $pendingOrders = Order::whereIn('status', ['pending', 'processing'])->count();
 
         $recentOrders = Order::query()
+            ->with('user:id,name')
             ->latest()
             ->take(5)
             ->get([
@@ -36,7 +35,7 @@ class AdminDashboardController extends Controller
                     'code' => 'ORD-' . str_pad($order->id, 4, '0', STR_PAD_LEFT),
                     'service' => $order->service_name,
                     'user' => optional($order->user)->name ?? 'Không rõ',
-                    'amount' => $order->total_price,
+                    'amount' => (float) $order->total_price,
                     'status' => $order->status,
                     'created_at' => $order->created_at,
                 ];
@@ -63,7 +62,15 @@ class AdminDashboardController extends Controller
         $notifications = Notification::query()
             ->latest()
             ->take(10)
-            ->get();
+            ->get([
+                'id',
+                'title',
+                'content',
+                'link',
+                'is_popup',
+                'is_active',
+                'created_at',
+            ]);
 
         return response()->json([
             'data' => [
@@ -85,6 +92,7 @@ class AdminDashboardController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
+            'link' => ['nullable', 'string', 'max:1000'],
             'is_popup' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
         ]);
@@ -92,6 +100,7 @@ class AdminDashboardController extends Controller
         $notification = Notification::create([
             'title' => $data['title'],
             'content' => $data['content'],
+            'link' => $data['link'] ?? null,
             'is_popup' => $data['is_popup'] ?? false,
             'is_active' => $data['is_active'] ?? true,
         ]);
@@ -106,7 +115,15 @@ class AdminDashboardController extends Controller
     {
         $notifications = Notification::query()
             ->latest()
-            ->get();
+            ->get([
+                'id',
+                'title',
+                'content',
+                'link',
+                'is_popup',
+                'is_active',
+                'created_at',
+            ]);
 
         return response()->json([
             'data' => $notifications,
@@ -118,7 +135,15 @@ class AdminDashboardController extends Controller
         $notifications = Notification::query()
             ->where('is_active', true)
             ->latest()
-            ->get();
+            ->get([
+                'id',
+                'title',
+                'content',
+                'link',
+                'is_popup',
+                'is_active',
+                'created_at',
+            ]);
 
         return response()->json([
             'data' => $notifications,

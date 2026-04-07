@@ -2,23 +2,36 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import api from "@/api/axios";
-import { Mail, Send, FileText, Type, Megaphone } from "lucide-react";
+import {
+  BellRing,
+  Send,
+  FileText,
+  Type,
+  Link as LinkIcon,
+  Megaphone,
+} from "lucide-react";
 
-export default function AdminEmailNotificationsPage() {
+type CreateNotificationResponse = {
+  message?: string;
+  data?: {
+    id: number;
+    title: string;
+    content: string;
+    link?: string | null;
+    created_at?: string;
+  };
+};
+
+export default function AdminNotificationsPage() {
   const [form, setForm] = useState({
-    subject: "",
     title: "",
     content: "",
+    link: "",
   });
 
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{
-    total_users?: number;
-    success_count?: number;
-    fail_count?: number;
-    message?: string;
-  } | null>(null);
-
+  const [result, setResult] = useState<CreateNotificationResponse["data"] | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
 
   const handleChange = (
@@ -32,46 +45,51 @@ export default function AdminEmailNotificationsPage() {
 
   const handleReset = () => {
     setForm({
-      subject: "",
       title: "",
       content: "",
+      link: "",
     });
     setResult(null);
+    setSuccessMessage("");
     setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!form.subject.trim() || !form.title.trim() || !form.content.trim()) {
-      setError("Vui lòng nhập đầy đủ subject, tiêu đề và nội dung email.");
+    if (!form.title.trim() || !form.content.trim()) {
+      setError("Vui lòng nhập đầy đủ tiêu đề và nội dung thông báo.");
       return;
     }
 
     try {
       setLoading(true);
       setError("");
+      setSuccessMessage("");
       setResult(null);
 
-      const res = await api.post("/admin/email-notifications/send", form);
+      const payload = {
+        title: form.title.trim(),
+        content: form.content.trim(),
+        link: form.link.trim() || null,
+      };
 
-      setResult({
-        total_users: res.data?.total_users ?? 0,
-        success_count: res.data?.success_count ?? 0,
-        fail_count: res.data?.fail_count ?? 0,
-        message: res.data?.message ?? "Đã gửi email thành công",
-      });
+      const res = await api.post<CreateNotificationResponse>(
+        "/admin/notifications",
+        payload
+      );
+
+      setSuccessMessage(res.data?.message || "Tạo thông báo thành công.");
+      setResult(res.data?.data || null);
 
       setForm({
-        subject: "",
         title: "",
         content: "",
+        link: "",
       });
     } catch (err: any) {
       console.error(err);
-      setError(
-        err?.response?.data?.message || "Không thể gửi email thông báo"
-      );
+      setError(err?.response?.data?.message || "Không thể tạo thông báo.");
     } finally {
       setLoading(false);
     }
@@ -82,7 +100,7 @@ export default function AdminEmailNotificationsPage() {
       <div className="space-y-6 sm:space-y-8 lg:space-y-10">
         <div className="border-b border-white/6 pb-3 sm:pb-4">
           <div className="text-[10px] uppercase tracking-[0.22em] text-white/40 sm:text-xs sm:tracking-[0.24em]">
-            Admin &nbsp; &gt; &nbsp; Email Notifications
+            Admin &nbsp; &gt; &nbsp; Notifications
           </div>
         </div>
 
@@ -90,21 +108,21 @@ export default function AdminEmailNotificationsPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.05] sm:h-14 sm:w-14">
-                <Mail size={24} className="text-cyan-300 sm:h-7 sm:w-7" />
+                <BellRing size={24} className="text-cyan-300 sm:h-7 sm:w-7" />
               </div>
 
               <div>
                 <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-[30px]">
-                  GỬI THÔNG BÁO EMAIL
+                  TẠO THÔNG BÁO
                 </h1>
                 <p className="mt-1 text-xs text-white/35 sm:mt-2 sm:text-sm">
-                  Gửi email thông báo tới toàn bộ người dùng trong hệ thống.
+                  Tạo thông báo hiển thị trực tiếp cho người dùng trong dashboard.
                 </p>
               </div>
             </div>
 
             <div className="self-start rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-cyan-200 sm:px-4 sm:text-xs">
-              Admin Broadcast
+              In-App Notification
             </div>
           </div>
         </section>
@@ -115,7 +133,7 @@ export default function AdminEmailNotificationsPage() {
               <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 <div>
                   <label className="mb-2 block text-xs text-white/55 sm:text-sm">
-                    Subject email
+                    Tiêu đề thông báo
                   </label>
                   <div className="flex h-11 items-center gap-3 rounded-2xl border border-white/10 bg-[#071226] px-3 sm:h-12 sm:px-4 lg:h-14">
                     <Type
@@ -124,10 +142,10 @@ export default function AdminEmailNotificationsPage() {
                     />
                     <input
                       type="text"
-                      name="subject"
-                      value={form.subject}
+                      name="title"
+                      value={form.title}
                       onChange={handleChange}
-                      placeholder="Ví dụ: Thông báo bảo trì hệ thống"
+                      placeholder="Ví dụ: Ưu đãi nạp ví hôm nay"
                       className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/25 sm:text-base"
                     />
                   </div>
@@ -135,36 +153,43 @@ export default function AdminEmailNotificationsPage() {
 
                 <div>
                   <label className="mb-2 block text-xs text-white/55 sm:text-sm">
-                    Tiêu đề hiển thị trong mail
+                    Nội dung thông báo
+                  </label>
+                  <div className="rounded-2xl border border-white/10 bg-[#071226] p-3 sm:p-4">
+                    <div className="mb-3 flex items-center gap-2 text-white/35">
+                      <FileText size={16} />
+                      <span className="text-xs sm:text-sm">
+                        Nội dung ngắn gọn, rõ ràng
+                      </span>
+                    </div>
+
+                    <textarea
+                      name="content"
+                      value={form.content}
+                      onChange={handleChange}
+                      rows={8}
+                      placeholder="Nhập nội dung muốn hiển thị cho người dùng..."
+                      className="w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-white/25 sm:text-base"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-xs text-white/55 sm:text-sm">
+                    Link điều hướng (không bắt buộc)
                   </label>
                   <div className="flex h-11 items-center gap-3 rounded-2xl border border-white/10 bg-[#071226] px-3 sm:h-12 sm:px-4 lg:h-14">
-                    <FileText
+                    <LinkIcon
                       size={16}
                       className="shrink-0 text-white/35 sm:h-[18px] sm:w-[18px]"
                     />
                     <input
                       type="text"
-                      name="title"
-                      value={form.title}
+                      name="link"
+                      value={form.link}
                       onChange={handleChange}
-                      placeholder="Ví dụ: Thông báo từ Sola Vietnam"
+                      placeholder="Ví dụ: /wallet hoặc https://zalo.me/..."
                       className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/25 sm:text-base"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-xs text-white/55 sm:text-sm">
-                    Nội dung email
-                  </label>
-                  <div className="rounded-2xl border border-white/10 bg-[#071226] p-3 sm:p-4">
-                    <textarea
-                      name="content"
-                      value={form.content}
-                      onChange={handleChange}
-                      rows={10}
-                      placeholder="Nhập nội dung email muốn gửi cho tất cả người dùng..."
-                      className="w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-white/25 sm:text-base"
                     />
                   </div>
                 </div>
@@ -172,6 +197,12 @@ export default function AdminEmailNotificationsPage() {
                 {error && (
                   <div className="rounded-[20px] border border-red-400/20 bg-red-400/10 p-4 text-sm text-red-200">
                     {error}
+                  </div>
+                )}
+
+                {successMessage && (
+                  <div className="rounded-[20px] border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-200">
+                    {successMessage}
                   </div>
                 )}
 
@@ -191,7 +222,7 @@ export default function AdminEmailNotificationsPage() {
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-violet-500 px-5 text-sm font-semibold text-white transition hover:bg-violet-400 disabled:opacity-50 sm:h-12 sm:px-6 sm:text-base"
                   >
                     <Send size={16} />
-                    {loading ? "Đang gửi..." : "Gửi email"}
+                    {loading ? "Đang tạo..." : "Tạo thông báo"}
                   </button>
                 </div>
               </form>
@@ -209,85 +240,60 @@ export default function AdminEmailNotificationsPage() {
                     Hướng dẫn
                   </h2>
                   <p className="mt-1 text-xs text-white/35 sm:text-sm">
-                    Email sẽ được gửi tới toàn bộ người dùng có email trong hệ
-                    thống.
+                    Có thể tạo thông báo thường hoặc thông báo có link điều hướng.
                   </p>
                 </div>
               </div>
 
               <div className="mt-5 space-y-3">
                 <div className="rounded-2xl border border-white/10 bg-[#071226] p-4 text-sm leading-7 text-white/75">
-                  Subject là tiêu đề thật của email trong hộp thư người nhận.
+                  Nếu nhập link ngoài như <span className="text-cyan-300">https://...</span> thì người dùng bấm sẽ mở tab mới.
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-[#071226] p-4 text-sm leading-7 text-white/75">
-                  Tiêu đề hiển thị là phần heading lớn bên trong giao diện email.
+                  Nếu nhập link trong web như <span className="text-cyan-300">/wallet</span> hoặc <span className="text-cyan-300">/orders</span> thì sẽ điều hướng trong app.
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-[#071226] p-4 text-sm leading-7 text-white/75">
-                  Nội dung nên viết rõ ràng, ngắn gọn, tránh quá dài nếu gửi số
-                  lượng lớn.
+                  Nếu để trống link thì thông báo chỉ hiển thị nội dung, không có hành động bấm.
                 </div>
               </div>
             </section>
 
             <section className="rounded-[22px] border border-white/10 bg-[#08152d] p-4 sm:rounded-[24px] sm:p-5 lg:rounded-[28px] lg:p-6">
               <h2 className="text-lg font-bold text-white sm:text-xl">
-                Kết quả gửi
+                Xem trước
               </h2>
 
-              {!result && !loading && (
-                <div className="mt-4 rounded-[20px] border border-white/10 bg-[#071226] p-5 text-sm text-white/60">
-                  Chưa có lần gửi nào trong phiên này.
-                </div>
-              )}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 rounded-2xl border border-white/10 bg-[#071226] p-4"
+              >
+                <p className="text-[10px] uppercase tracking-[0.18em] text-white/35">
+                  Preview
+                </p>
 
-              {loading && (
-                <div className="mt-4 rounded-[20px] border border-white/10 bg-[#071226] p-5 text-sm text-white/60">
-                  Hệ thống đang gửi email tới người dùng...
-                </div>
-              )}
+                <h3 className="mt-2 text-base font-bold text-white sm:text-lg">
+                  {form.title.trim() || "Tiêu đề thông báo"}
+                </h3>
 
-              {result && !loading && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 space-y-3"
-                >
-                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-200">
-                    {result.message || "Đã gửi email thành công"}
+                <p className="mt-2 text-sm leading-6 text-white/70">
+                  {form.content.trim() || "Nội dung thông báo sẽ hiển thị ở đây."}
+                </p>
+
+                {form.link.trim() && (
+                  <div className="mt-3 inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-medium text-cyan-200">
+                    {form.link.trim()}
                   </div>
+                )}
 
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-white/10 bg-[#071226] p-4">
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30 sm:text-xs">
-                        Tổng user
-                      </div>
-                      <div className="mt-2 text-xl font-bold text-white">
-                        {result.total_users ?? 0}
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/10 bg-[#071226] p-4">
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30 sm:text-xs">
-                        Thành công
-                      </div>
-                      <div className="mt-2 text-xl font-bold text-emerald-300">
-                        {result.success_count ?? 0}
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/10 bg-[#071226] p-4">
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/30 sm:text-xs">
-                        Thất bại
-                      </div>
-                      <div className="mt-2 text-xl font-bold text-red-300">
-                        {result.fail_count ?? 0}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
+                {result && (
+                  <p className="mt-4 text-[11px] text-emerald-300">
+                    Đã tạo thông báo thành công.
+                  </p>
+                )}
+              </motion.div>
             </section>
           </div>
         </section>
