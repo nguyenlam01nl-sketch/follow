@@ -66,7 +66,7 @@ function AuthLayout({ children }: Props) {
             <h1 className="text-5xl font-semibold leading-tight tracking-tight xl:text-6xl">
               Sola Vietnam
               <span className="block bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-300 bg-clip-text text-transparent">
-                Nền tản hỗ trợ tất cả dịch vụ mạng xã hội
+                Nền tảng hỗ trợ tất cả dịch vụ mạng xã hội
                 <br />
                 uy tín nhất Việt Nam !
               </span>
