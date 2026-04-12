@@ -43,15 +43,21 @@ function normalizeTikTokUrl(url) {
 }
 
 async function scrapeTikTokProfile(url) {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-blink-features=AutomationControlled",
-    ],
-  });
+const browser = await puppeteer.launch({
+  headless: false, // hoặc "shell" nếu bé muốn giữ không có UI
+  userDataDir: "/var/www/follow/chrome-profile-puppeteer",
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-blink-features=AutomationControlled",
+    "--window-size=1366,768",
+  ],
+  defaultViewport: {
+    width: 1366,
+    height: 768,
+  },
+});
 
   const page = await browser.newPage();
 
