@@ -44,7 +44,19 @@ function normalizeTikTokUrl(url) {
   return `https://www.tiktok.com/@${value.replace(/^@/, "")}`;
 }
 
-async function loadCookies(page) {
+function mapSameSite(value) {
+  if (!value || typeof value !== "string") return undefined;
+
+  const v = value.toLowerCase();
+
+  if (v === "lax") return "Lax";
+  if (v === "strict") return "Strict";
+  if (v === "no_restriction") return "None";
+
+  return undefined;
+}
+
+async function readFormattedCookies() {
   const raw = await fs.readFile(COOKIE_FILE, "utf8");
   const cookies = JSON.parse(raw);
 
@@ -52,11 +64,11 @@ async function loadCookies(page) {
     throw new Error("Cookie file rỗng hoặc sai format");
   }
 
-  const formattedCookies = cookies
+  return cookies
     .filter((c) => c?.name && c?.value)
     .map((c) => {
-      const cookie = {
-        name: c.name,
+      const formatted = {
+        name: String(c.name),
         value: String(c.value),
         domain: c.domain,
         path: c.path || "/",
@@ -64,22 +76,73 @@ async function loadCookies(page) {
         secure: Boolean(c.secure),
       };
 
-      if (typeof c.expirationDate === "number" && Number.isFinite(c.expirationDate)) {
-        cookie.expires = Math.floor(c.expirationDate);
+      const sameSite = mapSameSite(c.sameSite);
+      if (sameSite) {
+        formatted.sameSite = sameSite;
       }
 
-      if (typeof c.sameSite === "string") {
-        const s = c.sameSite.toLowerCase();
-        if (s === "lax") cookie.sameSite = "Lax";
-        else if (s === "strict") cookie.sameSite = "Strict";
-        else if (s === "no_restriction") cookie.sameSite = "None";
+      if (
+        typeof c.expirationDate === "number" &&
+        Number.isFinite(c.expirationDate)
+      ) {
+        formatted.expires = Math.floor(c.expirationDate);
       }
 
-      return cookie;
+      return formatted;
+    });
+}
+
+async function injectCookies(browser) {
+  const context = browser.defaultBrowserContext();
+  const formattedCookies = await readFormattedCookies();
+
+  await context.setCookie(...formattedCookies);
+  console.log(`✅ Injected ${formattedCookies.length} cookies`);
+}
+
+async function preparePage(page) {
+  await page.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, "webdriver", {
+      get: () => false,
     });
 
-  await page.setCookie(...formattedCookies);
-  console.log(`✅ Loaded ${formattedCookies.length} cookies`);
+    if (!window.chrome) {
+      window.chrome = {};
+    }
+
+    if (!window.chrome.runtime) {
+      window.chrome.runtime = {};
+    }
+
+    Object.defineProperty(navigator, "plugins", {
+      get: () => [1, 2, 3, 4, 5],
+    });
+
+    Object.defineProperty(navigator, "languages", {
+      get: () => ["en-US", "en"],
+    });
+
+    const originalQuery = window.navigator.permissions?.query;
+    if (originalQuery) {
+      window.navigator.permissions.query = (parameters) =>
+        parameters.name === "notifications"
+          ? Promise.resolve({ state: Notification.permission })
+          : originalQuery(parameters);
+    }
+  });
+
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  );
+
+  await page.setExtraHTTPHeaders({
+    "accept-language": "en-US,en;q=0.9",
+  });
+
+  await page.setViewport({
+    width: 1366,
+    height: 768,
+  });
 }
 
 async function scrapeTikTokProfile(url) {
@@ -90,6 +153,10 @@ async function scrapeTikTokProfile(url) {
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
       "--disable-blink-features=AutomationControlled",
+      "--disable-infobars",
+      "--window-position=0,0",
+      "--ignore-certificate-errors",
+      "--ignore-certificate-errors-spki-list",
       "--window-size=1366,768",
     ],
     defaultViewport: {
@@ -98,18 +165,10 @@ async function scrapeTikTokProfile(url) {
     },
   });
 
-  const page = await browser.newPage();
-
-  await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-  );
-
-  await page.setExtraHTTPHeaders({
-    "accept-language": "en-US,en;q=0.9",
-  });
-
   try {
-    // Vào domain TikTok trước để context ổn định
+    const page = await browser.newPage();
+    await preparePage(page);
+
     await page.goto("https://www.tiktok.com", {
       waitUntil: "domcontentloaded",
       timeout: 60000,
@@ -117,10 +176,15 @@ async function scrapeTikTokProfile(url) {
 
     await sleep(2500);
 
-    // Nạp cookie sau khi đã vào domain
-    await loadCookies(page);
+    await injectCookies(browser);
 
-    // Vào profile cần scrape
+    await page.goto("https://www.tiktok.com", {
+      waitUntil: "domcontentloaded",
+      timeout: 60000,
+    });
+
+    await sleep(3000);
+
     await page.goto(url, {
       waitUntil: "domcontentloaded",
       timeout: 60000,
@@ -149,7 +213,7 @@ async function scrapeTikTokProfile(url) {
 
     if (blocked) {
       throw new Error(
-        "TikTok vẫn chặn dù đã nạp cookie. Có thể cookie hết hạn hoặc TikTok phát hiện IP khác với máy local."
+        "TikTok vẫn chặn dù đã nạp cookie. Có thể TikTok phát hiện IP VPS khác với máy local."
       );
     }
 
@@ -165,7 +229,8 @@ async function scrapeTikTokProfile(url) {
           url: el.querySelector("a")?.href || "",
           thumbnail: el.querySelector("img")?.src || "",
           viewsText:
-            el.querySelector('[data-e2e="video-views"]')?.textContent?.trim() || "",
+            el.querySelector('[data-e2e="video-views"]')?.textContent?.trim() ||
+            "",
         }))
         .filter((p) => p.url)
         .slice(0, 10);
