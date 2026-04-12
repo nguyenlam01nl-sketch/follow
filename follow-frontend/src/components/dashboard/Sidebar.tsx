@@ -15,6 +15,7 @@ import {
   Mail,
   ShieldAlert,
   Network,
+  Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import api from "../../api/axios";
@@ -84,6 +85,8 @@ function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     { to: "/admin/users", label: "Người dùng", icon: Users },
     { to: "/admin/email-notifications", label: "Thông báo mail", icon: Mail },
     { to: "/admin/affiliate", label: "Affiliate", icon: Network },
+      { to: "/admin/ai-analyze", label: "Phân tích kênh", icon: Sparkles },
+
   ];
 
   const userMenu: MenuItem[] = [
@@ -95,6 +98,8 @@ function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     { to: "/report", label: "Báo cáo lừa đảo", icon: ShieldAlert },
     { to: "/affiliate", label: "Affiliate", icon: Network },
     { to: "/account", label: "Tài khoản", icon: User },
+      { to: "/ai-analyze", label: "Phân tích kênh", icon: Sparkles },
+
   ];
 
   const menuItems: MenuItem[] = role === "admin" ? adminMenu : userMenu;

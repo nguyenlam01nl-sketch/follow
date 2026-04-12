@@ -9,6 +9,7 @@ import AccountPage from "@/pages/user/account/AccountPage";
 import ServiceOrderPage from "@/pages/user/services/ServiceOrderPage";
 import EngagementPlatformPage from "@/pages/user/services/EngagementPlatformPage";
 import ProtectedRoute from "./ProtectedRoute";
+import AiAnalyzePage from "@/pages/user/ai/AiAnalyzePage";
 
 import AdminDashboardPage from "@/pages/admin/dashboard/AdminDashboardPage";
 import AdminServicesPage from "@/pages/admin/services/AdminServicesPage";
@@ -21,6 +22,7 @@ import AdminUsersPage from "@/pages/admin/users/AdminUsersPage";
 import AdminFeedbackPage from "@/pages/admin/feedback/AdminFeedbackPage";
 import AdminEmailNotificationsPage from "@/pages/admin/notification/AdminEmailNotificationsPage";
 import AdminReportPage from "@/pages/admin/report/AdminReportPage";
+import AdminAiAnalyzePage from "@/pages/admin/ai/AdminAiAnalyzePage";
 
 import FeedbackPage from "@/pages/user/feedback/FeedbackPage";
 import FeedbackHistoryPage from "@/pages/user/feedback/FeedbackHistoryPage";
@@ -62,6 +64,8 @@ function AppRoutes() {
         <Route path="/affiliate" element={<AffiliatePage />} />
 
         <Route path="/order-success" element={<OrderSuccessPage />} />
+
+        <Route path="/ai-analyze" element={<AiAnalyzePage />} />
       </Route>
 
       {/* 👑 ADMIN */}
@@ -81,6 +85,7 @@ function AppRoutes() {
         <Route path="/admin/wallet" element={<AdminWalletPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
         <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
+        <Route path="/admin/ai-analyze" element={<AdminAiAnalyzePage />} />
         <Route
           path="/admin/email-notifications"
           element={<AdminEmailNotificationsPage />}

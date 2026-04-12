@@ -21,6 +21,8 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\AdminReportController;
 use App\Http\Controllers\Api\AdminAffiliateController;
 use App\Http\Controllers\Api\ReferralController;
+use App\Http\Controllers\Api\AiAnalyzeController;
+use App\Http\Controllers\Api\AdminAiAnalyzeController;
 
 // ========================
 // PUBLIC
@@ -86,6 +88,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/referral/me', [ReferralController::class, 'myReferralData']);
     Route::post('/referral/apply-code', [ReferralController::class, 'applyReferralCode']);
 
+    Route::post('/ai-analyze', [AiAnalyzeController::class, 'analyze']);
+
+
     // ========================
     // ADMIN
     // ========================
@@ -143,5 +148,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/affiliate/referrers', [AdminAffiliateController::class, 'referrers']);
         Route::get('/affiliate/referrals', [AdminAffiliateController::class, 'referrals']);
         Route::get('/affiliate/commissions', [AdminAffiliateController::class, 'commissions']);
+
+        Route::get('/admin/ai-analyze', [AdminAiAnalyzeController::class, 'index']);
     });
 });

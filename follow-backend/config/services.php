@@ -22,6 +22,10 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
@@ -38,5 +42,10 @@ return [
     'external_api' => [
         'base_url' => env('EXTERNAL_API_BASE_URL'),
         'token' => env('EXTERNAL_API_TOKEN'),
+    ],
+
+    'scraper' => [
+        'base_url' => env('SCRAPER_BASE_URL'),
+        'token' => env('SCRAPER_TOKEN'),
     ],
 ];
