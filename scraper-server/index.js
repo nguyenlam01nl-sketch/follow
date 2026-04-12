@@ -12,6 +12,8 @@ app.use(express.json({ limit: "1mb" }));
 const PORT = Number(process.env.PORT || 3001);
 const SCRAPER_TOKEN = process.env.SCRAPER_TOKEN || "super_secret_scraper_token";
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 function parseCount(value = "") {
   const raw = String(value).trim().toUpperCase().replace(/,/g, "");
   if (!raw) return 0;
@@ -29,13 +31,15 @@ function normalizeTikTokUrl(url) {
 
   if (!value) return "";
 
-  if (value.startsWith("http")) return value;
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    return value;
+  }
 
   if (value.startsWith("@")) {
     return `https://www.tiktok.com/${value}`;
   }
 
-  return `https://www.tiktok.com/@${value.replace("@", "")}`;
+  return `https://www.tiktok.com/@${value.replace(/^@/, "")}`;
 }
 
 async function scrapeTikTokProfile(url) {
@@ -63,7 +67,7 @@ async function scrapeTikTokProfile(url) {
       timeout: 60000,
     });
 
-    await page.waitForTimeout(4000);
+    await sleep(4000);
 
     const html = (await page.content()).toLowerCase();
 
@@ -75,8 +79,11 @@ async function scrapeTikTokProfile(url) {
       throw new Error("TikTok chặn (cần proxy hoặc IP sạch hơn)");
     }
 
-    await page.evaluate(() => window.scrollBy(0, 2000));
-    await page.waitForTimeout(2000);
+    await page.evaluate(() => {
+      window.scrollBy(0, 2000);
+    });
+
+    await sleep(2000);
 
     const data = await page.evaluate(() => {
       const get = (sel) =>
@@ -108,7 +115,7 @@ async function scrapeTikTokProfile(url) {
       platform: "tiktok",
       profile: {
         name: data.name || "",
-        username: String(data.username || "").replace("@", ""),
+        username: String(data.username || "").replace(/^@/, ""),
         followers: parseCount(data.followers),
         likes: parseCount(data.likes),
       },
@@ -139,7 +146,6 @@ app.post("/scrape/tiktok", async (req, res) => {
     }
 
     const url = normalizeTikTokUrl(inputUrl);
-
     const data = await scrapeTikTokProfile(url);
 
     return res.json(data);
