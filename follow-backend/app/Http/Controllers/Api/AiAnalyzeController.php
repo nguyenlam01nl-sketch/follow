@@ -751,26 +751,23 @@ Mục tiêu phân tích:
                     ? $postsResponse->json()
                     : [];
 
-                $items = data_get(
-                    $postsJson,
-                    'itemList',
-                    data_get($postsJson, 'items', data_get($postsJson, 'data.items', []))
-                );
+                $items = data_get($postsJson, 'data.itemList', []);
 
                 $posts = collect($items)
                     ->map(function ($post, $index) use ($username) {
-                        $videoId = data_get($post, 'aweme_id')
+                        $videoId = data_get($post, 'id')
+                            ?: data_get($post, 'aweme_id')
                             ?: data_get($post, 'video.id')
-                            ?: data_get($post, 'id')
                             ?: ('tt_' . ($index + 1));
 
                         $desc = data_get($post, 'desc')
+                            ?: data_get($post, 'imagePost.title')
                             ?: data_get($post, 'title')
                             ?: ('TikTok post ' . ($index + 1));
 
-                        $thumbnail = data_get($post, 'video.cover.url_list.0')
-                            ?: data_get($post, 'video.dynamic_cover.url_list.0')
-                            ?: data_get($post, 'video.originCover.url_list.0')
+                        $thumbnail = data_get($post, 'video.cover')
+                            ?: data_get($post, 'video.originCover')
+                            ?: data_get($post, 'imagePost.cover.imageURL.urlList.0')
                             ?: data_get($post, 'cover')
                             ?: data_get($post, 'thumbnail')
                             ?: '';
@@ -811,13 +808,12 @@ Mục tiêu phân tích:
                         ];
                     })
                     ->filter(function ($post) {
-                        return !empty($post['id']) || !empty($post['thumbnail']);
+                        return !empty($post['id']);
                     })
                     ->take(12)
                     ->values()
                     ->all();
             }
-
             if (empty($posts)) {
                 $posts = [
                     [
