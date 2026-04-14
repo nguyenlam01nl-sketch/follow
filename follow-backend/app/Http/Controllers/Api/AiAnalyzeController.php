@@ -284,7 +284,9 @@ class AiAnalyzeController extends Controller
 
             $decoded['summary'] = $decoded['summary'] ?? 'Đã hoàn tất phân tích kênh.';
             $decoded['mentor_note'] = $decoded['mentor_note'] ?? '';
-            $decoded['account_summary'] = $decoded['account_summary'] ?? '';
+            $decoded['account_summary'] = is_string($decoded['account_summary'] ?? null)
+                ? $decoded['account_summary']
+                : '';
 
             $decoded['issues'] = is_array($decoded['issues'] ?? null) ? $decoded['issues'] : [];
             $decoded['opportunities'] = is_array($decoded['opportunities'] ?? null) ? $decoded['opportunities'] : [];
@@ -730,29 +732,29 @@ Mục tiêu phân tích:
             $posts = [];
 
             if (!empty($secUid)) {
-                $oldestPostsResponse = Http::withHeaders($headers)
+                $postsResponse = Http::withHeaders($headers)
                     ->timeout(60)
-                    ->get("https://{$apiHost}/api/user/oldest-posts", [
+                    ->get("https://{$apiHost}/api/user/posts", [
                         'secUid' => $secUid,
                         'count' => 12,
                         'cursor' => 0,
                     ]);
 
-                Log::info('RAPIDAPI OLDEST POSTS RAW', [
-                    'status' => $oldestPostsResponse->status(),
-                    'body' => $oldestPostsResponse->body(),
+                Log::info('RAPIDAPI POSTS RAW', [
+                    'status' => $postsResponse->status(),
+                    'body' => $postsResponse->body(),
                     'username' => $username,
                     'secUid' => $secUid,
                 ]);
 
-                $oldestPostsJson = $oldestPostsResponse->successful()
-                    ? $oldestPostsResponse->json()
+                $postsJson = $postsResponse->successful()
+                    ? $postsResponse->json()
                     : [];
 
                 $items = data_get(
-                    $oldestPostsJson,
+                    $postsJson,
                     'itemList',
-                    data_get($oldestPostsJson, 'items', data_get($oldestPostsJson, 'data.items', []))
+                    data_get($postsJson, 'items', data_get($postsJson, 'data.items', []))
                 );
 
                 $posts = collect($items)
@@ -762,18 +764,22 @@ Mục tiêu phân tích:
                             ?: data_get($post, 'id')
                             ?: ('tt_' . ($index + 1));
 
-                        $desc = data_get($post, 'desc', 'TikTok post ' . ($index + 1));
+                        $desc = data_get($post, 'desc')
+                            ?: data_get($post, 'title')
+                            ?: ('TikTok post ' . ($index + 1));
 
                         $thumbnail = data_get($post, 'video.cover.url_list.0')
                             ?: data_get($post, 'video.dynamic_cover.url_list.0')
                             ?: data_get($post, 'video.originCover.url_list.0')
                             ?: data_get($post, 'cover')
+                            ?: data_get($post, 'thumbnail')
                             ?: '';
 
                         $views = (int) (
                             data_get($post, 'stats.playCount')
                             ?: data_get($post, 'statistics.play_count')
                             ?: data_get($post, 'play_count')
+                            ?: data_get($post, 'views')
                             ?: 0
                         );
 
@@ -781,6 +787,7 @@ Mục tiêu phân tích:
                             data_get($post, 'stats.diggCount')
                             ?: data_get($post, 'statistics.digg_count')
                             ?: data_get($post, 'digg_count')
+                            ?: data_get($post, 'likes')
                             ?: 0
                         );
 
@@ -788,6 +795,7 @@ Mục tiêu phân tích:
                             data_get($post, 'stats.commentCount')
                             ?: data_get($post, 'statistics.comment_count')
                             ?: data_get($post, 'comment_count')
+                            ?: data_get($post, 'comments')
                             ?: 0
                         );
 
@@ -810,61 +818,22 @@ Mục tiêu phân tích:
                     ->all();
             }
 
-
-
-
-            $posts = collect($items)
-                ->map(function ($post, $index) use ($username) {
-                    $videoId = data_get($post, 'aweme_id')
-                        ?: data_get($post, 'video_id')
-                        ?: data_get($post, 'id')
-                        ?: ('tt_' . ($index + 1));
-
-                    $desc = data_get($post, 'desc', data_get($post, 'title', 'TikTok post ' . ($index + 1)));
-
-                    $thumbnail = data_get($post, 'video.cover.url_list.0')
-                        ?: data_get($post, 'video.dynamic_cover.url_list.0')
-                        ?: data_get($post, 'cover')
-                        ?: data_get($post, 'thumbnail', '');
-
-                    $views = (int) (
-                        data_get($post, 'statistics.play_count')
-                        ?: data_get($post, 'play_count')
-                        ?: data_get($post, 'views')
-                        ?: 0
-                    );
-
-                    $likes = (int) (
-                        data_get($post, 'statistics.digg_count')
-                        ?: data_get($post, 'digg_count')
-                        ?: data_get($post, 'likes')
-                        ?: 0
-                    );
-
-                    $comments = (int) (
-                        data_get($post, 'statistics.comment_count')
-                        ?: data_get($post, 'comment_count')
-                        ?: data_get($post, 'comments')
-                        ?: 0
-                    );
-
-                    return [
-                        'id' => $videoId,
-                        'title' => $desc ?: 'TikTok post ' . ($index + 1),
-                        'thumbnail' => $thumbnail,
-                        'views' => $views,
-                        'likes' => $likes,
-                        'comments' => $comments,
+            if (empty($posts)) {
+                $posts = [
+                    [
+                        'id' => 'fallback_1',
+                        'title' => 'Video gần đây',
+                        'thumbnail' => data_get($user, 'avatarLarger')
+                            ?: data_get($user, 'avatarMedium')
+                            ?: '',
+                        'views' => 0,
+                        'likes' => 0,
+                        'comments' => 0,
                         'is_pinned' => false,
-                        'url' => "https://www.tiktok.com/@{$username}/video/{$videoId}",
-                    ];
-                })
-                ->filter(function ($post) {
-                    return !empty($post['url']) || !empty($post['thumbnail']);
-                })
-                ->take(12)
-                ->values()
-                ->all();
+                        'url' => "https://www.tiktok.com/@{$username}",
+                    ],
+                ];
+            }
 
             return [
                 'status' => 'ok',
