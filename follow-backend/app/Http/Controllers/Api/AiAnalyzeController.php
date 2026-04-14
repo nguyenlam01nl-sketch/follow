@@ -721,11 +721,11 @@ Mục tiêu phân tích:
                 'x-rapidapi-host' => $apiHost,
             ];
 
-            $profileResponse = Http::withHeaders($headers)
-                ->timeout(60)
-                ->get("https://{$apiHost}/api/user/info", [
-                    'unique_id' => $username,
-                ]);
+           $profileResponse = Http::withHeaders($headers)
+    ->timeout(60)
+    ->get("https://{$apiHost}/api/user/info", [
+        'uniqueId' => $username,
+    ]);
 
             if (!$profileResponse->successful()) {
                 Log::warning('RAPIDAPI PROFILE FAILED', [
@@ -754,13 +754,13 @@ Mục tiêu phân tích:
                 ];
             }
 
-            $postsResponse = Http::withHeaders($headers)
-                ->timeout(60)
-                ->get("https://{$apiHost}/api/user/posts", [
-                    'unique_id' => $username,
-                    'count' => 12,
-                    'cursor' => 0,
-                ]);
+           $postsResponse = Http::withHeaders($headers)
+    ->timeout(60)
+    ->get("https://{$apiHost}/api/user/posts", [
+        'uniqueId' => $username,
+        'count' => 12,
+        'cursor' => 0,
+    ]);
 
             $postsJson = $postsResponse->successful() ? $postsResponse->json() : [];
             $items = data_get($postsJson, 'items', data_get($postsJson, 'data.items', []));
