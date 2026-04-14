@@ -215,6 +215,7 @@ class AiAnalyzeController extends Controller
             'status' => 'unreadable',
         ];
     }
+
     private function analyzeWithOpenAI(string $url, string $platform, array $rawData): array
     {
         $apiKey = config('services.openai.key');
@@ -664,35 +665,6 @@ Mục tiêu phân tích:
             }
         }
 
-        if ($platform === 'instagram') {
-            $first = explode('/', $path)[0] ?? null;
-            return $first ?: null;
-        }
-
-        if ($platform === 'youtube') {
-            $parts = explode('/', $path);
-
-            if (($parts[0] ?? null) === '@' && isset($parts[1])) {
-                return $parts[1];
-            }
-
-            if (str_starts_with($parts[0] ?? '', '@')) {
-                return ltrim($parts[0], '@');
-            }
-
-            if (($parts[0] ?? null) === 'channel' && isset($parts[1])) {
-                return $parts[1];
-            }
-
-            if (($parts[0] ?? null) === 'c' && isset($parts[1])) {
-                return $parts[1];
-            }
-
-            if (($parts[0] ?? null) === 'user' && isset($parts[1])) {
-                return $parts[1];
-            }
-        }
-
         return null;
     }
 
@@ -721,11 +693,11 @@ Mục tiêu phân tích:
                 'x-rapidapi-host' => $apiHost,
             ];
 
-           $profileResponse = Http::withHeaders($headers)
-    ->timeout(60)
-    ->get("https://{$apiHost}/api/user/info", [
-        'uniqueId' => $username,
-    ]);
+            $profileResponse = Http::withHeaders($headers)
+                ->timeout(60)
+                ->get("https://{$apiHost}/api/user/info", [
+                    'uniqueId' => $username,
+                ]);
 
             if (!$profileResponse->successful()) {
                 Log::warning('RAPIDAPI PROFILE FAILED', [
@@ -740,8 +712,8 @@ Mục tiêu phân tích:
             }
 
             $profileJson = $profileResponse->json();
-            $user = data_get($profileJson, 'user', data_get($profileJson, 'data.user', []));
-            $stats = data_get($profileJson, 'stats', data_get($profileJson, 'data.stats', []));
+            $user = data_get($profileJson, 'userInfo.user', []);
+            $stats = data_get($profileJson, 'userInfo.stats', []);
 
             if (empty($user) && empty($stats)) {
                 Log::warning('RAPIDAPI PROFILE EMPTY', [
@@ -754,16 +726,20 @@ Mục tiêu phân tích:
                 ];
             }
 
-           $postsResponse = Http::withHeaders($headers)
-    ->timeout(60)
-    ->get("https://{$apiHost}/api/user/posts", [
-        'uniqueId' => $username,
-        'count' => 12,
-        'cursor' => 0,
-    ]);
+            $postsResponse = Http::withHeaders($headers)
+                ->timeout(60)
+                ->get("https://{$apiHost}/api/user/posts", [
+                    'uniqueId' => $username,
+                    'count' => 12,
+                    'cursor' => 0,
+                ]);
 
             $postsJson = $postsResponse->successful() ? $postsResponse->json() : [];
-            $items = data_get($postsJson, 'items', data_get($postsJson, 'data.items', []));
+            $items = data_get(
+                $postsJson,
+                'itemList',
+                data_get($postsJson, 'items', data_get($postsJson, 'data.items', []))
+            );
 
             $posts = collect($items)
                 ->map(function ($post, $index) use ($username) {
@@ -827,7 +803,6 @@ Mục tiêu phân tích:
                             ?: data_get($user, 'uniqueId')
                             ?: $this->beautifyNameFromUsername($username),
                         'username' => data_get($user, 'uniqueId')
-                            ?: data_get($user, 'unique_id')
                             ?: $username,
                         'avatar' => data_get($user, 'avatarLarger')
                             ?: data_get($user, 'avatarMedium')
@@ -836,7 +811,7 @@ Mục tiêu phân tích:
                         'bio' => data_get($user, 'signature', ''),
                         'followers' => (int) data_get($stats, 'followerCount', 0),
                         'following' => (int) data_get($stats, 'followingCount', 0),
-                        'likes' => (int) data_get($stats, 'heartCount', 0),
+                        'likes' => (int) (data_get($stats, 'heartCount') ?: data_get($stats, 'heart', 0)),
                         'posts_count' => (int) data_get($stats, 'videoCount', count($posts)),
                     ],
                     'posts' => $posts,
