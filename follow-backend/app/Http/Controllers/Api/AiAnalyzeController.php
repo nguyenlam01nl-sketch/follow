@@ -35,7 +35,7 @@ class AiAnalyzeController extends Controller
 
         if ($platform === 'unknown') {
             return response()->json([
-                'message' => 'Chỉ hỗ trợ link YouTube, Instagram hoặc TikTok.',
+                'message' => 'Hiện tại chỉ hỗ trợ link TikTok.',
             ], 422);
         }
 
@@ -190,14 +190,6 @@ class AiAnalyzeController extends Controller
     {
         $lower = strtolower($url);
 
-        if (str_contains($lower, 'youtube.com') || str_contains($lower, 'youtu.be')) {
-            return 'youtube';
-        }
-
-        if (str_contains($lower, 'instagram.com')) {
-            return 'instagram';
-        }
-
         if (str_contains($lower, 'tiktok.com')) {
             return 'tiktok';
         }
@@ -216,26 +208,13 @@ class AiAnalyzeController extends Controller
         }
 
         if ($platform === 'tiktok') {
-            return $this->fetchTikTokFromScraper($url, $username);
-        }
-
-        if ($platform === 'instagram') {
-            return [
-                'status' => 'unreadable',
-            ];
-        }
-
-        if ($platform === 'youtube') {
-            return [
-                'status' => 'unreadable',
-            ];
+            return $this->fetchTikTokFromRapidApi($username);
         }
 
         return [
             'status' => 'unreadable',
         ];
     }
-
     private function analyzeWithOpenAI(string $url, string $platform, array $rawData): array
     {
         $apiKey = config('services.openai.key');
@@ -723,47 +702,36 @@ Mục tiêu phân tích:
         return mb_convert_case($name, MB_CASE_TITLE, 'UTF-8');
     }
 
-    private function fetchTikTokFromScraper(string $url, string $username): array
+    private function fetchTikTokFromRapidApi(string $username): array
     {
-        $baseUrl = rtrim((string) config('services.scraper.base_url'), '/');
-        $token = (string) config('services.scraper.token');
+        $apiKey = (string) env('RAPIDAPI_KEY');
+        $apiHost = (string) env('RAPIDAPI_HOST', 'tiktok-api23.p.rapidapi.com');
 
-        Log::info('SCRAPER CONFIG', [
-            'base_url' => $baseUrl,
-            'has_token' => !empty($token),
-            'url' => $url,
-        ]);
+        if (!$apiKey || !$apiHost) {
+            Log::warning('RAPIDAPI MISSING CONFIG');
 
-        if (!$baseUrl || !$token) {
-            Log::warning('SCRAPER MISSING CONFIG');
             return [
                 'status' => 'unreadable',
             ];
         }
 
         try {
-            $response = Http::withToken($token)
-                ->timeout(90)
-                ->post($baseUrl . '/scrape/tiktok', [
-                    'url' => $url,
+            $headers = [
+                'x-rapidapi-key' => $apiKey,
+                'x-rapidapi-host' => $apiHost,
+            ];
+
+            $profileResponse = Http::withHeaders($headers)
+                ->timeout(60)
+                ->get("https://{$apiHost}/api/user/info", [
+                    'unique_id' => $username,
                 ]);
 
-            Log::info('SCRAPER HTTP RESPONSE', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-
-            if (!$response->successful()) {
-                return [
-                    'status' => 'unreadable',
-                ];
-            }
-
-            $data = $response->json();
-
-            if (!is_array($data)) {
-                Log::warning('SCRAPER INVALID JSON', [
-                    'data' => $data,
+            if (!$profileResponse->successful()) {
+                Log::warning('RAPIDAPI PROFILE FAILED', [
+                    'status' => $profileResponse->status(),
+                    'body' => $profileResponse->body(),
+                    'username' => $username,
                 ]);
 
                 return [
@@ -771,54 +739,113 @@ Mục tiêu phân tích:
                 ];
             }
 
-            $profile = data_get($data, 'profile', []);
-            $posts = data_get($data, 'posts', []);
+            $profileJson = $profileResponse->json();
+            $user = data_get($profileJson, 'user', data_get($profileJson, 'data.user', []));
+            $stats = data_get($profileJson, 'stats', data_get($profileJson, 'data.stats', []));
 
-            if (empty($profile) && empty($posts)) {
-                Log::warning('SCRAPER EMPTY DATA');
+            if (empty($user) && empty($stats)) {
+                Log::warning('RAPIDAPI PROFILE EMPTY', [
+                    'username' => $username,
+                    'body' => $profileResponse->body(),
+                ]);
+
                 return [
                     'status' => 'not_found',
                 ];
             }
+
+            $postsResponse = Http::withHeaders($headers)
+                ->timeout(60)
+                ->get("https://{$apiHost}/api/user/posts", [
+                    'unique_id' => $username,
+                    'count' => 12,
+                    'cursor' => 0,
+                ]);
+
+            $postsJson = $postsResponse->successful() ? $postsResponse->json() : [];
+            $items = data_get($postsJson, 'items', data_get($postsJson, 'data.items', []));
+
+            $posts = collect($items)
+                ->map(function ($post, $index) use ($username) {
+                    $videoId = data_get($post, 'aweme_id')
+                        ?: data_get($post, 'video_id')
+                        ?: data_get($post, 'id')
+                        ?: ('tt_' . ($index + 1));
+
+                    $desc = data_get($post, 'desc', data_get($post, 'title', 'TikTok post ' . ($index + 1)));
+
+                    $thumbnail = data_get($post, 'video.cover.url_list.0')
+                        ?: data_get($post, 'video.dynamic_cover.url_list.0')
+                        ?: data_get($post, 'cover')
+                        ?: data_get($post, 'thumbnail', '');
+
+                    $views = (int) (
+                        data_get($post, 'statistics.play_count')
+                        ?: data_get($post, 'play_count')
+                        ?: data_get($post, 'views')
+                        ?: 0
+                    );
+
+                    $likes = (int) (
+                        data_get($post, 'statistics.digg_count')
+                        ?: data_get($post, 'digg_count')
+                        ?: data_get($post, 'likes')
+                        ?: 0
+                    );
+
+                    $comments = (int) (
+                        data_get($post, 'statistics.comment_count')
+                        ?: data_get($post, 'comment_count')
+                        ?: data_get($post, 'comments')
+                        ?: 0
+                    );
+
+                    return [
+                        'id' => $videoId,
+                        'title' => $desc ?: 'TikTok post ' . ($index + 1),
+                        'thumbnail' => $thumbnail,
+                        'views' => $views,
+                        'likes' => $likes,
+                        'comments' => $comments,
+                        'is_pinned' => false,
+                        'url' => "https://www.tiktok.com/@{$username}/video/{$videoId}",
+                    ];
+                })
+                ->filter(function ($post) {
+                    return !empty($post['url']) || !empty($post['thumbnail']);
+                })
+                ->take(12)
+                ->values()
+                ->all();
 
             return [
                 'status' => 'ok',
                 'data' => [
                     'platform' => 'tiktok',
                     'profile' => [
-                        'name' => data_get($profile, 'name') ?: $this->beautifyNameFromUsername($username),
-                        'username' => data_get($profile, 'username') ?: $username,
-                        'avatar' => data_get($profile, 'avatar', ''),
-                        'bio' => data_get($profile, 'bio', ''),
-                        'followers' => (int) data_get($profile, 'followers', 0),
-                        'following' => (int) data_get($profile, 'following', 0),
-                        'likes' => (int) data_get($profile, 'likes', 0),
-                        'posts_count' => (int) data_get($profile, 'posts_count', count($posts)),
+                        'name' => data_get($user, 'nickname')
+                            ?: data_get($user, 'uniqueId')
+                            ?: $this->beautifyNameFromUsername($username),
+                        'username' => data_get($user, 'uniqueId')
+                            ?: data_get($user, 'unique_id')
+                            ?: $username,
+                        'avatar' => data_get($user, 'avatarLarger')
+                            ?: data_get($user, 'avatarMedium')
+                            ?: data_get($user, 'avatarThumb')
+                            ?: '',
+                        'bio' => data_get($user, 'signature', ''),
+                        'followers' => (int) data_get($stats, 'followerCount', 0),
+                        'following' => (int) data_get($stats, 'followingCount', 0),
+                        'likes' => (int) data_get($stats, 'heartCount', 0),
+                        'posts_count' => (int) data_get($stats, 'videoCount', count($posts)),
                     ],
-                    'posts' => collect($posts)
-                        ->map(function ($post, $index) {
-                            return [
-                                'id' => data_get($post, 'id', 'tt_' . ($index + 1)),
-                                'title' => data_get($post, 'title', 'TikTok post ' . ($index + 1)),
-                                'thumbnail' => data_get($post, 'thumbnail', ''),
-                                'views' => (int) data_get($post, 'views', 0),
-                                'likes' => (int) data_get($post, 'likes', 0),
-                                'comments' => (int) data_get($post, 'comments', 0),
-                                'is_pinned' => (bool) data_get($post, 'is_pinned', false),
-                                'url' => data_get($post, 'url', ''),
-                            ];
-                        })
-                        ->filter(function ($post) {
-                            return !empty($post['url']) || !empty($post['thumbnail']);
-                        })
-                        ->take(12)
-                        ->values()
-                        ->all(),
+                    'posts' => $posts,
                 ],
             ];
         } catch (\Throwable $e) {
-            Log::error('SCRAPER EXCEPTION', [
+            Log::error('RAPIDAPI EXCEPTION', [
                 'message' => $e->getMessage(),
+                'username' => $username,
             ]);
 
             return [
