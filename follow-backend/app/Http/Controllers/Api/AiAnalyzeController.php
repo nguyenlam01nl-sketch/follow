@@ -734,6 +734,19 @@ Mục tiêu phân tích:
                     'cursor' => 0,
                 ]);
 
+            Log::info('RAPIDAPI POSTS RAW', [
+                'status' => $postsResponse->status(),
+                'body' => $postsResponse->body(),
+                'username' => $username,
+            ]);
+
+            $postsJson = $postsResponse->successful() ? $postsResponse->json() : [];
+            $items = data_get(
+                $postsJson,
+                'itemList',
+                data_get($postsJson, 'items', data_get($postsJson, 'data.items', []))
+            );
+
             $postsJson = $postsResponse->successful() ? $postsResponse->json() : [];
             $items = data_get(
                 $postsJson,
