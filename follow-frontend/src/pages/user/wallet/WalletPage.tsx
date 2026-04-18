@@ -74,6 +74,7 @@ function WalletPage() {
 
       const username =
         userRes.data?.username || userRes.data?.name || "user";
+
       setTransferNote(`solavietnam ${username}`);
     } catch (error) {
       console.error("Lỗi load wallet:", error);
@@ -92,71 +93,9 @@ function WalletPage() {
     fetchWalletData();
   }, []);
 
-  const handleCreateDeposit = async () => {
-    try {
-      const userRes = await api.get("/account");
-      const username = userRes.data?.username || userRes.data?.name || "user";
-
-      const { value: amount } = await Swal.fire({
-        title: "Nạp tiền",
-        input: "number",
-        inputLabel: "Nhập số tiền",
-        inputPlaceholder: "500000",
-        showCancelButton: true,
-        confirmButtonText: "Tạo",
-        cancelButtonText: "Huỷ",
-        confirmButtonColor: "#2F80ED",
-        inputValidator: (value) => {
-          if (!value) return "Nhập số tiền";
-          if (Number(value) < 1000) return "Tối thiểu 1.000đ";
-          return null;
-        },
-      });
-
-      if (!amount) return;
-
-      const transferContent = `solavietnam ${username}`;
-      setTransferNote(transferContent);
-
-      const res = await api.post("/wallet/deposit", {
-        amount: Number(amount),
-        payment_method: "bank_transfer",
-        content: transferContent,
-      });
-
-      const qrInfo = res.data?.qr_info;
-      setTransferNote(qrInfo?.content || transferContent);
-
-      await Swal.fire({
-        title: "Tạo thành công",
-        html: `
-          <div style="text-align:left;font-size:14px">
-            <p><b>Ngân hàng:</b> ${qrInfo?.bank_name || ""}</p>
-            <p><b>STK:</b> ${qrInfo?.account_number || ""}</p>
-            <p><b>Chủ TK:</b> ${qrInfo?.account_name || ""}</p>
-            <p><b>Nội dung:</b> ${qrInfo?.content || transferContent}</p>
-          </div>
-        `,
-        icon: "success",
-        confirmButtonColor: "#2F80ED",
-      });
-
-      fetchWalletData();
-    } catch (error: any) {
-      await Swal.fire({
-        title: "Lỗi!",
-        text:
-          error?.response?.data?.message ||
-          "Không thể tạo yêu cầu nạp tiền",
-        icon: "error",
-        confirmButtonColor: "#2F80ED",
-      });
-    }
-  };
-
   return (
     <DashboardLayout>
-      <div className="space-y-3 px-2.5 sm:px-4">
+      <div className="space-y-4 px-2.5 pb-4 sm:space-y-5 sm:px-4 sm:pb-6">
         <div>
           <h1 className="text-base font-semibold text-white sm:text-lg">
             Ví tiền
@@ -166,18 +105,14 @@ function WalletPage() {
           </p>
         </div>
 
-        <div className="space-y-2.5 sm:space-y-3">
-          <BalanceCard balance={balance} />
-          <DepositQR
-            onDeposit={handleCreateDeposit}
-            transferNote={transferNote}
-          />
-        </div>
+        <BalanceCard balance={balance} />
 
-        <div className="rounded-[18px] border border-white/10 bg-white/5 p-3 backdrop-blur-xl sm:rounded-[22px] sm:p-4">
+        <DepositQR transferNote={transferNote} />
+
+        <div className="rounded-[20px] border border-white/10 bg-white/5 p-3 backdrop-blur-xl sm:rounded-[24px] sm:p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-white sm:text-base">
-              Lịch sử
+              Lịch sử giao dịch
             </h2>
           </div>
 
@@ -191,8 +126,8 @@ function WalletPage() {
                 Chưa có giao dịch
               </div>
             ) : (
-              <div className="divide-y divide-white/10">
-                <div className="grid grid-cols-[minmax(0,1.6fr)_100px_84px] px-2 py-2 text-[10px] uppercase tracking-[0.12em] text-white/40 sm:px-3">
+              <div className="space-y-2 sm:space-y-0 sm:divide-y sm:divide-white/10">
+                <div className="hidden grid-cols-[minmax(0,1.6fr)_110px_90px] px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-white/40 sm:grid">
                   <div>Nội dung</div>
                   <div className="text-right">Số tiền</div>
                   <div className="text-right">Trạng thái</div>
@@ -201,20 +136,20 @@ function WalletPage() {
                 {transactions.map((tx) => (
                   <div
                     key={tx.id}
-                    className="grid grid-cols-[minmax(0,1.6fr)_100px_84px] items-center px-2 py-2 text-xs text-white sm:px-3"
+                    className="rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-white sm:grid sm:grid-cols-[minmax(0,1.6fr)_110px_90px] sm:items-center sm:rounded-none sm:border-0 sm:bg-transparent sm:px-3 sm:py-3"
                   >
                     <div className="min-w-0">
                       <div className="truncate font-medium text-white">
                         {tx.title}
                       </div>
-                      <div className="mt-0.5 truncate text-[10px] text-white/40">
+                      <div className="mt-1 text-[10px] text-white/40 sm:truncate">
                         {formatDate(tx.created_at)}
                         {tx.note ? ` • ${tx.note}` : ""}
                       </div>
                     </div>
 
                     <div
-                      className={`text-right text-[11px] font-semibold sm:text-xs ${
+                      className={`mt-2 text-[11px] font-semibold sm:mt-0 sm:text-right sm:text-xs ${
                         tx.type === "deposit"
                           ? "text-emerald-300"
                           : "text-rose-300"
@@ -224,9 +159,9 @@ function WalletPage() {
                       {formatMoney(tx.amount)}
                     </div>
 
-                    <div className="text-right">
+                    <div className="mt-2 sm:mt-0 sm:text-right">
                       <span
-                        className={`inline-flex rounded-full px-2 py-1 text-[10px] ${getStatusClass(
+                        className={`inline-flex rounded-full px-2.5 py-1 text-[10px] ${getStatusClass(
                           tx.status
                         )}`}
                       >

@@ -10,6 +10,7 @@ import ServiceOrderPage from "@/pages/user/services/ServiceOrderPage";
 import EngagementPlatformPage from "@/pages/user/services/EngagementPlatformPage";
 import ProtectedRoute from "./ProtectedRoute";
 import AiAnalyzePage from "@/pages/user/ai/AiAnalyzePage";
+import DocumentSupportPage from "@/pages/user/document/DocumentSupportPage";
 
 import AdminDashboardPage from "@/pages/admin/dashboard/AdminDashboardPage";
 import AdminServicesPage from "@/pages/admin/services/AdminServicesPage";
@@ -66,6 +67,7 @@ function AppRoutes() {
         <Route path="/order-success" element={<OrderSuccessPage />} />
 
         <Route path="/ai-analyze" element={<AiAnalyzePage />} />
+<Route path="/document-support" element={<DocumentSupportPage />} />
       </Route>
 
       {/* 👑 ADMIN */}

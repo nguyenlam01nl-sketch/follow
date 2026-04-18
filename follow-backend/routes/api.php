@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\AdminAffiliateController;
 use App\Http\Controllers\Api\ReferralController;
 use App\Http\Controllers\Api\AiAnalyzeController;
 use App\Http\Controllers\Api\AdminAiAnalyzeController;
+use App\Http\Controllers\Api\DocumentSupportController;
 
 // ========================
 // PUBLIC
@@ -90,6 +91,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/ai-analyze', [AiAnalyzeController::class, 'analyze']);
 
+    Route::get('/document-support', [DocumentSupportController::class, 'index']);
+    Route::post('/document-support', [DocumentSupportController::class, 'store']);
+    Route::get('/document-support/{id}', [DocumentSupportController::class, 'show']);
+
+
 
     // ========================
     // ADMIN
@@ -150,5 +156,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/affiliate/commissions', [AdminAffiliateController::class, 'commissions']);
 
         Route::get('/admin/ai-analyze', [AdminAiAnalyzeController::class, 'index']);
+
+        Route::patch('/admin/document-support/{id}/status', [DocumentSupportController::class, 'updateStatus']);
+        Route::delete('/admin/document-support/{id}', [DocumentSupportController::class, 'destroy']);
     });
 });

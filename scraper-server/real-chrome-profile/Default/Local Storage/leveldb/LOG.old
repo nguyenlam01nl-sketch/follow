@@ -1,6 +1,0 @@
-2026/04/12-12:20:36.224 4fec5 Reusing MANIFEST /Users/nguyenlam/Documents/follow/follow-frontend/scraper-server/real-chrome-profile/Default/Local Storage/leveldb/MANIFEST-000001
-2026/04/12-12:20:36.226 4fec5 Recovering log #8
-2026/04/12-12:20:36.227 4fec5 Reusing old log /Users/nguyenlam/Documents/follow/follow-frontend/scraper-server/real-chrome-profile/Default/Local Storage/leveldb/000008.log 
-2026/04/12-12:26:38.927 4fec8 Level-0 table #11: started
-2026/04/12-12:26:38.932 4fec8 Level-0 table #11: 23580 bytes OK
-2026/04/12-12:26:38.935 4fec8 Delete type=0 #8

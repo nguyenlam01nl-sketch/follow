@@ -6,11 +6,10 @@ const ACCOUNT = "19037432671013";
 const ACCOUNT_NAME = "Nguyen Lam";
 
 type DepositQRProps = {
-  onDeposit?: () => void | Promise<void>;
   transferNote?: string;
 };
 
-function DepositQR({ onDeposit, transferNote }: DepositQRProps) {
+function DepositQR({ transferNote }: DepositQRProps) {
   const [amount, setAmount] = useState<number>(100000);
   const [note, setNote] = useState<string>("");
 
@@ -22,10 +21,11 @@ function DepositQR({ onDeposit, transferNote }: DepositQRProps) {
     note
   )}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
 
+  // ✅ COPY nội dung
   const handleCopyNote = async () => {
     if (!note) return;
     await navigator.clipboard.writeText(note);
-    await Swal.fire({
+    Swal.fire({
       toast: true,
       position: "top-end",
       icon: "success",
@@ -37,11 +37,12 @@ function DepositQR({ onDeposit, transferNote }: DepositQRProps) {
     });
   };
 
+  // ✅ COPY full info
   const handleCopyAll = async () => {
     await navigator.clipboard.writeText(
       `${ACCOUNT} | ${amount} | ${note || "Chưa có nội dung"}`
     );
-    await Swal.fire({
+    Swal.fire({
       toast: true,
       position: "top-end",
       icon: "success",
@@ -53,118 +54,156 @@ function DepositQR({ onDeposit, transferNote }: DepositQRProps) {
     });
   };
 
+  // 🔥 DOWNLOAD QR (auto tải mobile + desktop)
+  const handleDownloadQR = async () => {
+    try {
+      const res = await fetch(qrUrl);
+      const blob = await res.blob();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `vietqr-${amount}.png`;
+      document.body.appendChild(a);
+      a.click();
+
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Đã tải mã QR",
+        showConfirmButton: false,
+        timer: 1400,
+        background: "#08152d",
+        color: "#fff",
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi",
+        text: "Không tải được QR",
+      });
+    }
+  };
+
   return (
-    <div className="rounded-[18px] border border-white/10 bg-white/5 p-3 backdrop-blur-xl sm:rounded-[22px] sm:p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-white sm:text-base">
-            Nạp tiền qua QR
-          </h2>
-          <p className="text-[11px] text-white/50 sm:text-xs">
-            Quét mã và giữ nguyên nội dung
-          </p>
-        </div>
-
-        {onDeposit && (
-          <button
-            type="button"
-            onClick={onDeposit}
-            className="shrink-0 rounded-xl bg-[#1570ef] px-3 py-2 text-[11px] font-semibold text-white transition hover:brightness-110 sm:text-xs"
-          >
-            Tạo yêu cầu
-          </button>
-        )}
+    <div className="rounded-[20px] border border-white/10 bg-white/5 p-3 backdrop-blur-xl sm:rounded-[24px] sm:p-4 md:p-5">
+      <div>
+        <h2 className="text-sm font-semibold text-white sm:text-base">
+          Nạp tiền qua QR
+        </h2>
+        <p className="text-[11px] text-white/50 sm:text-xs">
+          Quét mã hoặc lưu mã QR để chuyển khoản nhanh
+        </p>
       </div>
 
-      <div className="mt-3">
-        <p className="mb-2 text-[11px] text-white/55 sm:text-xs">Mệnh giá</p>
-        <div className="flex flex-wrap gap-2">
-          {[50000, 100000, 200000, 500000, 1000000].map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setAmount(v)}
-              className={`rounded-lg border px-3 py-1.5 text-[11px] transition sm:text-xs ${
-                amount === v
-                  ? "border-white/20 bg-white/12 text-white"
-                  : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10"
-              }`}
-            >
-              {v.toLocaleString("vi-VN")}đ
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_180px]">
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        {/* LEFT */}
         <div className="space-y-3">
+          {/* QUICK AMOUNT */}
           <div>
-            <label className="text-[11px] text-white/55 sm:text-xs">
+            <p className="mb-2 text-[11px] text-white/55 sm:text-xs">
+              Chọn mệnh giá nhanh
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {[50000, 100000, 200000, 500000, 1000000].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setAmount(v)}
+                  className={`rounded-xl border px-3 py-2 text-[11px] transition ${
+                    amount === v
+                      ? "border-cyan-300/30 bg-cyan-400/10 text-white"
+                      : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10"
+                  }`}
+                >
+                  {v.toLocaleString("vi-VN")}đ
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* AMOUNT INPUT */}
+          <div>
+            <label className="text-[11px] text-white/55">
               Số tiền
             </label>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value) || 0)}
-              className="mt-1 h-10 w-full rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white outline-none sm:h-11"
+              className="mt-1 h-11 w-full rounded-2xl border border-white/10 bg-white/5 px-3 text-white outline-none"
             />
           </div>
 
+          {/* NOTE */}
           <div>
-            <label className="text-[11px] text-white/55 sm:text-xs">
+            <label className="text-[11px] text-white/55">
               Nội dung chuyển khoản
             </label>
 
-            <div className="mt-1 flex h-10 items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 sm:h-11">
-              <span className="min-w-0 truncate select-all text-xs font-medium tracking-wide text-white sm:text-sm">
+            <div className="mt-1 flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
+              <span className="text-xs text-white break-all">
                 {note || "Chưa có nội dung"}
               </span>
 
               <button
-                type="button"
                 onClick={handleCopyNote}
-                className="shrink-0 text-[11px] text-cyan-300 hover:underline"
+                className="text-xs text-cyan-300"
               >
                 Copy
               </button>
             </div>
 
-            <p className="mt-1 text-[10px] text-red-300 sm:text-[11px]">
+            <p className="mt-1 text-[10px] text-red-300">
               Bắt buộc giữ nguyên nội dung khi chuyển khoản
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-[11px] sm:text-xs">
-            <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-              <div className="text-white/45">Ngân hàng</div>
-              <div className="mt-0.5 truncate font-medium text-white">
-                Techcombank
-              </div>
+          {/* BANK INFO */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-2">
+              <div className="text-white/40">Ngân hàng</div>
+              <div className="text-white">Techcombank</div>
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-              <div className="text-white/45">Số tài khoản</div>
-              <div className="mt-0.5 truncate font-medium text-white">
-                {ACCOUNT}
-              </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-2">
+              <div className="text-white/40">Số tài khoản</div>
+              <div className="text-white break-all">{ACCOUNT}</div>
             </div>
           </div>
-        </div>
-
-        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 p-3">
-          <img
-            src={qrUrl}
-            alt="QR Code"
-            className="h-36 w-36 rounded-xl bg-white p-2 sm:h-40 sm:w-40"
-          />
 
           <button
-            type="button"
             onClick={handleCopyAll}
-            className="text-[11px] text-white/55 transition hover:text-white"
+            className="w-full rounded-xl bg-white/10 py-2 text-sm text-white"
           >
-            Copy toàn bộ thông tin
+            Copy toàn bộ
           </button>
+        </div>
+
+        {/* RIGHT - QR */}
+        <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 p-3">
+          <div className="w-full rounded-xl bg-white p-3">
+            <img
+              src={qrUrl}
+              alt="QR Code"
+              className="mx-auto w-full max-w-[300px]"
+            />
+          </div>
+
+          <button
+            onClick={handleDownloadQR}
+            className="mt-3 w-full rounded-xl bg-[#1570ef] py-2 text-sm font-semibold text-white"
+          >
+            Tải mã QR
+          </button>
+
+      
         </div>
       </div>
     </div>
