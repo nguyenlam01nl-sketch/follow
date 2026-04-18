@@ -18,6 +18,8 @@ import {
   Zap,
 } from "lucide-react";
 
+import { RiThreadsFill } from "react-icons/ri";
+
 type ServiceItem = {
   id: number;
   name: string;
@@ -103,7 +105,7 @@ function getPlatformMeta(platform: string) {
   if (key.includes("threads")) {
   return {
     label: "THREADS",
-    icon: Globe,
+    icon: RiThreadsFill,
     iconClass: "text-white/85",
     sectionBorder: "border-white/10",
     badgeClass: "border-white/10 bg-white/[0.05] text-white/70",
@@ -204,7 +206,7 @@ export default function ServicesPage() {
     { key: "facebook", label: "Facebook", icon: Share2 },
     { key: "instagram", label: "Instagram", icon: Globe },
     { key: "tiktok", label: "TikTok", icon: MusicNoteIcon },
-    { key: "threads", label: "Threads", icon: Globe },
+    { key: "threads", label: "Threads", icon: RiThreadsFill },
     { key: "youtube", label: "YouTube", icon: Video },
   ];
 

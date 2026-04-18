@@ -5,6 +5,7 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import api from "@/api/axios";
 import { ChevronLeft, Check, ChevronDown, Sparkles, Wallet } from "lucide-react";
 import { Listbox, Transition } from "@headlessui/react";
+import { RiThreadsFill } from "react-icons/ri";
 
 function FacebookIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -229,7 +230,7 @@ const engagementData: Record<
 
   threads: {
   label: "Threads",
-  icon: <InstagramIcon className="h-5 w-5 text-pink-400" />,
+  icon: <RiThreadsFill className="h-5 w-5 text-pink-400" />,
   serviceTypes: [
     {
       key: "follow",
