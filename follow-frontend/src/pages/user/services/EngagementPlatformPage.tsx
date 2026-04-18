@@ -227,6 +227,43 @@ const engagementData: Record<
     ],
   },
 
+  threads: {
+  label: "Threads",
+  icon: <InstagramIcon className="h-5 w-5 text-pink-400" />,
+  serviceTypes: [
+    {
+      key: "follow",
+      name: "Tăng Follow",
+      hint: "Nhập link profile Threads",
+      matchers: ["follow", "sub"],
+    },
+    {
+      key: "like",
+      name: "Tăng Like",
+      hint: "Nhập link bài viết Threads",
+      matchers: ["like", "tym", "tim"],
+    },
+    {
+      key: "view",
+      name: "Tăng View",
+      hint: "Nhập link bài viết Threads",
+      matchers: ["view"],
+    },
+    {
+      key: "comment",
+      name: "Tăng Comment",
+      hint: "Nhập link bài viết Threads",
+      matchers: ["comment"],
+    },
+    {
+      key: "share",
+      name: "Tăng Share",
+      hint: "Nhập link bài viết Threads",
+      matchers: ["share"],
+    },
+  ],
+},
+
   youtube: {
     label: "YouTube",
     icon: <YoutubeIcon className="h-5 w-5 text-red-500" />,

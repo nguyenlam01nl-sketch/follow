@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\ReferralController;
 use App\Http\Controllers\Api\AiAnalyzeController;
 use App\Http\Controllers\Api\AdminAiAnalyzeController;
 use App\Http\Controllers\Api\DocumentSupportController;
+use App\Http\Controllers\Api\PaymentWebhookController;
 
 // ========================
 // PUBLIC
@@ -95,7 +96,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/document-support', [DocumentSupportController::class, 'store']);
     Route::get('/document-support/{id}', [DocumentSupportController::class, 'show']);
 
-
+    Route::post('/webhooks/sepay', [PaymentWebhookController::class, 'sepay']);
 
     // ========================
     // ADMIN

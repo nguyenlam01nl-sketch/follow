@@ -26,54 +26,26 @@ class WalletController extends Controller
         return response()->json($transactions);
     }
 
-    public function createDeposit(Request $request, AdminMailService $adminMailService)
-    {
-        $data = $request->validate([
-            'amount' => ['required', 'numeric', 'min:1000'],
-            'payment_method' => ['nullable', 'string', 'max:50'],
-            'content' => ['nullable', 'string', 'max:255'],
-        ]);
+   public function createDeposit(Request $request)
+{
+    $data = $request->validate([
+        'amount' => ['required', 'numeric', 'min:1000'],
+    ]);
 
-        $user = $request->user();
+    $user = $request->user();
 
-        $transferContent = $data['content']
-            ?? ('solavietnam ' . ($user->username ?: $user->name ?: 'user'));
+    $transferContent = 'solavietnam ' . ($user->username ?: $user->name ?: 'user');
 
-        $transaction = WalletTransaction::create([
-            'user_id' => $user->id,
-            'title' => 'Nạp tiền vào ví',
-            'amount' => $data['amount'],
-            'type' => 'deposit',
-            'status' => 'pending',
-            'payment_method' => $data['payment_method'] ?? 'bank_transfer',
-            'note' => $transferContent,
-        ]);
-
-        $adminMailService->send(
-            'emails.admin-deposit-notification',
-            [
-                'transaction' => $transaction,
-                'user' => $user,
-            ],
-            'Có yêu cầu nạp tiền mới - Sola Vietnam',
-            [
-                'transaction_id' => $transaction->id ?? null,
-                'user_id' => $user->id ?? null,
-                'type' => 'deposit',
-            ]
-        );
-
-        return response()->json([
-            'message' => 'Đã tạo yêu cầu nạp tiền',
-            'transaction' => $transaction,
-            'qr_info' => [
-                'bank_name' => 'Techcombank',
-                'bank_code' => 'techcombank',
-                'account_number' => '19037432671013',
-                'account_name' => 'Nguyen Lam',
-                'amount' => (float) $data['amount'],
-                'content' => $transferContent,
-            ],
-        ], 201);
-    }
+    return response()->json([
+        'message' => 'Lấy thông tin QR thành công',
+        'qr_info' => [
+            'bank_name' => 'Techcombank',
+            'bank_code' => 'techcombank',
+            'account_number' => '19037432671013',
+            'account_name' => 'Nguyen Lam',
+            'amount' => (float) $data['amount'],
+            'content' => $transferContent,
+        ],
+    ], 200);
+}
 }
