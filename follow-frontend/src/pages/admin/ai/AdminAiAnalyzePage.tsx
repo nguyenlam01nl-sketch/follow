@@ -6,7 +6,6 @@ import {
   Brain,
   BarChart3,
   Link as LinkIcon,
-  Users,
   TrendingUp,
   Clock,
 } from "lucide-react";

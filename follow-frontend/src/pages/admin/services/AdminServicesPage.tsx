@@ -99,7 +99,7 @@ function getPlatformMeta(platform: string) {
 if (key.includes("threads")) {
   return {
     label: "THREADS",
-    icon: Globe,
+    icon: RiThreadsFill,
     iconClass: "text-white/85",
     sectionBorder: "border-white/10",
     badgeClass: "border-white/10 bg-white/[0.05] text-white/70",
@@ -224,7 +224,7 @@ export default function AdminServicesPage() {
     { key: "facebook", label: "Quản lý tương tác Facebook", icon: Share2 },
     { key: "instagram", label: "Quản lý tương tác Instagram", icon: Globe },
     { key: "tiktok", label: "Quản lý tương tác TikTok", icon: MusicNoteIcon },
-    { key: "threads", label: "Quản lý tương tác Threads", icon: Globe },
+    { key: "threads", label: "Quản lý tương tác Threads", icon: RiThreadsFill },
     { key: "youtube", label: "Quản lý tương tác YouTube", icon: Video },
   ];
 
