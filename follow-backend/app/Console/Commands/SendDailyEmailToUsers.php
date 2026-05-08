@@ -18,231 +18,219 @@ class SendDailyEmailToUsers extends Command
        $campaigns = [
 
     [
-        'subject' => '🎉 Giảm ngay 5% hôm nay tại Sola Vietnam',
-        'title' => '🔥 Ưu đãi social media',
-        'content' => 'Giảm ngay 5% cho nhiều dịch vụ tăng follow và tăng tương tác hôm nay tại Sola Vietnam.',
+        'subject' => '🔥 Giảm 10% tăng follow',
+        'title' => '🎉 Khuyến mãi hôm nay',
+        'content' => 'Giảm ngay 10% dịch vụ tăng follow hôm nay.',
     ],
 
     [
-        'subject' => '🚀 Tặng thêm lượt follow khi đặt dịch vụ',
-        'title' => '🎁 Bonus follow miễn phí',
-        'content' => 'Một số dịch vụ hôm nay được tặng thêm follow miễn phí khi đặt đơn trên website.',
+        'subject' => '⚡ Sale follow TikTok',
+        'title' => '📈 TikTok giảm giá',
+        'content' => 'Giảm giá nhiều gói follow TikTok.',
     ],
 
     [
-        'subject' => '🔥 Flash sale dịch vụ TikTok',
-        'title' => '📈 Ưu đãi tăng TikTok',
-        'content' => 'Nhiều dịch vụ tăng follow TikTok đang giảm giá trong hôm nay.',
+        'subject' => '🎁 Tặng thêm follow',
+        'title' => '🔥 Ưu đãi follow',
+        'content' => 'Đặt follow hôm nay được cộng thêm số lượng.',
     ],
 
     [
-        'subject' => '💎 Ưu đãi tăng tương tác Facebook',
-        'title' => '👍 Tăng like tiện lợi',
-        'content' => 'Giảm giá nhiều dịch vụ tăng like và tăng follow Facebook hôm nay.',
+        'subject' => '💥 Giảm giá tăng like',
+        'title' => '👍 Sale tương tác',
+        'content' => 'Nhiều gói tăng like đang giảm mạnh.',
     ],
 
     [
-        'subject' => '🎯 Tăng view TikTok giá tốt',
-        'title' => '📊 Hỗ trợ tăng view',
-        'content' => 'Các gói tăng view TikTok đang có giá ưu đãi trong thời gian ngắn.',
+        'subject' => '🚀 Sale view TikTok',
+        'title' => '🎬 Tăng view giá tốt',
+        'content' => 'Giảm giá dịch vụ tăng view TikTok hôm nay.',
     ],
 
     [
-        'subject' => '⚡ Giảm 10% dịch vụ Instagram',
-        'title' => '📸 Ưu đãi Instagram',
-        'content' => 'Nhiều dịch vụ Instagram hôm nay được giảm trực tiếp 10% trên hệ thống.',
+        'subject' => '🔥 Giảm giá Instagram',
+        'title' => '📸 Khuyến mãi IG',
+        'content' => 'Sale follow và like Instagram hôm nay.',
     ],
 
     [
-        'subject' => '🎁 Tặng thêm lượt xem video',
-        'title' => '🎬 Bonus view',
-        'content' => 'Đặt dịch vụ tăng view hôm nay có cơ hội được cộng thêm lượt xem miễn phí.',
+        'subject' => '⚡ Sale Facebook',
+        'title' => '👍 Facebook ưu đãi',
+        'content' => 'Nhiều dịch vụ Facebook đang giảm giá.',
     ],
 
     [
-        'subject' => '🚀 Dịch vụ social media giá tốt',
-        'title' => '🔥 Ưu đãi hôm nay',
-        'content' => 'Nhiều dịch vụ social media đang có mức giá ưu đãi trên Sola Vietnam.',
+        'subject' => '🎉 Khuyến mãi social media',
+        'title' => '🔥 Deal hôm nay',
+        'content' => 'Nhiều dịch vụ social đang có ưu đãi.',
     ],
 
     [
-        'subject' => '💥 Deal hot tăng follow TikTok',
-        'title' => '📈 Follow TikTok',
-        'content' => 'Theo dõi các ưu đãi tăng follow TikTok mới nhất trên website.',
+        'subject' => '💎 Giảm 5% toàn bộ dịch vụ',
+        'title' => '🔥 Ưu đãi toàn web',
+        'content' => 'Giảm giá nhiều dịch vụ hôm nay.',
     ],
 
     [
-        'subject' => '🎉 Giảm giá dịch vụ Facebook',
-        'title' => '👍 Facebook social',
-        'content' => 'Các gói tăng like và follow Facebook hôm nay đang có ưu đãi hấp dẫn.',
+        'subject' => '🚀 Follow giá rẻ hôm nay',
+        'title' => '📈 Deal follow',
+        'content' => 'Nhiều gói tăng follow đang giảm giá.',
     ],
 
     [
-        'subject' => '🔥 Tặng bonus khi nạp ví',
-        'title' => '💰 Ưu đãi nạp ví',
-        'content' => 'Một số mốc nạp ví hôm nay sẽ được cộng thêm số dư khuyến mãi.',
+        'subject' => '🔥 Sale mắt livestream',
+        'title' => '👀 Livestream ưu đãi',
+        'content' => 'Giảm giá dịch vụ mắt livestream.',
     ],
 
     [
-        'subject' => '📢 Hỗ trợ tăng mắt livestream',
-        'title' => '👀 Livestream social',
-        'content' => 'Nhiều gói tăng mắt livestream đang được giảm giá hôm nay.',
+        'subject' => '🎁 Tặng thêm lượt xem',
+        'title' => '🎬 View khuyến mãi',
+        'content' => 'Đặt view hôm nay được cộng thêm lượt xem.',
     ],
 
     [
-        'subject' => '🚀 Follow Instagram giá ưu đãi',
-        'title' => '📸 Tăng follow IG',
-        'content' => 'Các dịch vụ Instagram hiện đang có ưu đãi hấp dẫn trong hôm nay.',
+        'subject' => '⚡ TikTok đang giảm giá',
+        'title' => '🎵 Deal TikTok',
+        'content' => 'Nhiều gói TikTok giá tốt hôm nay.',
     ],
 
     [
-        'subject' => '🎁 Tặng thêm tương tác bài viết',
-        'title' => '❤️ Bonus tương tác',
-        'content' => 'Một số dịch vụ hôm nay được cộng thêm lượt tương tác miễn phí.',
+        'subject' => '🔥 Instagram sale lớn',
+        'title' => '📸 IG giảm giá',
+        'content' => 'Follow Instagram đang có giá ưu đãi.',
     ],
 
     [
-        'subject' => '💎 Deal social media hôm nay',
-        'title' => '🔥 Flash sale social',
-        'content' => 'Nhiều dịch vụ social media đang được cập nhật giá tốt hơn.',
+        'subject' => '💥 Facebook giảm mạnh',
+        'title' => '👍 Sale Facebook',
+        'content' => 'Nhiều dịch vụ Facebook đang giảm sâu.',
     ],
 
     [
-        'subject' => '⚡ Ưu đãi tăng like Facebook',
-        'title' => '👍 Like Facebook',
-        'content' => 'Giảm giá một số gói tăng like Facebook hôm nay.',
-    ],
-
-    [
-        'subject' => '🎯 Khuyến mãi follow TikTok',
-        'title' => '📈 TikTok deal',
-        'content' => 'Theo dõi website để cập nhật các ưu đãi follow TikTok mới.',
-    ],
-
-    [
-        'subject' => '🔥 Deal tăng view Reels',
-        'title' => '🎬 Instagram Reels',
-        'content' => 'Dịch vụ tăng view Reels đang có mức giá ưu đãi trong hôm nay.',
-    ],
-
-    [
-        'subject' => '🚀 Hỗ trợ social media 24/7',
-        'title' => '🌐 Sola Vietnam',
-        'content' => 'Website hỗ trợ nhiều dịch vụ social media hoạt động liên tục mỗi ngày.',
-    ],
-
-    [
-        'subject' => '🎁 Bonus follow miễn phí',
+        'subject' => '🎉 Tăng follow siêu rẻ',
         'title' => '📈 Ưu đãi follow',
-        'content' => 'Một số đơn hàng hôm nay sẽ được cộng thêm follow miễn phí.',
+        'content' => 'Giảm giá follow trên nhiều nền tảng.',
     ],
 
     [
-        'subject' => '💥 Giảm giá dịch vụ TikTok',
-        'title' => '🎵 TikTok social',
-        'content' => 'Nhiều gói TikTok hiện đang được giảm giá trực tiếp.',
+        'subject' => '🚀 Deal TikTok hôm nay',
+        'title' => '🎵 TikTok khuyến mãi',
+        'content' => 'Nhiều gói TikTok đang có ưu đãi.',
     ],
 
     [
-        'subject' => '📢 Khuyến mãi social media',
-        'title' => '🔥 Deal mới',
-        'content' => 'Theo dõi Sola Vietnam để cập nhật thêm nhiều ưu đãi mới mỗi ngày.',
+        'subject' => '🔥 Sale tăng tương tác',
+        'title' => '❤️ Khuyến mãi tương tác',
+        'content' => 'Like, follow, view đều đang giảm giá.',
     ],
 
     [
-        'subject' => '⚡ Ưu đãi follow Instagram',
+        'subject' => '⚡ Giảm giá view video',
+        'title' => '🎬 View ưu đãi',
+        'content' => 'Tăng view video với giá tốt hôm nay.',
+    ],
+
+    [
+        'subject' => '🎁 Khuyến mãi follow IG',
         'title' => '📸 Instagram deal',
-        'content' => 'Các gói follow Instagram đang được điều chỉnh giá ưu đãi.',
+        'content' => 'Nhiều gói Instagram đang sale.',
     ],
 
     [
-        'subject' => '🎉 Tăng tương tác bài viết',
-        'title' => '❤️ Social interaction',
-        'content' => 'Nhiều dịch vụ tăng tương tác bài viết đang có khuyến mãi.',
+        'subject' => '💥 TikTok giá tốt',
+        'title' => '🎵 TikTok social',
+        'content' => 'Sale nhiều dịch vụ TikTok hôm nay.',
     ],
 
     [
-        'subject' => '🚀 Deal social media hot',
-        'title' => '🔥 Ưu đãi hôm nay',
-        'content' => 'Nhiều dịch vụ tăng follow và tăng tương tác đang được giảm giá.',
+        'subject' => '🔥 Follow Facebook giảm giá',
+        'title' => '👍 Facebook follow',
+        'content' => 'Giảm giá follow Facebook hôm nay.',
     ],
 
     [
-        'subject' => '💰 Ưu đãi nạp ví hôm nay',
-        'title' => '🎁 Bonus số dư',
-        'content' => 'Một số mốc nạp ví được tặng thêm số dư khuyến mãi.',
+        'subject' => '🚀 Deal social hôm nay',
+        'title' => '🔥 Social media',
+        'content' => 'Nhiều dịch vụ đang có giá ưu đãi.',
     ],
 
     [
-        'subject' => '🎯 Dịch vụ tăng follow giá tốt',
-        'title' => '📈 Follow social',
-        'content' => 'Nhiều gói tăng follow hiện đang có giá tốt hơn hôm nay.',
+        'subject' => '⚡ Sale follow cực mạnh',
+        'title' => '📈 Follow khuyến mãi',
+        'content' => 'Nhiều gói follow đang giảm sâu.',
     ],
 
     [
-        'subject' => '🔥 Ưu đãi tăng mắt livestream',
-        'title' => '👀 Livestream deal',
-        'content' => 'Theo dõi website để cập nhật các ưu đãi livestream mới nhất.',
+        'subject' => '🎉 Tăng view đang sale',
+        'title' => '🎬 Deal lượt xem',
+        'content' => 'Giảm giá dịch vụ tăng view hôm nay.',
     ],
 
     [
-        'subject' => '🚀 Tăng view video nhanh chóng',
-        'title' => '🎬 Video social',
-        'content' => 'Nhiều dịch vụ tăng view đang có ưu đãi giới hạn.',
+        'subject' => '🔥 Khuyến mãi Instagram',
+        'title' => '📸 IG social',
+        'content' => 'Nhiều gói Instagram đang ưu đãi.',
     ],
 
     [
-        'subject' => '🎁 Quà tặng social media',
-        'title' => '💎 Bonus ưu đãi',
-        'content' => 'Một số dịch vụ hôm nay được cộng thêm bonus miễn phí.',
+        'subject' => '💎 Sale tăng like',
+        'title' => '❤️ Like giá rẻ',
+        'content' => 'Giảm giá nhiều gói tăng like.',
     ],
 
     [
-        'subject' => '📢 Hệ thống social media tiện lợi',
-        'title' => '🌐 Sola Vietnam',
-        'content' => 'Đặt dịch vụ social media nhanh chóng trực tiếp trên website.',
+        'subject' => '🚀 Follow TikTok ưu đãi',
+        'title' => '🎵 TikTok follow',
+        'content' => 'Follow TikTok đang có giá tốt.',
     ],
 
     [
-        'subject' => '⚡ Giảm giá tăng follow Facebook',
-        'title' => '👍 Facebook deal',
-        'content' => 'Nhiều gói Facebook hôm nay đang được giảm giá trực tiếp.',
+        'subject' => '🔥 Deal Facebook hôm nay',
+        'title' => '👍 Facebook social',
+        'content' => 'Sale nhiều dịch vụ Facebook.',
     ],
 
     [
-        'subject' => '🎉 Flash sale TikTok',
-        'title' => '🎵 TikTok ưu đãi',
-        'content' => 'Các gói tăng follow và view TikTok đang có giá ưu đãi.',
-    ],
-
-    [
-        'subject' => '💥 Bonus tương tác miễn phí',
-        'title' => '❤️ Tăng interaction',
-        'content' => 'Một số dịch vụ hôm nay được cộng thêm tương tác miễn phí.',
-    ],
-
-    [
-        'subject' => '🚀 Ưu đãi social mỗi ngày',
-        'title' => '🔥 Daily deal',
-        'content' => 'Theo dõi Sola Vietnam để cập nhật ưu đãi social media hằng ngày.',
-    ],
-
-    [
-        'subject' => '🎁 Deal follow Instagram',
-        'title' => '📸 Instagram social',
-        'content' => 'Nhiều dịch vụ Instagram đang có giá ưu đãi hấp dẫn.',
-    ],
-
-    [
-        'subject' => '⚡ Ưu đãi tăng view TikTok',
+        'subject' => '⚡ View TikTok giảm mạnh',
         'title' => '🎬 TikTok view',
-        'content' => 'Dịch vụ tăng view TikTok hôm nay đang được giảm giá.',
+        'content' => 'Nhiều gói tăng view đang sale.',
     ],
 
     [
-        'subject' => '🔥 Hỗ trợ social media giá tốt',
-        'title' => '🌐 Sola Vietnam',
-        'content' => 'Khám phá nhiều dịch vụ social media với mức giá tiện lợi hơn hôm nay.',
+        'subject' => '🎁 Khuyến mãi toàn hệ thống',
+        'title' => '🔥 Deal social',
+        'content' => 'Nhiều dịch vụ social đang ưu đãi.',
+    ],
+
+    [
+        'subject' => '💥 Giảm giá follow Instagram',
+        'title' => '📸 IG ưu đãi',
+        'content' => 'Instagram hôm nay đang giảm giá.',
+    ],
+
+    [
+        'subject' => '🚀 Sale follow Facebook',
+        'title' => '👍 Facebook deal',
+        'content' => 'Nhiều gói Facebook giá tốt hôm nay.',
+    ],
+
+    [
+        'subject' => '🔥 Ưu đãi tăng mắt live',
+        'title' => '👀 Livestream deal',
+        'content' => 'Mắt livestream đang giảm giá mạnh.',
+    ],
+
+    [
+        'subject' => '⚡ TikTok sale hôm nay',
+        'title' => '🎵 TikTok ưu đãi',
+        'content' => 'Nhiều dịch vụ TikTok đang khuyến mãi.',
+    ],
+
+    [
+        'subject' => '🎉 Tăng tương tác giá tốt',
+        'title' => '❤️ Social ưu đãi',
+        'content' => 'Nhiều gói tăng tương tác đang sale.',
     ],
 
 ];
