@@ -16,7 +16,7 @@ import {
   ShieldAlert,
   // Network,
   Sparkles,
-  FileBadge2,
+  // FileBadge2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import api from "../../api/axios";
