@@ -14,7 +14,7 @@ import {
   MessageSquare,
   Mail,
   ShieldAlert,
-  Network,
+  // Network,
   Sparkles,
   FileBadge2,
 } from "lucide-react";
@@ -86,7 +86,7 @@ function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     { to: "/admin/reports", label: "Báo cáo lừa đảo", icon: ShieldAlert },
     { to: "/admin/users", label: "Người dùng", icon: Users },
     { to: "/admin/email-notifications", label: "Thông báo mail", icon: Mail },
-    { to: "/admin/affiliate", label: "Affiliate", icon: Network },
+    // { to: "/admin/affiliate", label: "Affiliate", icon: Network },
       { to: "/admin/ai-analyze", label: "Phân tích kênh", icon: Sparkles },
 
   ];
@@ -100,7 +100,7 @@ function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     { to: "/wallet", label: "Ví tiền", icon: Wallet },
     { to: "/feedback", label: "Góp ý", icon: MessageSquare },
     { to: "/report", label: "Báo cáo lừa đảo", icon: ShieldAlert },
-    { to: "/affiliate", label: "Affiliate", icon: Network },
+    // { to: "/affiliate", label: "Affiliate", icon: Network },
     { to: "/account", label: "Tài khoản", icon: User },
       { to: "/ai-analyze", label: "Phân tích kênh", icon: Sparkles },
 
