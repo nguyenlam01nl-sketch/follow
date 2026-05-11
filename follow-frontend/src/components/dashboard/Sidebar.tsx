@@ -79,7 +79,7 @@ function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   const adminMenu: MenuItem[] = [
     { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/admin/services", label: "Dịch vụ", icon: ShoppingBag },
-      { to: "/admin/document-support", label: "Hỗ trợ làm giấy tờ", icon: FileBadge2 },
+      // { to: "/admin/document-support", label: "Hỗ trợ làm giấy tờ", icon: FileBadge2 },
     { to: "/admin/orders", label: "Đơn hàng", icon: FileText },
     { to: "/admin/wallet", label: "Ví tiền", icon: Wallet },
     { to: "/admin/feedback", label: "Góp ý", icon: MessageSquare },
@@ -94,7 +94,7 @@ function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   const userMenu: MenuItem[] = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/services", label: "Dịch vụ", icon: ShoppingBag },
-      { to: "/document-support", label: "Hỗ trợ làm giấy tờ", icon: FileBadge2 },
+      // { to: "/document-support", label: "Hỗ trợ làm giấy tờ", icon: FileBadge2 },
 
     { to: "/orders", label: "Đơn hàng", icon: FileText },
     { to: "/wallet", label: "Ví tiền", icon: Wallet },
